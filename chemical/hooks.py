@@ -42,6 +42,18 @@ app_include_css = [
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
+doctype_js = {
+	"BOM": "public/js/doctype_js/bom.js",
+	"BOM Update Tool": "public/js/doctype_js/bom_update_tool.js",
+	"Stock Entry": "public/js/doctype_js/stock_entry.js",
+	"Purchase Invoice": "public/js/doctype_js/purchase_invoice.js",
+	"Purchase Order": "public/js/doctype_js/purchase_order.js",
+	"Work Order": "public/js/doctype_js/work_order.js",
+	"Sales Order": "public/js/doctype_js/sales_order.js",
+	"Sales Invoice": "public/js/doctype_js/sales_invoice.js",
+	"Delivery Note": "public/js/doctype_js/delivery_note.js",
+}
+
 # Home Pages
 # ----------
 
@@ -131,7 +143,7 @@ app_include_css = [
 # 	"frappe.desk.doctype.event.event.get_events": "chemical.event.get_events"
 # }
 
-fixtures = ["Custom Field", "Custom Script"]
+#fixtures = ["Custom Field"]
 
 override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.api.enqueue_update_cost",
@@ -139,7 +151,8 @@ override_whitelisted_methods = {
 
 doc_events = {
 	"BOM": {
-		"before_save": "chemical.api.bom_before_save"
+		"before_save": "chemical.api.bom_before_save",
+		"on_submit": "chemical.api.bom_on_submit"
 	},
 	"Item Price": {
 		"before_save": "chemical.api.IP_before_save",
@@ -156,14 +169,16 @@ doc_events = {
 		"validate": "chemical.api.item_validate",
 	},
 	"Stock Entry": {
-		"validate": "chemical.batch_valuation.stock_entry_validate",
+		"validate": [
+			"chemical.batch_valuation.stock_entry_validate",
+		],
 		"before_save": "chemical.api.stock_entry_before_save",
-		"before_submit": "chemical.api.override_po_functions",
+		"before_submit": "chemical.api.se_before_submit",
 		"on_submit": [
 			"chemical.api.stock_entry_on_submit",
 			"chemical.batch_valuation.stock_entry_on_submit",
 		],
-		"before_cancel": "chemical.api.override_po_functions",
+		"before_cancel": "chemical.api.se_before_cancel",
 		"on_cancel": [
 			"chemical.api.stock_entry_on_cancel",
 			"chemical.batch_valuation.stock_entry_on_cancel",
@@ -194,6 +209,9 @@ doc_events = {
 		"on_submit": "chemical.api.dn_on_submit",
 		"before_cancel": "chemical.api.dn_before_cancel",
 	},
+	"Sales Invoice": {
+		"before_submit": "chemical.api.si_before_submit"
+	}
 }
 
 scheduler_events = {

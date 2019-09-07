@@ -570,39 +570,39 @@ def make_material_transfer(work_order_id, qty=None):
 	return mti.as_dict()
 
 
-@frappe.whitelist()
-def get_raw_materials(work_order):
-	mti_data = frappe.db.sql("""select name
-		from `tabMaterial Transfer Instruction`
-		where docstatus = 1
-			and work_order = %s """, work_order, as_dict = 1)
+# @frappe.whitelist()
+# def get_raw_materials(work_order):
+# 	mti_data = frappe.db.sql("""select name
+# 		from `tabMaterial Transfer Instruction`
+# 		where docstatus = 1
+# 			and work_order = %s """, work_order, as_dict = 1)
 
-	if not mti_data:
-		frappe.msgprint(_("No Material Transfer Instruction found!"))
-		return
+# 	if not mti_data:
+# 		frappe.msgprint(_("No Material Transfer Instruction found!"))
+# 		return
 
-	transfer_data = []
+# 	transfer_data = []
 
-	for mti in mti_data:
-		mti_doc = frappe.get_doc("Material Transfer Instruction", mti.name)
-		for row in mti_doc.items:
-			transfer_dict = {}
-			transfer_dict['item_code'] = row.item_code
-			transfer_dict['item_name'] = row.item_name
-			transfer_dict['description'] = row.description
-			transfer_dict['uom'] = row.uom
-			transfer_dict['stock_uom'] = row.stock_uom
-			transfer_dict['qty'] = row.qty
-			transfer_dict['batch_no'] = row.batch_no
-			transfer_dict['transfer_qty'] = row.transfer_qty
-			transfer_dict['conversion_factor'] = row.conversion_factor
-			transfer_dict['s_warehouse'] = row.s_warehouse
-			transfer_dict['bom_no'] = row.bom_no
-			transfer_dict['lot_no'] = row.lot_no
-			transfer_dict['packaging_material'] = row.packaging_material
-			transfer_dict['packing_size'] = row.packing_size
-			transfer_dict['batch_yield'] = row.batch_yield
-			transfer_dict['concentration'] = row.concentration
-			transfer_data.append(transfer_dict)
+# 	for mti in mti_data:
+# 		mti_doc = frappe.get_doc("Material Transfer Instruction", mti.name)
+# 		for row in mti_doc.items:
+# 			transfer_dict = {}
+# 			transfer_dict['item_code'] = row.item_code
+# 			transfer_dict['item_name'] = row.item_name
+# 			transfer_dict['description'] = row.description
+# 			transfer_dict['uom'] = row.uom
+# 			transfer_dict['stock_uom'] = row.stock_uom
+# 			transfer_dict['qty'] = row.qty
+# 			transfer_dict['batch_no'] = row.batch_no
+# 			transfer_dict['transfer_qty'] = row.transfer_qty
+# 			transfer_dict['conversion_factor'] = row.conversion_factor
+# 			transfer_dict['s_warehouse'] = row.s_warehouse
+# 			transfer_dict['bom_no'] = row.bom_no
+# 			transfer_dict['lot_no'] = row.lot_no
+# 			transfer_dict['packaging_material'] = row.packaging_material
+# 			transfer_dict['packing_size'] = row.packing_size
+# 			transfer_dict['batch_yield'] = row.batch_yield
+# 			transfer_dict['concentration'] = row.concentration
+# 			transfer_data.append(transfer_dict)
 
-	return transfer_data
+# 	return transfer_data

@@ -135,46 +135,48 @@ def sales_order_query(doctype, txt, searchfield, start, page_len, filters):
 			'customer': filters.get('customer')
 		})
 
-@frappe.whitelist()
-def update_item_price(item, price_list, per_unit_price):
-
-	if db.exists("Item Price",{"item_code":item,"price_list":price_list}):
-		name = db.get_value("Item Price",{"item_code":item,"price_list":price_list},'name')
-		db.set_value("Item Price",name,"price_list_rate", per_unit_price)	
-	else:
-		item_price = frappe.new_doc("Item Price")
-		item_price.price_list = price_list
-		item_price.item_code = item
-		item_price.price_list_rate = per_unit_price
+# @frappe.whitelist()
+# def update_item_price(item, price_list, per_unit_price):
 	
-		item_price.save()
-	db.commit()
+	# if db.exists("Item Price",{"item_code":item,"price_list":price_list}):
+		# name = db.get_value("Item Price",{"item_code":item,"price_list":price_list},'name')
+		# db.set_value("Item Price",name,"price_list_rate", per_unit_price)	
+	# else:
+		# item_price = frappe.new_doc("Item Price")
+		# item_price.price_list = price_list
+		# item_price.item_code = item
+		# item_price.price_list_rate = per_unit_price
+	
+		# item_price.save()
+	# db.commit()
 		
-	return ["Item Price Updated!",per_unit_price]
+	# return ["Item Price Updated!",per_unit_price]
 
-@frappe.whitelist()
-def update_bom_price(bom):
-	doc = frappe.get_doc("BOM",bom)
-	per_unit_price = flt(doc.total_cost) / flt(doc.quantity)
-	doc.per_unit_price = flt(per_unit_price)
-	doc.save()
-	update_item_price(doc.item, doc.buying_price_list, doc.per_unit_price)
+# @frappe.whitelist()
+# def update_bom_price(bom):
+	# doc = frappe.get_doc("BOM",bom)
+	# operating_cost = flt(doc.volume_quantity * doc.volume_rate)
+	# doc.db_set("total_cost",doc.raw_material_cost + doc.total_operational_cost + operating_cost - doc.scrap_material_cost )
+	# doc.db_set('per_unit_price',flt(doc.total_cost) / flt(doc.quantity))
+	# doc.db_set('operating_cost', operating_cost)
+	# doc.save()
+	# update_item_price(doc.item, doc.buying_price_list, doc.per_unit_price)
 	
-@frappe.whitelist()	
-def update_item_price_daily():
-	data = db.sql("""
-		select 
-			item, per_unit_price , buying_price_list
-		from
-			`tabBOM` 
-		where 
-			docstatus < 2 
-			and is_default = 1 """,as_dict =1)
+# @frappe.whitelist()	
+# def update_item_price_daily():
+	# data = db.sql("""
+		# select 
+			# item, per_unit_price , buying_price_list
+		# from
+			# `tabBOM` 
+		# where 
+			# docstatus < 2 
+			# and is_default = 1 """,as_dict =1)
 			
-	for row in data:
-		update_item_price(row.item, row.buying_price_list, row.per_unit_price)
+	# for row in data:
+		# update_item_price(row.item, row.buying_price_list, row.per_unit_price)
 		
-	return "Latest price updated in Price List."
+	# return "Latest price updated in Price List."
 
 def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	cond = ""
