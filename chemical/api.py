@@ -307,7 +307,7 @@ def get_based_on(self):
 		
 def update_additional_cost(self):
 	if self.purpose == "Manufacture" and self.bom_no:
-		if self.is_new():
+		if self.is_new() and not self.amended_from:
 			self.append("additional_costs",{
 				'description': "Spray drying cost",
 				'amount': self.volume_cost
@@ -324,37 +324,40 @@ def cal_target_yield_cons(self):
 	tot_quan = 0
 	item_arr = list()
 	item_map = dict()
-
+	flag = 0
 	if self.purpose == "Manufacture" and self.based_on:
 		for d in self.items:
+			if d.t_warehouse:
+				flag+=1		
 			if d.item_code not in item_arr:
 				item_map.setdefault(d.item_code, 0)
 			
 			item_map[d.item_code] += flt(d.qty)
+			
+		if flag == 1:
+			# Last row object
+			last_row = self.items[-1]
 
-		# Last row object
-		last_row = self.items[-1]
+			# Last row batch_yield
+			batch_yield = last_row.batch_yield
 
-		# Last row batch_yield
-		batch_yield = last_row.batch_yield
+			# List of item_code from items table
+			items_list = [row.item_code for row in self.items]
 
-		# List of item_code from items table
-		items_list = [row.item_code for row in self.items]
+			# Check if items list has "Vinyl Sulphone (V.S)" and no based_on value
+			if not self.based_on and "Vinyl Sulphone (V.S)" in items_list:
+				cal_yield = flt(last_row.qty / item_map["Vinyl Sulphone (V.S)"]) # Last row qty / sum of items of "Vinyl Sulphone (V.S)" from map variable
 
-		# Check if items list has "Vinyl Sulphone (V.S)" and no based_on value
-		if not self.based_on and "Vinyl Sulphone (V.S)" in items_list:
-			cal_yield = flt(last_row.qty / item_map["Vinyl Sulphone (V.S)"]) # Last row qty / sum of items of "Vinyl Sulphone (V.S)" from map variable
+			# Check if items list has frm.doc.based_on value
+			elif self.based_on in items_list:
+				cal_yield = flt(last_row.qty / item_map[self.based_on]) # Last row qty / sum of items of based_on item from map variable
 
-		# Check if items list has frm.doc.based_on value
-		elif self.based_on in items_list:
-			cal_yield = flt(last_row.qty / item_map[self.based_on]) # Last row qty / sum of items of based_on item from map variable
+			# if self.bom_no:
+			# 	bom_batch_yield = flt(frappe.db.get_value("BOM", self.bom_no, 'batch_yield'))
+			# 	cons = flt(bom_batch_yield * 100) / flt(cal_yield)
+			# 	last_row.concentration = cons
 
-		# if self.bom_no:
-		# 	bom_batch_yield = flt(frappe.db.get_value("BOM", self.bom_no, 'batch_yield'))
-		# 	cons = flt(bom_batch_yield * 100) / flt(cal_yield)
-		# 	last_row.concentration = cons
-
-		last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)
+			last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)
 
 @frappe.whitelist()
 def stock_entry_on_submit(self, method):
@@ -468,7 +471,6 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 		wip_warehouse = work_order.wip_warehouse
 	else:
 		wip_warehouse = None
-
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.purpose = purpose
 	stock_entry.work_order = work_order_id
@@ -480,7 +482,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	if work_order.bom_no:
 		stock_entry.inspection_required = frappe.db.get_value('BOM',
 			work_order.bom_no, 'inspection_required')
-
+	
 	if purpose=="Material Transfer for Manufacture":
 		stock_entry.to_warehouse = wip_warehouse
 		stock_entry.project = work_order.project
@@ -493,6 +495,22 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 			stock_entry.set("additional_costs", additional_costs)
 
 	get_items(stock_entry)
+	if purpose=='Manufacture':
+		if hasattr(work_order, 'second_item'):
+			if work_order.second_item:
+				bom = frappe.db.sql(''' select name from tabBOM where item = %s ''',work_order.second_item)[0][0]
+				if bom:
+					stock_entry.append('items',{
+						'item_code': work_order.second_item,
+						't_warehouse': work_order.fg_warehouse,
+						'qty': work_order.second_item_qty,
+						'uom': frappe.db.get_value('Item',work_order.second_item,'stock_uom'),
+						'stock_uom': frappe.db.get_value('Item',work_order.second_item,'stock_uom'),
+						'conversion_factor': 1 ,
+						'bom_no': bom
+					})
+				else:
+					frappe.throw(_('Please create BOM for item {}'.format(self.second_item)))
 	return stock_entry.as_dict()
 
 def get_items(self):

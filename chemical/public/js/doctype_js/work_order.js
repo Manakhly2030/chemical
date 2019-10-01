@@ -34,7 +34,8 @@ frappe.ui.form.on("Work Order", {
 	},
 	before_save: function (frm) {
 		if (frm.doc.based_on_qty) {
-			let qty = flt(frm.doc.batch_yield * frm.doc.based_on_qty);
+			let qty = flt(frm.doc.batch_yield * frm.doc.based_on_qty,3);
+			colsole.log(qty)
 			frm.set_value('qty', qty);
 		}
 		if (frm.doc.volume) {

@@ -33,7 +33,7 @@ def pi_on_cancel(self, method):
 
 @frappe.whitelist()
 def stock_entry_validate(self, method):
-	if batch_wise_cost():
+	if batch_wise_cost():		
 		if self.from_ball_mill != 1 and self.purpose not in ["Manufacture", "Subcontract", "Material Receipt"]:
 			set_basic_rate_for_t_warehouse(self)
 

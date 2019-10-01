@@ -233,7 +233,7 @@ frappe.ui.form.on("Stock Entry Detail", {
             frm.events.set_basic_rate(frm, cdt, cdn);
         });
 
-        if (!d.s_warehouse && d.t_warehouse) {
+        if (!d.s_warehouse && d.t_warehouse && d.bom_no == frm.doc.bom_no) {
             frm.set_value('fg_completed_qty', d.qty);
         }
     },
