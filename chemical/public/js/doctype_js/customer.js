@@ -17,8 +17,10 @@ frappe.ui.form.on("Customer", {
 		}
 	},
 	before_save: function(frm){
-		if((frm.doc.accounts == undefined || !frm.doc.accounts.length) && frm.doc.default_currency != undefined){
+		console.log('call')
+		if((frm.doc.accounts == undefined || frm.doc.accounts.length == 0) && frm.doc.default_currency != undefined){
             if (frm.doc.default_currency == 'USD') {
+				
                 let accounts = frm.add_child('accounts');
                 accounts.company = frappe.defaults.get_user_default("Company");
                 frappe.db.get_value("Company", accounts.company, 'abbr', function (r) {

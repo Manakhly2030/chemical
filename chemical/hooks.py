@@ -52,7 +52,7 @@ doctype_js = {
 	"Sales Order": "public/js/doctype_js/sales_order.js",
 	"Sales Invoice": "public/js/doctype_js/sales_invoice.js",
 	"Delivery Note": "public/js/doctype_js/delivery_note.js",
-	"Customer": "public/js/doctype_js/customer.js",
+	"Address": "public/js/doctype_js/address.js",
 }
 
 # Home Pages

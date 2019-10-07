@@ -22,8 +22,7 @@ def new_item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 			and (tabItem.`{key}` LIKE %(txt)s
 				or tabItem.item_name LIKE %(txt)s
 				or tabItem.item_group LIKE %(txt)s
-				or tabItem.item_customer_code LIKE %(txt)s
-				or tabItem.barcode LIKE %(txt)s)
+				or tabItem.item_customer_code LIKE %(txt)s)
 			{fcond} {mcond}
 		order by
 			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
