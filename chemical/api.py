@@ -195,8 +195,8 @@ def cost_calculation(self):
 	etp_amount = 0
 	operating_cost = flt(self.volume_quantity) * flt(self.volume_rate)
 	if hasattr(self, 'etp_qty'):
-		etp_amount = flt(self.etp_qty*self.etp_amount)
-		self.etp_amount = flt(self.etp_qty*self.etp_amount)
+		etp_amount = flt(self.etp_qty*self.etp_rate)
+		self.etp_amount = flt(self.etp_qty*self.etp_rate)
 	self.total_cost = self.raw_material_cost + self.total_operational_cost + operating_cost + etp_amount - self.scrap_material_cost 
 	per_unit_price = flt(self.total_cost) / flt(self.quantity)
 	self.operating_cost = operating_cost
