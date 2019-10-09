@@ -3,6 +3,7 @@ frappe.ui.form.on("BOM", {
         frm.trigger("cal_operational_cost");
         let unit_qty = flt(frm.doc.total_cost / frm.doc.quantity);
         frm.set_value("per_unit_price", unit_qty);
+		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
     },
     onload: function (frm) {
         if (frm.doc.__islocal && frm.doc.rm_cost_as_per == "Price List") {
@@ -100,4 +101,10 @@ frappe.ui.form.on("BOM", {
             }
         });
     },
+	etp_qty: function(frm){
+		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
+	},
+	etp_rate: function(frm){
+		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
+	}
 });

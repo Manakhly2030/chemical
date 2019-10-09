@@ -192,8 +192,12 @@ def bom_on_submit(self, method):
 	cost_calculation(self)
 
 def cost_calculation(self):
+	etp_amount = 0
 	operating_cost = flt(self.volume_quantity) * flt(self.volume_rate)
-	self.total_cost = self.raw_material_cost + self.total_operational_cost + operating_cost - self.scrap_material_cost 
+	if hasattr(self, 'etp_qty'):
+		etp_amount = flt(self.etp_qty*self.etp_amount)
+		self.etp_amount = flt(self.etp_qty*self.etp_amount)
+	self.total_cost = self.raw_material_cost + self.total_operational_cost + operating_cost + etp_amount - self.scrap_material_cost 
 	per_unit_price = flt(self.total_cost) / flt(self.quantity)
 	self.operating_cost = operating_cost
 
@@ -312,11 +316,18 @@ def update_additional_cost(self):
 				'description': "Spray drying cost",
 				'amount': self.volume_cost
 			})
+			if hasattr(self, 'etp_qty'):
+				self.append("additional_costs",{
+					'description': "ETP cost",
+					'amount': flt(self.etp_qty * self.etp_rate)
+				})
 		else:
 			for row in self.additional_costs:
 				if row.description == "Spray drying cost":
 					row.amount = self.volume_cost
-					break
+				if hasattr(self, 'etp_qty') and row.description == "ETP cost":
+					row.amount = flt(self.etp_qty * self.etp_rate)
+				break
 					
 def cal_target_yield_cons(self):
 	cal_yield = 0

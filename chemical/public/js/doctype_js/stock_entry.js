@@ -152,6 +152,12 @@ frappe.ui.form.on("Stock Entry", {
         let cost = flt(frm.doc.volume * frm.doc.volume_rate);
         frm.set_value('volume_cost', cost);
     },
+	etp_qty: function(frm){
+		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
+	},
+	etp_rate: function(frm){
+		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
+	},
     cal_qty: function (frm) {
         let qty = 0;
         frm.doc.items.forEach(function (d) {
