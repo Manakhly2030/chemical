@@ -53,6 +53,7 @@ doctype_js = {
 	"Sales Invoice": "public/js/doctype_js/sales_invoice.js",
 	"Delivery Note": "public/js/doctype_js/delivery_note.js",
 	"Address": "public/js/doctype_js/address.js",
+	"Customer": "public/js/doctype_js/customer.js",
 }
 
 # Home Pages
@@ -147,7 +148,7 @@ doctype_js = {
 #fixtures = ["Custom Field"]
 
 override_whitelisted_methods = {
-	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.api.enqueue_update_cost",
+	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.api.enqueue_update_cost"
 }
 
 doc_events = {
