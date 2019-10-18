@@ -195,16 +195,18 @@ def cost_calculation(self):
 	etp_amount = 0
 	operating_cost = flt(self.volume_quantity) * flt(self.volume_rate)
 	if hasattr(self, 'etp_qty'):
-		etp_amount = flt(self.etp_qty*self.etp_rate)
-		self.etp_amount = flt(self.etp_qty*self.etp_rate)
-	self.total_cost = self.raw_material_cost + self.total_operational_cost + operating_cost + etp_amount - self.scrap_material_cost 
+		etp_amount = flt(self.etp_qty)*flt(self.etp_rate)
+		self.etp_amount = flt(self.etp_qty)*flt(self.etp_rate)
+	self.db_set('total_cost',self.raw_material_cost + self.total_operational_cost + operating_cost + etp_amount - self.scrap_material_cost)
 	per_unit_price = flt(self.total_cost) / flt(self.quantity)
-	self.operating_cost = operating_cost
+	self.db_set('operating_cost',operating_cost)
 
 	if self.per_unit_price != per_unit_price:
-		self.per_unit_price = per_unit_price
-		
+		self.db_set('per_unit_price', per_unit_price)
+	frappe.db.commit()
+	
 def yield_cal(self):
+	cal_yield = 0
 	for d in self.items:
 		if self.based_on and self.based_on == d.item_code:
 			cal_yield = flt(self.quantity) / flt(d.qty)
