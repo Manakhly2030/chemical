@@ -40,6 +40,7 @@ frappe.ui.form.on('Inward Sample', {
 				}
 			}
 		})
+		frm.set_value("party_alias", frm.doc.party)
 	},
 	update_pricelist_rate: function (frm) {
 		if (frm.doc.item_code && frm.doc.item_price) {
