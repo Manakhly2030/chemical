@@ -228,11 +228,23 @@ def update_cost():
 		
 		operating_cost = flt(bom_obj.volume_quantity) * flt(bom_obj.volume_rate)
 		bom_obj.db_set("total_cost",bom_obj.raw_material_cost + bom_obj.total_operational_cost + operating_cost - bom_obj.scrap_material_cost )
+		per_unit_price = flt(bom_obj.total_cost) / flt(bom_obj.quantity)
 		bom_obj.db_set('per_unit_price',flt(bom_obj.total_cost) / flt(bom_obj.quantity))
 		bom_obj.db_set('operating_cost', operating_cost)
 
 		# if bom_obj.per_unit_price != per_unit_price:
-			# bom_obj.db_set('per_unit_price', per_unit_price)		
+			# bom_obj.db_set('per_unit_price', per_unit_price)
+		if frappe.db.exists("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list}):
+			name = frappe.db.get_value("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list},'name')
+			frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
+		else:
+			item_price = frappe.new_doc("Item Price")
+			item_price.price_list = bom_obj.buying_price_list
+			item_price.item_code = bom_obj.item
+			item_price.price_list_rate = per_unit_price
+			
+			item_price.save()
+		frappe.db.commit()
 
 @frappe.whitelist()
 def se_before_submit(self, method):
