@@ -191,18 +191,20 @@ def bom_before_save(self, method):
 	yield_cal(self)
 
 @frappe.whitelist()
-def bom_on_submit(self, method):
+def bom_validate(self, method):
 	cost_calculation(self)
 
 def cost_calculation(self):
 	etp_amount = 0
+	additional_amount = 0
 	self.volume_amount = flt(self.volume_quantity) * flt(self.volume_rate)
 	if hasattr(self, 'etp_qty'):
 		etp_amount = flt(self.etp_qty)*flt(self.etp_rate)
 		self.etp_amount = flt(self.etp_qty)*flt(self.etp_rate)
 		self.db_set('per_unit_etp_cost',flt(etp_amount/self.quantity))
 		
-	self.additional_amount = sum(flt(d.amount) for d in self.additional_cost)
+	additional_amount = sum(flt(d.amount) for d in self.additional_cost)
+	self.additional_amount = additional_amount
 	self.db_set('total_cost',self.raw_material_cost + flt(self.additional_amount) + self.volume_amount + etp_amount - self.scrap_material_cost)
 	per_unit_price = flt(self.total_cost) / flt(self.quantity)
 	self.db_set('per_unit_volume_cost',flt(self.volume_amount/self.quantity))	
