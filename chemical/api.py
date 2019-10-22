@@ -337,6 +337,8 @@ def get_based_on(self):
 		
 def update_additional_cost(self):
 	if self.purpose == "Manufacture" and self.bom_no:
+		bom = frappe.get_doc("BOM",self.bom_no)
+		
 		if self.is_new() and not self.amended_from:
 			self.append("additional_costs",{
 				'description': "Spray drying cost",
@@ -347,12 +349,28 @@ def update_additional_cost(self):
 					'description': "ETP cost",
 					'amount': flt(self.etp_qty * self.etp_rate)
 				})
+			if bom.additional_cost:
+				for d in bom.additional_cost:
+					self.append('additional_costs', {
+						'description': d.description,
+						'qty': flt(flt(self.fg_completed_qty * d.qty)/ bom.quantity),
+						'rate': abs(d.rate),
+						'amount':  abs(d.rate)* flt(flt(self.fg_completed_qty * d.qty)/ bom.quantity)
+					})
 		else:
 			for row in self.additional_costs:
 				if row.description == "Spray drying cost":
 					row.amount = self.volume_cost
 				if hasattr(self, 'etp_qty') and row.description == "ETP cost":
 					row.amount = flt(self.etp_qty * self.etp_rate)
+				if bom.additional_cost:
+					for d in bom.additional_cost:
+						for i in self.additional_costs:
+							if i.description == d.description:
+								i.qty = flt(flt(self.fg_completed_qty * d.qty)/ bom.quantity)
+								i.rate = abs(d.rate)
+								i.amount = abs(d.rate)* flt(flt(self.fg_completed_qty * d.qty)/ bom.quantity)   
+								break
 				break
 					
 def cal_target_yield_cons(self):
