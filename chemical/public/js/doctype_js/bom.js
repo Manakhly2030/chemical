@@ -1,29 +1,33 @@
 frappe.ui.form.on("BOM", {
     before_save: function (frm) {
-        frm.trigger("cal_operational_cost");
         let unit_qty = flt(frm.doc.total_cost / frm.doc.quantity);
         frm.set_value("per_unit_price", unit_qty);
 		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
+		let amount = 0
+		frm.doc.items.forEach(function (d) {
+            amount += d.amount
+        });
+        frm.set_value("additional_amount", amount);
     },
     onload: function (frm) {
         if (frm.doc.__islocal && frm.doc.rm_cost_as_per == "Price List") {
             frm.set_value("buying_price_list", "Standard Buying");
         }
     },
-    cal_operational_cost: function (frm) {
+    /* cal_operational_cost: function (frm) {
         let op_cost = flt(frm.doc.operational_cost * frm.doc.quantity);
         let total_cost = flt(op_cost + frm.doc.total_cost)
         frm.set_value("total_operational_cost", flt(op_cost));
         frm.set_value("total_cost", total_cost);
         frm.set_value("per_unit_price", flt(total_cost / frm.doc.quantity));
-    },
+    }, */
 
-    operational_cost: function (frm) {
+    /* operational_cost: function (frm) {
         frm.set_value("total_operational_cost", flt(frm.doc.operational_cost * frm.doc.quantity));
-    },
+    }, */
 
     total_operational_cost: function (frm) {
-        frm.set_value("total_cost", flt(frm.doc.total_operational_cost + frm.doc.raw_material_cost + frm.doc.spray_drying_cost - frm.doc.scrap_material_cost));
+        frm.set_value("total_cost", flt(frm.doc.additional_amount + frm.doc.raw_material_cost + frm.doc.volume_amount + frm.doc.etp_amount - frm.doc.scrap_material_cost));
     },
 
     total_cost: function (frm) {
@@ -106,5 +110,15 @@ frappe.ui.form.on("BOM", {
 	},
 	etp_rate: function(frm){
 		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
+	}
+});
+frappe.ui.form.on("BOM Additional Cost", {
+	qty: function(frm, cdt, cdn){
+		let d = locals[cdt][cdn]
+		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
+	},
+	rate: function(frm, cdt, cdn){
+		let d = locals[cdt][cdn]
+		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
 	}
 });

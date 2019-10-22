@@ -25,6 +25,8 @@ app_include_js = [
 	"assets/js/timeline.min.js"
 ]
 
+fixtures = ["Custom Field"]
+
 app_include_css = [
 	"assets/css/summernote.min.css"
 ]
