@@ -13,8 +13,9 @@ if(this.frm.doc.skip_transfer && !this.frm.doc.__islocal){
 
 frappe.ui.form.on("Work Order", {
 	refresh: function(frm){
+		$(".form-inner-toolbar").find("button[data-label=Finish]").css({"float":"right"})
 		if(frm.doc.status != 'Completed' && !frm.doc.skip_transfer && frm.doc.docstatus == 1){
-			var transfer_btn = frm.add_custom_button(__('Make Transfer'), function() {
+			var transfer_btn = frm.add_custom_button(__('Transfer Material'), function() {
 				erpnext.work_order.make_se(frm, 'Material Transfer for Manufacture');
 			});
 			transfer_btn.addClass('btn-primary');

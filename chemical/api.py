@@ -566,8 +566,9 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	if purpose=='Manufacture':
 		if hasattr(work_order, 'second_item'):
 			if work_order.second_item:
-				bom = frappe.db.sql(''' select name from tabBOM where item = %s ''',work_order.second_item)[0][0]
+				bom = frappe.db.sql(''' select name from tabBOM where item = %s ''',work_order.second_item)
 				if bom:
+					bom = bom[0][0]
 					stock_entry.append('items',{
 						'item_code': work_order.second_item,
 						't_warehouse': work_order.fg_warehouse,
@@ -578,7 +579,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 						'bom_no': bom
 					})
 				else:
-					frappe.throw(_('Please create BOM for item {}'.format(self.second_item)))
+					frappe.throw(_('Please create BOM for item {}'.format(work_order.second_item)))
 	return stock_entry.as_dict()
 
 def get_items(self):
