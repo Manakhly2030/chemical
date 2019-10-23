@@ -353,9 +353,9 @@ def update_additional_cost(self):
 				for d in bom.additional_cost:
 					self.append('additional_costs', {
 						'description': d.description,
-						'qty': flt(flt(self.fg_completed_qty * d.qty)/ bom.quantity),
+						'qty': flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity),
 						'rate': abs(d.rate),
-						'amount':  abs(d.rate)* flt(flt(self.fg_completed_qty * d.qty)/ bom.quantity)
+						'amount':  abs(d.rate)* flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)
 					})
 		else:
 			for row in self.additional_costs:
@@ -367,9 +367,9 @@ def update_additional_cost(self):
 					for d in bom.additional_cost:
 						for i in self.additional_costs:
 							if i.description == d.description:
-								i.qty = flt(flt(self.fg_completed_qty * d.qty)/ bom.quantity)
+								i.qty = flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)
 								i.rate = abs(d.rate)
-								i.amount = abs(d.rate)* flt(flt(self.fg_completed_qty * d.qty)/ bom.quantity)   
+								i.amount = abs(d.rate)* flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)   
 								break
 				break
 					

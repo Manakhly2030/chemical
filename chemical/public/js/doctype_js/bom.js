@@ -113,12 +113,12 @@ frappe.ui.form.on("BOM", {
 	}
 });
 frappe.ui.form.on("BOM Additional Cost", {
-	qty: function(frm, cdt, cdn){
+	/* qty: function(frm, cdt, cdn){
 		let d = locals[cdt][cdn]
 		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
-	},
+	}, */
 	rate: function(frm, cdt, cdn){
 		let d = locals[cdt][cdn]
-		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
+		frappe.model.set_value(d.doctype,d.name,'amount',flt(frm.doc.quantity*d.rate))
 	}
 });
