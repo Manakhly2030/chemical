@@ -174,6 +174,7 @@ doc_events = {
 	},
 	"Stock Entry": {
 		"validate": [
+			"chemical.api.stock_entry_validate",
 			"chemical.batch_valuation.stock_entry_validate",
 		],
 		"before_save": "chemical.api.stock_entry_before_save",
@@ -192,7 +193,10 @@ doc_events = {
 		'before_naming': "chemical.batch_valuation.override_batch_autoname",
 	},
 	"Purchase Receipt": {
-		"validate": "chemical.batch_valuation.pr_validate",
+		"validate": [
+			"chemical.api.pr_validate",
+			"chemical.batch_valuation.pr_validate",
+		],
 		"on_cancel": "chemical.batch_valuation.pr_on_cancel",
 	},
 	"Purchase Invoice": {

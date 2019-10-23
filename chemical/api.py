@@ -865,3 +865,19 @@ def validate_customer_batch(self):
 			if batch_customer:
 				if batch_customer != self.customer:
 					frappe.throw(_("Please select correct batch for customer <strong>{}</strong> in row {}".format(self.customer,row.idx)))
+
+@frappe.whitelist()
+def pr_validate(self, method):
+	validate_batch_wise_item_for_concentration(self)
+
+@frappe.whitelist()
+def stock_entry_validate(self, method):
+	if self.purpose == "Material Receipt":
+		validate_batch_wise_item_for_concentration(self)
+
+def validate_batch_wise_item_for_concentration(self):
+	for row in self.items:
+		has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
+
+		if not has_batch_no and flt(row.concentration):
+			frappe.throw(_("Row #{idx}. Please remove concentration for non batch item {item_code}.".format(idx = row.idx, item_code = frappe.bold(row.item_code))))
