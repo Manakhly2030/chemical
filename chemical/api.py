@@ -375,17 +375,16 @@ def update_additional_cost(self):
 			for row in self.additional_costs:
 				if row.description == "Spray drying cost":
 					row.amount = self.volume_cost
-				if hasattr(self, 'etp_qty') and row.description == "ETP cost":
-					row.amount = flt(self.etp_qty * self.etp_rate)
-				if bom.additional_cost:
+				elif hasattr(self, 'etp_qty') and row.description == "ETP cost":
+					row.amount = flt(self.etp_qty) * flt(self.etp_rate)
+				elif bom.additional_cost:
 					for d in bom.additional_cost:
-						for i in self.additional_costs:
-							if i.description == d.description:
-								i.qty = flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)
-								i.rate = abs(d.rate)
-								i.amount = abs(d.rate)* flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)   
-								break
-				break
+						if row.description == d.description:
+							row.qty = flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)
+							row.rate = abs(d.rate)
+							row.amount = abs(d.rate)* flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)   
+							break
+				
 					
 def cal_target_yield_cons(self):
 	cal_yield = 0
@@ -879,5 +878,7 @@ def validate_batch_wise_item_for_concentration(self):
 	for row in self.items:
 		has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
 
-		if not has_batch_no and flt(row.concentration):
-			frappe.throw(_("Row #{idx}. Please remove concentration for non batch item {item_code}.".format(idx = row.idx, item_code = frappe.bold(row.item_code))))
+		# if not has_batch_no and flt(row.concentration):
+			# frappe.throw(_("Row #{idx}. Please remove concentration for non batch item {item_code}.".format(idx = row.idx, item_code = frappe.bold(row.item_code))))
+		if not has_batch_no:
+			row.concentration = 100

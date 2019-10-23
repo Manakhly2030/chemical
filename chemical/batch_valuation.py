@@ -48,6 +48,8 @@ def stock_entry_on_submit(self, method):
 			update_stock_ledger_batch(self)
 
 def make_transfer_batches(self):
+	validate_concentration(self, 't_warehouse')
+
 	for row in self.items:
 		if not row.get('t_warehouse'):
 			continue
@@ -122,6 +124,8 @@ def set_basic_rate_for_t_warehouse(self):
 
 def make_batches(self, warehouse_field):
 	if self._action == "submit":
+		validate_concentration(self, warehouse_field)
+
 		for row in self.items:
 			if not row.get(warehouse_field):
 				continue
@@ -165,6 +169,14 @@ def delete_batches(self, warehouse):
 	else:
 		frappe.db.commit()
 
+def validate_concentration(self, warehouse_field):
+	for row in self.items:
+		if not row.get(warehouse_field):
+			continue
+
+		has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
+		if has_batch_no and not flt(row.concentration):
+			frappe.throw(_("Row #{idx}. Concentration cannot be 0 for batch wise item - {item_code}.".format(idx = row.idx, item_code = frappe.bold(row.item_code))))
 
 @frappe.whitelist()
 def override_batch_autoname(self, method):
