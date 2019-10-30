@@ -148,6 +148,10 @@ def fetch_item_group(self):
 @frappe.whitelist()
 def upadte_item_price(docname,item, price_list, per_unit_price):
 	doc = frappe.get_doc("BOM",docname)
+	for row in doc.items:
+		row.db_set('per_unit_rate', flt(row.amount)/self.quantity)
+	for row in doc.scrap_items:
+		row.db_set('per_unit_rate', flt(row.amount)/self.quantity)
 	doc.db_set('volume_amount',flt(doc.volume_quantity) * flt(doc.volume_rate))
 	doc.db_set('etp_amount',flt(doc.etp_qty) * flt(doc.etp_rate))
 	doc.db_set('total_operational_cost',flt(doc.additional_amount) + flt(doc.volume_amount) + flt(doc.etp_amount))
@@ -208,6 +212,11 @@ def cost_calculation(self):
 		self.etp_amount = flt(self.etp_qty)*flt(self.etp_rate)
 		self.db_set('per_unit_etp_cost',flt(etp_amount/self.quantity))
 		
+	for row in self.items:
+		row.per_unit_rate = flt(row.amount)/self.quantity
+	for row in self.scrap_items:
+		row.per_unit_rate = flt(row.amount)/self.quantity
+		
 	additional_amount = sum(flt(d.amount) for d in self.additional_cost)
 	self.additional_amount = additional_amount
 	self.db_set('total_operational_cost',flt(self.additional_amount) + flt(self.volume_amount) + etp_amount)
@@ -245,6 +254,11 @@ def update_cost():
 		bom_obj = frappe.get_doc("BOM", bom)
 		bom_obj.update_cost(update_parent=False, from_child_bom=True)
 		
+		for row in bom_obj.items:
+			row.db_set('per_unit_rate', flt(row.amount)/self.quantity)
+		for row in bom_obj.scrap_items:
+			row.db_set('per_unit_rate', flt(row.amount)/self.quantity)
+			
 		bom_obj.db_set("volume_amount",flt(bom_obj.volume_quantity) * flt(bom_obj.volume_rate))
 		bom_obj.db_set("etp_amount",flt(bom_obj.etp_qty) * flt(bom_obj.etp_rate))
 		bom_obj.db_set('total_operational_cost',flt(bom_obj.additional_amount) + flt(bom_obj.volume_amount) + flt(bom_obj.etp_amount))
