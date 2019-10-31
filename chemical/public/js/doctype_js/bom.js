@@ -10,10 +10,33 @@ frappe.ui.form.on("BOM", {
         frm.set_value("additional_amount", amount);
     },
     onload: function (frm) {
+		if(frm.doc.is_multiple_item){
+			cur_frm.set_df_property("quantity", "read_only",1);
+		}
         if (frm.doc.__islocal && frm.doc.rm_cost_as_per == "Price List") {
             frm.set_value("buying_price_list", "Standard Buying");
         }
     },
+	is_multiple_item: function(frm){
+		if(frm.doc.is_multiple_item){
+			cur_frm.set_df_property("quantity", "read_only",1);
+			cur_frm.set_df_property("quantity", "label",'First Item Quantity');
+		}
+		if(!frm.doc.is_multiple_item){
+			cur_frm.set_df_property("quantity", "read_only",0);
+			cur_frm.set_df_property("quantity", "label",'Quantity');
+		}
+	},
+	cost_ratio_of_first_item:function(frm){
+		if(frm.doc.is_multiple_item){ 
+			frm.set_value('cost_ratio_of_second_item',flt(100 - frm.doc.cost_ratio_of_first_item))		
+		}
+	},
+	qty_ratio_of_first_item:function(frm){
+		if(frm.doc.is_multiple_item){
+			frm.set_value('qty_ratio_of_second_item',flt(100 - frm.doc.qty_ratio_of_first_item))		
+		}
+	},
     /* cal_operational_cost: function (frm) {
         let op_cost = flt(frm.doc.operational_cost * frm.doc.quantity);
         let total_cost = flt(op_cost + frm.doc.total_cost)
