@@ -30,6 +30,17 @@ this.frm.cscript.onload = function (frm) {
 
 frappe.ui.form.on("Stock Entry", {
 	onload: function(frm){
+		if(frm.doc.from_bom){
+			frappe.db.get_value("BOM",frm.doc.bom_no,['etp_rate','volume_rate'],function(r){
+				if(!frm.doc.etp_rate){
+					console.log('call')
+					frm.set_value('etp_rate',r.etp_rate);
+				}
+				if(!frm.doc.volume_rate){
+					frm.set_value('volume_rate',r.volume_rate);
+				}
+			});
+		}
 		if(frm.doc.work_order){
 			frappe.db.get_value("Work Order", frm.doc.work_order, 'skip_transfer', function (r) {
 				if (r.skip_transfer == 1) {
