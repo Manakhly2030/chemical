@@ -381,11 +381,15 @@ def update_additional_cost(self):
 		if self.is_new() and not self.amended_from:
 			self.append("additional_costs",{
 				'description': "Spray drying cost",
+				'qty': self.volume,
+				'rate': self.volume_rate,
 				'amount': self.volume_cost
 			})
 			if hasattr(self, 'etp_qty'):
 				self.append("additional_costs",{
 					'description': "ETP cost",
+					'qty': self.etp_qty,
+					'rate': self.etp_rate,
 					'amount': flt(self.etp_qty * self.etp_rate)
 				})
 			if bom.additional_cost:
@@ -399,8 +403,12 @@ def update_additional_cost(self):
 		else:
 			for row in self.additional_costs:
 				if row.description == "Spray drying cost":
+					row.qty = self.volume
+					row.rate = self.volume_rate
 					row.amount = self.volume_cost
 				elif hasattr(self, 'etp_qty') and row.description == "ETP cost":
+					row.qty = flt(self.etp_qty)
+					row.rate = flt(self.etp_rate)
 					row.amount = flt(self.etp_qty) * flt(self.etp_rate)
 				elif bom.additional_cost:
 					for d in bom.additional_cost:
