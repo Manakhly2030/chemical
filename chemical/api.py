@@ -209,6 +209,7 @@ def bom_validate(self, method):
 def qty_calculation(self):
 	if self.is_multiple_item:
 		self.db_set('quantity',flt(self.total_quantity * self.qty_ratio_of_first_item)/100.0)
+		self.db_set('second_item_qty', flt(self.total_quantity - self.quantity))
 	
 def cost_calculation(self):
 	etp_amount = 0
@@ -248,6 +249,8 @@ def yield_cal(self):
 	for d in self.items:
 		if self.based_on and self.based_on == d.item_code:
 			cal_yield = flt(self.quantity) / flt(d.qty)
+			if self.is_multiple_item:
+				self.second_item_batch_yield = flt(self.second_item_qty) / d.qty
 	
 	self.batch_yield = cal_yield
 

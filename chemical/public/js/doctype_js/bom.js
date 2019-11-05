@@ -8,6 +8,11 @@ frappe.ui.form.on("BOM", {
             amount += d.amount
         });
         frm.set_value("additional_amount", amount);
+		frm.trigger('second_item_qty_cal');
+		if(frm.doc.is_multiple_item){
+			frm.set_value('qty_ratio_of_second_item',flt(100 - frm.doc.qty_ratio_of_first_item))
+			frm.set_value('cost_ratio_of_second_item',flt(100 - frm.doc.cost_ratio_of_first_item))				
+		}
     },
     onload: function (frm) {
 		if(frm.doc.is_multiple_item){
@@ -35,6 +40,11 @@ frappe.ui.form.on("BOM", {
 	qty_ratio_of_first_item:function(frm){
 		if(frm.doc.is_multiple_item){
 			frm.set_value('qty_ratio_of_second_item',flt(100 - frm.doc.qty_ratio_of_first_item))		
+		}
+	},
+	second_item_qty_cal: function(frm){
+		if(frm.doc.is_multiple_item){
+			frm.set_value('second_item_qty',flt(frm.doc.total_quantity - frm.doc.quantity))
 		}
 	},
     /* cal_operational_cost: function (frm) {
