@@ -126,6 +126,10 @@ class BallMillDataSheet(Document):
 	def cal_total(self):
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
 		self.per_unit_amount = self.amount/ self.actual_qty
+		self.total_qty = sum([flt(item.quantity) for item in self.items])		
+
+	def before_save(self):
+		self.handling_loss = flt(self.total_qty) - flt(self.actual_qty)
 	
 	def validate_qty(self):
 		total_qty = sum([flt(row.qty) for row in self.packaging])
