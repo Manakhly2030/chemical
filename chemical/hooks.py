@@ -219,7 +219,10 @@ doc_events = {
 	},
 	"Sales Invoice": {
 		"before_submit": "chemical.api.si_before_submit"
-	}
+	},
+	"Stock Ledger Entry": {
+		"validate": "chemical.api.sl_before_submit"
+	},
 }
 
 scheduler_events = {
