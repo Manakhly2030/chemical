@@ -221,7 +221,7 @@ doc_events = {
 		"before_submit": "chemical.api.si_before_submit"
 	},
 	"Stock Ledger Entry": {
-		"validate": "chemical.api.sl_before_submit"
+		"before_submit": "chemical.api.sl_before_submit"
 	},
 }
 
