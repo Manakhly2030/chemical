@@ -203,8 +203,15 @@ def bom_before_save(self, method):
 
 @frappe.whitelist()
 def bom_validate(self, method):
+	price_overrides(self)
 	qty_calculation(self)
 	cost_calculation(self)
+
+def price_overrides(self):
+	for row in self.items:
+		if row.from_price_list:
+			#row.db_set('bom_no','')
+			row.bom_no = ''
 
 def qty_calculation(self):
 	if self.is_multiple_item:
