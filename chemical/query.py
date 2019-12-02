@@ -224,3 +224,14 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 			{match_conditions}
 			order by expiry_date, name desc
 			limit %(start)s, %(page_len)s""".format(cond, match_conditions=get_match_cond(doctype)), args)
+
+
+@frappe.whitelist()
+def get_outward_sample_batch_no(doctype, txt, searchfield, start, page_len, filters, as_dict):
+	return frappe.db.sql("""
+	SELECT 
+			name
+	FROM
+			`tabBatch`
+	WHERE
+			item = '{0}' """.format(filters.get("item_name")))
