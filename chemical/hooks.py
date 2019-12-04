@@ -56,6 +56,7 @@ doctype_js = {
 	"Delivery Note": "public/js/doctype_js/delivery_note.js",
 	"Address": "public/js/doctype_js/address.js",
 	"Customer": "public/js/doctype_js/customer.js",
+	"Production Plan": "public/js/doctype_js/production_plan.js",
 }
 
 # Home Pages
@@ -223,6 +224,11 @@ doc_events = {
 	"Stock Ledger Entry": {
 		"before_submit": "chemical.api.sl_before_submit"
 	},
+	"Sales Order": {
+		"on_cancel": "chemical.api.so_on_cancel"
+	},
+
+
 }
 
 scheduler_events = {

@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 import frappe
 import frappe.defaults
 from frappe import _
-from frappe.utils import nowdate, flt, cint, cstr
+from frappe import msgprint, _
+from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from frappe.utils.background_jobs import enqueue
 from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.contacts.doctype.address.address import get_address_display, get_default_address
@@ -11,11 +12,13 @@ from frappe.contacts.doctype.contact.contact import get_contact_details, get_def
 
 from erpnext.selling.doctype.customer.customer import Customer
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
+from erpnext.manufacturing.doctype.work_order.work_order import get_item_details	
+from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
 from erpnext.buying.doctype.supplier.supplier import Supplier
 from erpnext.manufacturing.doctype.bom.bom import add_additional_cost
 
 import json
-from six import itervalues
+from six import itervalues, string_types
 
 @frappe.whitelist()
 def get_customer_ref_code(item_code, customer):
@@ -941,3 +944,278 @@ def batch_qty_validation_with_date_time(self):
 		if flt(batch_bal_after_transaction) < 0:
 			frappe.throw(_("Stock balance in Batch {0} will become negative {1} for Item {2} at Warehouse {3} at date {4} and time {5}")
 				.format(self.batch_no, batch_bal_after_transaction, self.item_code, self.warehouse, self.posting_date, self.posting_time))
+
+
+def so_on_cancel(self, method):
+	h(self)
+	
+def update_outward_sample(self) :
+	for row in self.items:
+		if row.outward_sample:
+			os_doc = frappe.get_doc("Outward Sample",row.outward_sample)
+			os_doc.db_set('sales_order', '')
+
+# Override Production Plan Functions
+@frappe.whitelist()
+def override_proplan_functions():
+
+	ProductionPlan.get_open_sales_orders = get_open_sales_orders
+	ProductionPlan.get_items = get_items_from_sample
+
+def get_sales_orders(self):
+	so_filter = item_filter = ""
+	if self.from_date:
+		so_filter += " and so.transaction_date >= %(from_date)s"
+	if self.to_date:
+		so_filter += " and so.transaction_date <= %(to_date)s"
+	if self.customer:
+		so_filter += " and so.customer = %(customer)s"
+	if self.project:
+		so_filter += " and so.project = %(project)s"
+
+	if self.item_code:
+		item_filter += " and so_item.item_code = %(item)s"
+
+	open_so = frappe.db.sql("""
+		select distinct so.name, so.transaction_date, so.customer, so.base_grand_total
+		from `tabSales Order` so, `tabSales Order Item` so_item
+		where so_item.parent = so.name
+			and so.docstatus = 1 and so.status not in ("Stopped", "Closed")
+			and so.company = %(company)s
+			and so_item.qty > so_item.work_order_qty {0} {1}
+
+		""".format(so_filter, item_filter), {
+			"from_date": self.from_date,
+			"to_date": self.to_date,
+			"customer": self.customer,
+			"project": self.project,
+			"item": self.item_code,
+			"company": self.company
+
+		}, as_dict=1)
+
+	return open_so
+
+def get_open_sales_orders(self):
+		""" Pull sales orders  which are pending to deliver based on criteria selected"""
+		open_so = get_sales_orders(self)
+		if open_so:
+			self.add_so_in_table(open_so)
+		else:
+			frappe.msgprint(_("Sales orders are not available for production"))
+
+@frappe.whitelist()
+def get_items_from_sample(self):
+	if self.get_items_from == "Sales Order":
+			get_so_items(self)
+	elif self.get_items_from == "Material Request":
+			self.get_mr_items()
+
+def get_so_items(self):
+		so_list = [d.sales_order for d in self.get("sales_orders", []) if d.sales_order]
+		if not so_list:
+			msgprint(_("Please enter Sales Orders in the above table"))
+			return []
+		item_condition = ""
+		if self.item_code:
+			item_condition = ' and so_item.item_code = "{0}"'.format(frappe.db.escape(self.item_code))
+	# -----------------------	custom added code  ------------#
+		sample_list = [[d.outward_sample, d.quantity] for d in self.get("finish_items", []) if d.outward_sample]	
+		if not sample_list:
+			frappe.msgprint(_("Please Get Finished Items."))
+			return []
+			
+		item_details = frappe._dict()
+		
+		for sample, quantity in sample_list:
+			sample_doc = frappe.get_doc("Outward Sample",sample)
+			
+			for row in sample_doc.details:
+				bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
+
+				if bom_no:
+					item_details.setdefault(row.item_code, frappe._dict({
+						'planned_qty': 0.0,
+						'bom_no': bom_no,
+						'item_code': row.item_code
+					}))
+
+					item_details[row.item_code].planned_qty += flt(quantity) * flt(row.quantity) / flt(sample_doc.total_qty)
+
+		items = [values for values in item_details.values()]
+
+		# for i in items:
+		# 	frappe.msgprint(str(i))
+		# frappe.msgprint(str(items))
+				#get item_Code and Bom no
+				# data = frappe.db.sql("""select item as item_code,name as bom_no from `tabBOM` where item = %s and is_active = 1 and is_default = 1 and docstatus= 1""", (item_code), as_dict=1)
+				
+				# for get planned qty
+				# my_list = []
+				# for d in self.finish_items:
+
+				# 	planned_qty =1.0
+				# 	sales_qty = 0.0
+
+				# 	sales_qty  = d.quantity # 1
+					
+				# 	sample_doc = frappe.get_doc("Outward Sample",d.outward_sample)
+				# 	total_qty = sample_doc.total_qty #4
+					
+					
+				# 	my_list.append(sample_doc.total_qty)
+					
+					# for d in data:
+					# 	if sample_doc.total_qty not in my_list:
+					# 		d['planned_qty'] = sample_doc.total_qty
+					# 		my_list.append(sample_doc.total_qty)
+					
+					# get quantity of particular item from outward sample details
+					# for i in sample_doc.details:
+					# 	# my_list = []
+					# 	if i.item_code == item_code:
+					# 		qty = i.quantity #2
+							
+					# 		# calculate planned_qty
+					# 		planned_qty = flt(sales_qty*qty)/flt(total_qty)
+					# 		# my_list.append({'item_code':item_code ,'planned_qty':planned_qty})
+
+					# 		# frappe.msgprint(str(my_list))
+
+							# add planned qty in data dict 
+					# for d in data:
+					# 	d['planned_qty'] = sample_doc.total_qty
+
+				# frappe.msgprint('v',my_list)
+				# items.extend(data)
+			# frappe.msgprint("data",str(data))
+		# frappe.msgprint("data",str(items))
+		# frappe.msgprint(str(items))
+	# -----------------------	
+		# items = frappe.db.sql("""select distinct parent, item_code, warehouse,
+		# 	(qty - work_order_qty) * conversion_factor as pending_qty, name
+		# 	from `tabSales Order Item` so_item
+		# 	where parent in (%s) and docstatus = 1 and qty > work_order_qty
+		# 	and exists (select name from `tabBOM` bom where bom.item=so_item.item_code
+		# 			and bom.is_active = 1) %s""" % \
+		# 	(", ".join(["%s"] * len(so_list)), item_condition), tuple(so_list), as_dict=1)
+
+		if self.item_code:
+			item_condition = ' and so_item.item_code = "{0}"'.format(frappe.db.escape(self.item_code))
+
+		packed_items = frappe.db.sql("""select distinct pi.parent, pi.item_code, pi.warehouse as warehouse,
+			(((so_item.qty - so_item.work_order_qty) * pi.qty) / so_item.qty)
+				as pending_qty, pi.parent_item, so_item.name
+			from `tabSales Order Item` so_item, `tabPacked Item` pi
+			where so_item.parent = pi.parent and so_item.docstatus = 1
+			and pi.parent_item = so_item.item_code
+			and so_item.parent in (%s) and so_item.qty > so_item.work_order_qty
+			and exists (select name from `tabBOM` bom where bom.item=pi.item_code
+					and bom.is_active = 1) %s""" % \
+			(", ".join(["%s"] * len(so_list)), item_condition), tuple(so_list), as_dict=1)
+
+		add_items(self,items + packed_items)
+		calculate_total_planned_qty(self)
+
+def add_items(self, items):
+	# frappe.msgprint("call add")
+	self.set('po_items', [])
+	for data in items:
+		item_details = get_item_details(data.item_code)
+		pi = self.append('po_items', {
+			'include_exploded_items': 1,
+			'warehouse': data.warehouse,
+			'item_code': data.item_code,
+			'description': item_details and item_details.description or '',
+			'stock_uom': item_details and item_details.stock_uom or '',
+			'bom_no': item_details and item_details.bom_no or '',
+			# 'planned_qty': data.pending_qty, 
+			'planned_qty':data.planned_qty,
+			'pending_qty': data.pending_qty,
+			'planned_start_date': now_datetime(),
+			'product_bundle_item': data.parent_item
+		})
+
+		if self.get_items_from == "Sales Order":
+			pi.sales_order = data.parent
+			pi.sales_order_item = data.name
+
+		elif self.get_items_from == "Material Request":
+			pi.material_request = data.parent
+			pi.material_request_item = data.name
+
+def calculate_total_planned_qty(self):
+		self.total_planned_qty = 0
+		for d in self.po_items:
+			self.total_planned_qty += flt(d.planned_qty)
+
+	
+# 	if isinstance(doc, string_types):
+# 		doc = json.loads(doc)
+		
+# 	so_list = [d['sales_order'] for d in doc['sales_orders'] if d['sales_order']]
+
+# 	sample_list = [d['outward_sample'] for d in doc['finish_items'] if d['outward_sample']]
+# 	if not sample_list:
+# 		frappe.msgprint(_("Please enter Sales Orders in the above table"))
+# 		return []
+
+# 	for sample in sample_list:
+# 		sample_doc = frappe.get_doc("Outward Sample",sample)
+# 		items_list = [d.item_code for d in sample_doc.details]
+
+# 		for item_code in items_list:
+# 			items = frappe.db.sql("""select item as item_code,name as bom_no from `tabBOM` where item = '%s' and is_active = 1 and is_default = 1 and docstatus= 1"""%item_code,as_dict=1)
+			
+	
+# 	if doc['item_code']:
+# 		item_condition = ' and so_item.item_code = "{0}"'.format(frappe.db.escape( doc['item_code']))
+
+# 		packed_items = frappe.db.sql("""select distinct pi.parent, pi.item_code, pi.warehouse as warehouse,
+# 			(((so_item.qty - so_item.work_order_qty) * pi.qty) / so_item.qty)
+# 				as pending_qty, pi.parent_item, so_item.name
+# 			from `tabSales Order Item` so_item, `tabPacked Item` pi
+# 			where so_item.parent = pi.parent and so_item.docstatus = 1
+# 			and pi.parent_item = so_item.item_code
+# 			and so_item.parent in (%s) and so_item.qty > so_item.work_order_qty
+# 			and exists (select name from `tabBOM` bom where bom.item=pi.item_code
+# 					and bom.is_active = 1) %s""" % \
+# 			(", ".join(["%s"] * len(so_list)), item_condition), tuple(so_list), as_dict=1)
+
+# 	add_items(items,packed_items)
+# 	# calculate_total_planned_qty()
+
+# def add_items(self, items):
+# 	self.set('po_items', [])
+# 	for data in items:
+# 		item_details = get_item_details(data.item_code)
+# 		pi = self.append('po_items', {
+# 			'include_exploded_items': 1,
+# 			'warehouse': data.warehouse,
+# 			'item_code': data.item_code,
+# 			'description': item_details and item_details.description or '',
+# 			'stock_uom': item_details and item_details.stock_uom or '',
+# 			'bom_no': item_details and item_details.bom_no or '',
+# 			'planned_qty': data.pending_qty,
+# 			'pending_qty': data.pending_qty,
+# 			'planned_start_date': now_datetime(),
+# 			'product_bundle_item': data.parent_item
+# 		})
+
+# 		if self.get_items_from == "Sales Order":
+# 			pi.sales_order = data.parent
+# 			pi.sales_order_item = data.name
+
+# 		elif self.get_items_from == "Material Request":
+# 			pi.material_request = data.parent
+# 			pi.material_request_item = data.name
+
+# # def calculate_total_planned_qty(self):
+# # 	self.total_planned_qty = 0
+# # 	for d in self.po_items:
+# # 		self.total_planned_qty += flt(d.planned_qty)
+
+	
+		
+
+	
