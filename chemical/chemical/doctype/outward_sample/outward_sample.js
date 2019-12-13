@@ -2,10 +2,10 @@
 // For license information, please see license.txt
 
 //fetch territory from party.
-cur_frm.add_fetch("party", "territory", "destination");
+//cur_frm.add_fetch("party", "territory", "destination");
+
 //fetch item name in child table.
 cur_frm.add_fetch("inward_sample", "item_code", "item_name");
-
 cur_frm.add_fetch("batch_no", "concentration", "concentration");
 
 cur_frm.add_fetch("item_code", "item_name", "item_name");
@@ -81,6 +81,22 @@ frappe.ui.form.on('Outward Sample', {
 				}
 			})
 		}
+		if (frm.doc.link_to == 'Supplier') {
+			frappe.call({
+				method: 'chemical.api.get_supplier_ref_code',
+				args: {
+					'item_code': frm.doc.product_name,
+					'supplier': frm.doc.party
+				},
+				callback: function (r) {
+					if (r.message) {
+						frm.set_value('item_name', r.message);
+					}
+				}
+			})
+
+		}
+
 	},
 	update_price: function (frm) {
 		frm.call({

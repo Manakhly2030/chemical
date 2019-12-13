@@ -1,7 +1,7 @@
 // Copyright (c) 2018, Finbyz Tech Pvt Ltd and contributors
 // For license information, please see license.txt
 //fetch territory from party.
-cur_frm.add_fetch("party", "territory", "destination");
+// cur_frm.add_fetch("party", "territory", "destination");
 
 frappe.ui.form.on('Inward Sample', {
 	party: function (frm) {
@@ -29,17 +29,17 @@ frappe.ui.form.on('Inward Sample', {
 	},
 	get_party_details: function (frm) {
 		frappe.call({
-			method: "erpnext.accounts.party.get_party_details",
+			method: "chemical.api.get_party_details",
 			args: {
 				party: frm.doc.party,
 				party_type: frm.doc.link_to
 			},
 			callback: function (r) {
 				if (r.message) {
-					frm.set_value('party_name', frm.doc.party);
+					frm.set_value('party_name', r.message.party_name);
 				}
 			}
-		})
+		});
 		frm.set_value("party_alias", frm.doc.party)
 	},
 	update_pricelist_rate: function (frm) {

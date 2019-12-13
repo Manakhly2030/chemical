@@ -26,6 +26,12 @@ def get_customer_ref_code(item_code, customer):
 	return ref_code if ref_code else ''
 
 @frappe.whitelist()
+def get_supplier_ref_code(item_code, supplier):
+
+	ref_code = frappe.db.get_value("Item Supplier", {'parent': item_code, 'supplier': supplier}, 'supplier_part_no')	
+	return ref_code 
+
+@frappe.whitelist()
 def customer_auto_name(self, method):
 	if self.alias and self.customer_name != self.alias:
 		self.name = self.alias
@@ -1020,77 +1026,81 @@ def get_so_items(self):
 		if self.item_code:
 			item_condition = ' and so_item.item_code = "{0}"'.format(frappe.db.escape(self.item_code))
 	# -----------------------	custom added code  ------------#
-		sample_list = [[d.outward_sample, d.quantity] for d in self.get("finish_items", []) if d.outward_sample]	
-		if not sample_list:
-			frappe.msgprint(_("Please Get Finished Items."))
-			return []
-			
-		item_details = frappe._dict()
-		
-		for sample, quantity in sample_list:
-			sample_doc = frappe.get_doc("Outward Sample",sample)
-			
-			for row in sample_doc.details:
-				bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
+		if self.as_per_projected_qty == 1:                                                           #condition 1
+			sample_list = [[d.outward_sample, d.quantity ,d.projected_qty] for d in self.get("finish_items", []) if d.outward_sample]	
+			if not sample_list:
+				frappe.msgprint(_("Please Get Finished Items."))
+				return []	
+			item_details = frappe._dict()
 
-				if bom_no:
-					item_details.setdefault(row.item_code, frappe._dict({
-						'planned_qty': 0.0,
-						'bom_no': bom_no,
-						'item_code': row.item_code
-					}))
+			for sample, quantity ,projected_qty in sample_list:#changes here
+				if projected_qty < 0:
+					sample_doc = frappe.get_doc("Outward Sample",sample)
+					for row in sample_doc.details:
+						bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
 
-					item_details[row.item_code].planned_qty += flt(quantity) * flt(row.quantity) / flt(sample_doc.total_qty)
-
-		items = [values for values in item_details.values()]
-
-		# for i in items:
-		# 	frappe.msgprint(str(i))
-		# frappe.msgprint(str(items))
-				#get item_Code and Bom no
-				# data = frappe.db.sql("""select item as item_code,name as bom_no from `tabBOM` where item = %s and is_active = 1 and is_default = 1 and docstatus= 1""", (item_code), as_dict=1)
-				
-				# for get planned qty
-				# my_list = []
-				# for d in self.finish_items:
-
-				# 	planned_qty =1.0
-				# 	sales_qty = 0.0
-
-				# 	sales_qty  = d.quantity # 1
-					
-				# 	sample_doc = frappe.get_doc("Outward Sample",d.outward_sample)
-				# 	total_qty = sample_doc.total_qty #4
-					
-					
-				# 	my_list.append(sample_doc.total_qty)
-					
-					# for d in data:
-					# 	if sample_doc.total_qty not in my_list:
-					# 		d['planned_qty'] = sample_doc.total_qty
-					# 		my_list.append(sample_doc.total_qty)
-					
-					# get quantity of particular item from outward sample details
-					# for i in sample_doc.details:
-					# 	# my_list = []
-					# 	if i.item_code == item_code:
-					# 		qty = i.quantity #2
+						if bom_no:
+							item_details.setdefault(row.item_code, frappe._dict({
+								'planned_qty': 0.0,
+								'bom_no': bom_no,
+								'item_code': row.item_code
+							}))
 							
-					# 		# calculate planned_qty
-					# 		planned_qty = flt(sales_qty*qty)/flt(total_qty)
-					# 		# my_list.append({'item_code':item_code ,'planned_qty':planned_qty})
+							item_details[row.item_code].planned_qty += flt(abs(projected_qty)) * flt(row.quantity) / flt(sample_doc.total_qty)
+			
+			items = [values for values in item_details.values()]
 
-					# 		# frappe.msgprint(str(my_list))
+		elif self.as_per_actual_qty == 1:															 #condition 2
+			
+			sample_list = [[d.outward_sample, d.quantity,d.actual_qty] for d in self.get("finish_items", []) if d.outward_sample]	
+			if not sample_list:
+				frappe.msgprint(_("Please Get Finished Items."))
+				return []	
+			item_details = frappe._dict()
+			for sample, quantity, actual_qty in sample_list:
+				diff = actual_qty - quantity #changes here
+				if diff < 0:
+					sample_doc = frappe.get_doc("Outward Sample",sample)
 
-							# add planned qty in data dict 
-					# for d in data:
-					# 	d['planned_qty'] = sample_doc.total_qty
+					for row in sample_doc.details:
+						bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
 
-				# frappe.msgprint('v',my_list)
-				# items.extend(data)
-			# frappe.msgprint("data",str(data))
-		# frappe.msgprint("data",str(items))
-		# frappe.msgprint(str(items))
+						if bom_no:
+							item_details.setdefault(row.item_code, frappe._dict({
+								'planned_qty': 0.0,
+								'bom_no': bom_no,
+								'item_code': row.item_code
+							}))
+							
+							item_details[row.item_code].planned_qty += flt(abs(diff)) * flt(row.quantity) / flt(sample_doc.total_qty)
+							
+			items = [values for values in item_details.values()]
+
+		else:		
+																						 #default
+			sample_list = [[d.outward_sample, d.quantity] for d in self.get("finish_items", []) if d.outward_sample]	
+			if not sample_list:
+				frappe.msgprint(_("Please Get Finished Items."))
+				return []	
+			item_details = frappe._dict()
+			for sample, quantity in sample_list:
+				sample_doc = frappe.get_doc("Outward Sample",sample)
+
+				for row in sample_doc.details:
+					bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
+
+					if bom_no:
+						item_details.setdefault(row.item_code, frappe._dict({
+							'planned_qty': 0.0,
+							'bom_no': bom_no,
+							'item_code': row.item_code
+						}))
+
+						item_details[row.item_code].planned_qty += flt(quantity) * flt(row.quantity) / flt(sample_doc.total_qty)
+
+			items = [values for values in item_details.values()]
+
+		
 	# -----------------------	
 		# items = frappe.db.sql("""select distinct parent, item_code, warehouse,
 		# 	(qty - work_order_qty) * conversion_factor as pending_qty, name
@@ -1149,6 +1159,10 @@ def calculate_total_planned_qty(self):
 		for d in self.po_items:
 			self.total_planned_qty += flt(d.planned_qty)
 
+@frappe.whitelist()
+def get_actual_and_projected_qty(warehouse,item_code):
+	qty = frappe.db.get_value("Bin", {"item_code": item_code, "warehouse": warehouse},["projected_qty", "actual_qty"], as_dict=True, cache=True)
+	return qty['actual_qty'] ,qty['projected_qty']
 	
 # 	if isinstance(doc, string_types):
 # 		doc = json.loads(doc)
