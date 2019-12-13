@@ -56,6 +56,7 @@ doctype_js = {
 	"Delivery Note": "public/js/doctype_js/delivery_note.js",
 	"Address": "public/js/doctype_js/address.js",
 	"Customer": "public/js/doctype_js/customer.js",
+	"Supplier": "public/js/doctype_js/supplier.js",
 	"Production Plan": "public/js/doctype_js/production_plan.js",
 }
 

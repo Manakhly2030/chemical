@@ -9,6 +9,7 @@ from frappe.utils.background_jobs import enqueue
 from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.contacts.doctype.address.address import get_address_display, get_default_address
 from frappe.contacts.doctype.contact.contact import get_contact_details, get_default_contact
+from frappe.desk.notifications import get_filters_for
 
 from erpnext.selling.doctype.customer.customer import Customer
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
