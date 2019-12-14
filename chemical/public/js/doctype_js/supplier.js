@@ -36,14 +36,14 @@ function dashboard_link_doctype(frm, doctype){
 	
 	// bind links
 	self.find(".badge-link").on('click', function() {
-		frappe.route_options = {"quotation": frm.doc.name}
+		frappe.route_options = {"party": frm.doc.name}
 		frappe.set_route("List", doctype);
 	});
 	
 	// bind open notifications
 	self.find('.open-notification').on('click', function() {
 		frappe.route_options = {
-			"quotation": frm.doc.name,
+			"pary": frm.doc.name,
 			"status": "Draft"
 		}
 		frappe.set_route("List", doctype);
@@ -55,7 +55,8 @@ function dashboard_link_doctype(frm, doctype){
 	}
 	self.find('.btn-new').on('click', function() {
 		frappe.new_doc(doctype,{
-			"quotation": frm.doc.name
+			"party": frm.doc.name,
+			"link_to": "Supplier"
 		});
 	});
 	}
