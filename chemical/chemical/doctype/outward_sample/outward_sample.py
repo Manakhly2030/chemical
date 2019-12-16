@@ -143,19 +143,18 @@ def make_quotation(source_name, target_doc=None):
 
 	return doclist
 
-def get_outward_sample(doctype, txt, searchfield, start, page_len, filters, as_dict):
-	return frappe.db.sql("""
-		SELECT 
-			`tabOutward Sample`.name, `tabOutward Sample`.date as transaction_date
-		FROM
-			`tabOutward Sample`
-		WHERE
-			`tabOutward Sample`.docstatus = 1
-			%(fcond)s
-			%(mcond)s
-		""" % {
-			"fcond": get_filters_cond(doctype, filters, []),
-			"mcond": get_match_cond(doctype),
-			"txt": "%(txt)s"
-		}, {"txt": ("%%%s%%" % txt)}, as_dict=as_dict)
-
+# def get_outward_sample(doctype, txt, searchfield, start, page_len, filters, as_dict):
+# 	return frappe.db.sql("""
+# 		SELECT 
+# 			`tabOutward Sample`.name, `tabOutward Sample`.date as transaction_date
+# 		FROM
+# 			`tabOutward Sample`
+# 		WHERE
+# 			`tabOutward Sample`.docstatus = 1
+# 			%(fcond)s
+# 			%(mcond)s
+# 		""" % {
+# 			"fcond": get_filters_cond(doctype, filters, []),
+# 			"mcond": get_match_cond(doctype),
+# 			"txt": "%(txt)s"
+# 		}, {"txt": ("%%%s%%" % txt)}, as_dict=as_dict)
