@@ -44,20 +44,34 @@ this.frm.cscript.onload = function (frm) {
 			}
 		}
 	});
-	this.frm.set_query("batch_no", "details", function(doc, cdt, cdn) {
+	this.frm.set_query("batch_no", "details", function (doc, cdt, cdn) {
 		let d = locals[cdt][cdn];
-		if(!d.item_name){
+		if (!d.item_name) {
 			frappe.msgprint(__("Please select Item"));
 		}
-		else{
+		else {
 			return {
-				query: "chemical.query.get_outward_sample_batch_no",
+				query: "chemical.query.get_batch_no",
 				filters: {
-					'item_name': d.item_name,
+					'item_code': d.item_name,
 				}
 			}
 		}
 	});
+	// this.frm.set_query("batch_no", "details", function(doc, cdt, cdn) {
+	// 	let d = locals[cdt][cdn];
+	// 	if(!d.item_name){
+	// 		frappe.msgprint(__("Please select Item"));
+	// 	}
+	// 	else{
+	// 		return {
+	// 			query: "chemical.query.get_outward_sample_batch_no",
+	// 			filters: {
+	// 				'item_name': d.item_name,
+	// 			}
+	// 		}
+	// 	}
+	// });
 }
 
 frappe.ui.form.on('Outward Sample', {
