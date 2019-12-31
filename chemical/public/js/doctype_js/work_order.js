@@ -32,11 +32,18 @@ frappe.ui.form.on("Work Order", {
 				frm.remove_custom_button('Make Timesheet');
 			}
 		}
+
+		if(frm.doc.status == "Closed" || frm.doc.status == "Completed"){
+			frm.remove_custom_button('Finish');
+		}
+
+		if (frm.doc.based_on && frm.doc.based_on != "") {
+			cur_frm.set_df_property('based_on_qty', 'label', cstr(frm.doc.based_on) + " Qty");
+		}
 	},
 	before_save: function (frm) {
 		if (frm.doc.based_on_qty) {
 			let qty = flt(frm.doc.batch_yield * frm.doc.based_on_qty,3);
-			colsole.log(qty)
 			frm.set_value('qty', qty);
 		}
 		if (frm.doc.volume) {

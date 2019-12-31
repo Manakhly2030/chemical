@@ -954,7 +954,7 @@ def batch_qty_validation_with_date_time(self):
 
 
 def so_on_cancel(self, method):
-	h(self)
+	pass
 	
 def update_outward_sample(self) :
 	for row in self.items:
