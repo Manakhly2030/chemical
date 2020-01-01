@@ -433,9 +433,13 @@ def update_additional_cost(self):
 				elif bom.additional_cost:
 					for d in bom.additional_cost:
 						if row.description == d.description:
-							row.qty = flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)
 							row.rate = abs(d.rate)
-							row.amount = abs(d.rate)* flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)   
+							if hasattr(self, 'fg_completed_qty'):
+								row.qty = flt(flt(self.real_fg_completed_qty * bom.quantity)/ bom.quantity)
+								row.amount = abs(d.rate)* flt(flt(self.real_fg_completed_qty * bom.quantity)/ bom.quantity)
+							else:
+								row.qty = flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)
+								row.amount = abs(d.rate)* flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)   
 							break
 				
 					
@@ -965,7 +969,7 @@ def update_outward_sample(self) :
 # Override Production Plan Functions
 @frappe.whitelist()
 def override_proplan_functions():
-
+	
 	ProductionPlan.get_open_sales_orders = get_open_sales_orders
 	ProductionPlan.get_items = get_items_from_sample
 
@@ -987,7 +991,7 @@ def get_sales_orders(self):
 		select distinct so.name, so.transaction_date, so.customer, so.base_grand_total
 		from `tabSales Order` so, `tabSales Order Item` so_item
 		where so_item.parent = so.name
-			and so.docstatus = 1 and so.status not in ("Stopped", "Closed")
+			and so.docstatus = 1 and so.status not in ("Stopped", "Closed","Completed")
 			and so.company = %(company)s
 			and so_item.qty > so_item.work_order_qty {0} {1}
 
@@ -1027,6 +1031,7 @@ def get_so_items(self):
 		if self.item_code:
 			item_condition = ' and so_item.item_code = "{0}"'.format(frappe.db.escape(self.item_code))
 	# -----------------------	custom added code  ------------#
+
 		if self.as_per_projected_qty == 1:                                                           #condition 1
 			sample_list = [[d.outward_sample, d.quantity ,d.projected_qty] for d in self.get("finish_items", []) if d.outward_sample]	
 			if not sample_list:
@@ -1039,15 +1044,17 @@ def get_so_items(self):
 					sample_doc = frappe.get_doc("Outward Sample",sample)
 					for row in sample_doc.details:
 						bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
-
+						
 						if bom_no:
+							bom = frappe.get_doc("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
 							item_details.setdefault(row.item_code, frappe._dict({
 								'planned_qty': 0.0,
-								'bom_no': bom_no,
-								'item_code': row.item_code
+								'bom_no': bom.name,
+								'item_code': row.item_code,
+								'concentration' : bom.concentration
 							}))
 							
-							item_details[row.item_code].planned_qty += flt(abs(projected_qty)) * flt(row.quantity) / flt(sample_doc.total_qty)
+							item_details[row.item_code].planned_qty += (flt(abs(projected_qty)) * flt(row.quantity) * flt(row.concentration))/ (flt(sample_doc.total_qty) * flt(bom.concentration) )
 			
 			items = [values for values in item_details.values()]
 
@@ -1065,15 +1072,16 @@ def get_so_items(self):
 
 					for row in sample_doc.details:
 						bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
-
 						if bom_no:
+							bom = frappe.get_doc("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
 							item_details.setdefault(row.item_code, frappe._dict({
 								'planned_qty': 0.0,
-								'bom_no': bom_no,
-								'item_code': row.item_code
+								'bom_no': bom.name,
+								'item_code': row.item_code,
+								'concentration' : bom.concentration
 							}))
 							
-							item_details[row.item_code].planned_qty += flt(abs(diff)) * flt(row.quantity) / flt(sample_doc.total_qty)
+							item_details[row.item_code].planned_qty += (flt(abs(diff)) * flt(row.quantity) * flt(row.concentration)) / (flt(sample_doc.total_qty) * flt(bom.concentration))
 							
 			items = [values for values in item_details.values()]
 
@@ -1089,19 +1097,21 @@ def get_so_items(self):
 
 				for row in sample_doc.details:
 					bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
-
 					if bom_no:
+						bom = frappe.get_doc("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
+						# frappe.msgprint(str(bom.name))
+					
 						item_details.setdefault(row.item_code, frappe._dict({
 							'planned_qty': 0.0,
-							'bom_no': bom_no,
-							'item_code': row.item_code
+							'bom_no': bom.name,
+							'item_code': row.item_code,
+							'concentration' : bom.concentration
 						}))
-
-						item_details[row.item_code].planned_qty += flt(quantity) * flt(row.quantity) / flt(sample_doc.total_qty)
+						
+						item_details[row.item_code].planned_qty += (flt(quantity) * flt(row.quantity) * (row.concentration))/ (flt(sample_doc.total_qty)* (bom.concentration))
 
 			items = [values for values in item_details.values()]
-
-		
+			
 	# -----------------------	
 		# items = frappe.db.sql("""select distinct parent, item_code, warehouse,
 		# 	(qty - work_order_qty) * conversion_factor as pending_qty, name
@@ -1141,6 +1151,7 @@ def add_items(self, items):
 			'stock_uom': item_details and item_details.stock_uom or '',
 			'bom_no': item_details and item_details.bom_no or '',
 			# 'planned_qty': data.pending_qty, 
+			'concentration': data.concentration,
 			'planned_qty':data.planned_qty,
 			'pending_qty': data.pending_qty,
 			'planned_start_date': now_datetime(),
@@ -1301,8 +1312,3 @@ def get_open_count(doctype, name, links):
 # # 	self.total_planned_qty = 0
 # # 	for d in self.po_items:
 # # 		self.total_planned_qty += flt(d.planned_qty)
-
-	
-		
-
-	
