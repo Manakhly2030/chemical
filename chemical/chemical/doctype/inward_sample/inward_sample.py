@@ -42,3 +42,14 @@ class InwardSample(Document):
 		if self.link_to == "Customer" and self.party and self.item_code:
 			ref_code = frappe.db.get_value("Item Customer Detail", {'parent': self.item_code, 'customer_name': self.party}, 'ref_code')
 			self.customer_item_name = ref_code
+
+		
+	def before_naming(self):
+		
+		frappe.db.sql("update `tabSeries` set current = %s where name = %s", (int(self.inward_no) - 1, self.naming_series))
+
+
+
+
+
+		
