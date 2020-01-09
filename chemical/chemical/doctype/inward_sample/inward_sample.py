@@ -45,8 +45,10 @@ class InwardSample(Document):
 
 		
 	def before_naming(self):
-		
-		frappe.db.sql("update `tabSeries` set current = %s where name = %s", (int(self.inward_no) - 1, self.naming_series))
+		if self.inward_no:
+			if not frappe.db.get_value('Series', self.naming_series, 'name', order_by="name"):
+				frappe.db.sql("insert into tabSeries (name, current) values (%s, 0)", (self.naming_series))
+			frappe.db.sql("update `tabSeries` set current = %s where name = %s", (int(self.inward_no) - 1, self.naming_series))
 
 
 
