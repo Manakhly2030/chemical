@@ -18,12 +18,12 @@ app_license = "GPL 3.0"
 # app_include_css = "/assets/chemical/css/chemical.css"
 # app_include_js = "/assets/chemical/js/chemical.js"
 
-app_include_js = [
-	"assets/js/summernote.min.js",
-	"assets/js/comment_desk.min.js",
-	"assets/js/editor.min.js",
-	"assets/js/timeline.min.js"
-]
+# app_include_js = [
+# 	"assets/js/summernote.min.js",
+# 	"assets/js/comment_desk.min.js",
+# 	"assets/js/editor.min.js",
+# 	"assets/js/timeline.min.js"
+# ]
 
 fixtures = ["Custom Field"]
 
@@ -227,9 +227,7 @@ doc_events = {
 	},
 	"Sales Order": {
 		"on_cancel": "chemical.api.so_on_cancel"
-	},
-
-
+	}
 }
 
 scheduler_events = {
