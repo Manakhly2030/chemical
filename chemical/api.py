@@ -434,7 +434,7 @@ def update_additional_cost(self):
 					for d in bom.additional_cost:
 						if row.description == d.description:
 							row.rate = abs(d.rate)
-							if hasattr(self, 'fg_completed_qty'):
+							if hasattr(self, 'real_fg_completed_qty'):
 								row.qty = flt(flt(self.real_fg_completed_qty * bom.quantity)/ bom.quantity)
 								row.amount = abs(d.rate)* flt(flt(self.real_fg_completed_qty * bom.quantity)/ bom.quantity)
 							else:
