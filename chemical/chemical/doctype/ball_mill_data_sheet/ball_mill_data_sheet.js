@@ -86,21 +86,32 @@ this.frm.cscript.onload = function(frm) {
 	});
 }
 function get_qty(frm) {
-	if(flt(frm.doc.target_qty) != 0 && frm.doc.sales_order){
-		frappe.model.with_doc("Outward Sample", frm.doc.sample_no, function() {
-			var os_doc = frappe.model.get_doc("Outward Sample", frm.doc.sample_no)
-			console.log("os_doc",os_doc.total_qty);
-			$.each(os_doc.details, function(index, row){
-				let d = frm.add_child("items");
-				d.item_name = row.item_name;
-				d.source_warehouse = frm.doc.default_source_warehouse;
-				d.quantity = flt(flt(frm.doc.target_qty * row.quantity) / os_doc.total_qty);
-				d.required_quantity = flt(flt(frm.doc.target_qty * row.quantity) / os_doc.total_qty);
-			})
-		});
+	if(flt(frm.doc.target_qty) != 0 && frm.doc.sample_no){
+		frappe.run_serially([
+			() => { frm.set_value('items',[]) },
+			() => {
+				frappe.model.with_doc("Outward Sample", frm.doc.sample_no, function() {
+					frappe.run_serially([
+						() => {
+							let os_doc = frappe.model.get_doc("Outward Sample", frm.doc.sample_no)
+							$.each(os_doc.details, function(index, row){
+								let d = frm.add_child("items");
+								d.item_name = row.item_name;
+								d.source_warehouse = frm.doc.default_source_warehouse;
+								d.quantity = flt(flt(frm.doc.target_qty * row.quantity) / os_doc.total_qty);
+								d.required_quantity = flt(flt(frm.doc.target_qty * row.quantity) / os_doc.total_qty);
+							})
+						},
+						() => {
+							frm.refresh_fields("items");
+						},
+					])
+				});
+			},
+		]);
+	
 	}
-	// return 
-  }
+}
 
 frappe.ui.form.on('Ball Mill Data Sheet', {
 	refresh: function(frm){
@@ -135,20 +146,15 @@ frappe.ui.form.on('Ball Mill Data Sheet', {
 		
 	},
 	product_name: function(frm) {
-		console.log("call pr");
 		frm.set_value('sales_order','')
 		frm.set_value('sample_no','')
        
 	},
 	sample_no:function(frm){
-		frm.set_value('items',[])
 		get_qty(frm);
-		frm.refresh_field("items");
 	},
 	target_qty:function(frm){
-		frm.set_value('items',[])
 		get_qty(frm);
-		frm.refresh_field("items");
 	},
 	default_source_warehouse:function(frm){
 
@@ -161,11 +167,17 @@ frappe.ui.form.on('Ball Mill Data Sheet', {
 
 frappe.ui.form.on('Ball Mill Data Sheet Item', {
 	items_add: function(frm, cdt, cdn) {
-		var row = locals[cdt][cdn];
+		let row = locals[cdt][cdn];
 		if(!row.source_warehouse && row.source_warehouse == undefined){
 		 row.source_warehouse = cur_frm.doc.default_source_warehouse;
 		 frm.refresh_field("items");
 		}
 	},
-	
+	concentration: function(frm, cdt, cdn) {
+		let row = locals[cdt][cdn];
+		if (row.required_quantity){
+			frappe.model.set_value(cdt,cdn,"quantity",row.required_quantity*row.concentration)
+			frappe.model.set_value(cdt,cdn,"required_quantity",row.required_quantity*row.concentration)
+		}
+	},
 });
