@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from chemical.api import naming_series_name
 
 class InwardSample(Document):
 	def onclick_update_price(self):
@@ -45,12 +46,16 @@ class InwardSample(Document):
 
 		
 	def before_naming(self):
-		if self.series_value:
-			if not frappe.db.get_value('Series', self.naming_series, 'name', order_by="name"):
-				frappe.db.sql("insert into tabSeries (name, current) values (%s, 0)", (self.naming_series))
-			frappe.db.sql("update `tabSeries` set current = %s where name = %s", (int(self.series_value) - 1, self.naming_series))
+		if not self.amended_from:
+			if self.series_value:
+				if self.series_value > 0:
+					name = naming_series_name(self.naming_series)
+					
+					check = frappe.db.get_value('Series', name, 'current', order_by="name")
+					if check == 0:
+						pass
+					elif not check:
+						frappe.db.sql("insert into tabSeries (name, current) values ('{}', 0)".format(name))
+					
+					frappe.db.sql("update `tabSeries` set current = {} where name = '{}'".format(int(self.series_value) - 1,name))
 
-
-
-
-		

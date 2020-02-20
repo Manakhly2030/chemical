@@ -10,6 +10,7 @@ from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.contacts.doctype.address.address import get_address_display, get_default_address
 from frappe.contacts.doctype.contact.contact import get_contact_details, get_default_contact
 from frappe.desk.notifications import get_filters_for
+from datetime import date
 
 from erpnext.selling.doctype.customer.customer import Customer
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
@@ -1313,11 +1314,48 @@ def get_open_count(doctype, name, links):
 # # 	for d in self.po_items:
 # # 		self.total_planned_qty += flt(d.planned_qty)
 @frappe.whitelist()
-def check_counter_series(name = None):
+def check_counter_series(name = None,company_series=None):
+
+	name = naming_series_name(name, company_series)
+	
 	check = frappe.db.get_value('Series', name, 'current', order_by="name")
-	if not check:
-		frappe.db.sql("insert into tabSeries (name, current) values (%s, 0)", (name))
+	
+	if check == 0:
+		return 1
+	elif check == None:
+		frappe.db.sql("insert into tabSeries (name, current) values ('{}', 0)".format(name))
 		return 1
 	else:
 		return int(frappe.db.get_value('Series', name, 'current', order_by="name")) + 1
+
+def check_sub(string, sub_str): 
+	if (string.find(sub_str) == -1): 
+	   return False 
+	else: 
+		return True
+
+def naming_series_name(name, company_series=None):
+	
+	if check_sub(name, '.fiscal.'):
+		current_fiscal = frappe.db.get_value('Global Defaults', None, 'current_fiscal_year')
+		fiscal = frappe.db.get_value("Fiscal Year", str(current_fiscal),'fiscal')
+		name = name.replace('.fiscal.', str(fiscal))
+
+	if check_sub(name, '.YYYY.'):
+		name = name.replace('.YYYY.', date.today().year)
+
+	if check_sub(name, '.YY.'):
+		name = name.replace('.YY.', str(date.today().year)[-2:])
+
+	if company_series:
+		if check_sub(name, 'company_series.'):
+			name = name.replace('company_series.', str(company_series))
+			
+	if check_sub(name, ".#"):
+		name = name.replace('#', '')
+		if name[-1] == '.':
+			name = name[:-1]
+	
+	return name
+
 	

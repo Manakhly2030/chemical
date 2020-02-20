@@ -9,7 +9,8 @@ frappe.ui.form.on('Inward Sample', {
 			frm.trigger("get_party_details");
 		}
 	},
-	naming_series: function (frm) {
+
+	get_naming_series: function (frm) {
 		let naming_series = frm.doc.naming_series
 		frappe.call({
 			method: "chemical.api.check_counter_series",
@@ -22,7 +23,13 @@ frappe.ui.form.on('Inward Sample', {
 			}
 		});
 	},
+	naming_series: function (frm) {
+		frm.trigger('get_naming_series')
+	},
 	onload: function (frm) {
+		if (frm.doc.__islocal) {
+			frm.trigger('get_naming_series')
+		}	
 		if (frm.doc.party) {
 			frm.trigger("get_party_details");
 		}
