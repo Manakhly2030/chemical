@@ -120,6 +120,13 @@ class OutwardSample(Controller):
 				where docstatus = 1 and product_name = %s and party = %s ORDER BY date DESC", (self.product_name, self.party))
 		if last_sample:
 			self.last_sample = last_sample[0][0]
+		
+	def before_naming(self):
+		if self.series_value:
+			if not frappe.db.get_value('Series', self.naming_series, 'name', order_by="name"):
+				frappe.db.sql("insert into tabSeries (name, current) values (%s, 0)", (self.naming_series))
+			frappe.db.sql("update `tabSeries` set current = %s where name = %s", (int(self.series_value) - 1, self.naming_series))
+
 
 @frappe.whitelist()
 def make_quotation(source_name, target_doc=None):
