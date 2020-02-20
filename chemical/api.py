@@ -1312,3 +1312,12 @@ def get_open_count(doctype, name, links):
 # # 	self.total_planned_qty = 0
 # # 	for d in self.po_items:
 # # 		self.total_planned_qty += flt(d.planned_qty)
+@frappe.whitelist()
+def check_counter_series(name = None):
+	check = frappe.db.get_value('Series', name, 'current', order_by="name")
+	if not check:
+		frappe.db.sql("insert into tabSeries (name, current) values (%s, 0)", (name))
+		return 1
+	else:
+		return int(frappe.db.get_value('Series', name, 'current', order_by="name")) + 1
+	
