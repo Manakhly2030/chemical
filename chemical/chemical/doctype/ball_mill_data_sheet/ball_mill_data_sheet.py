@@ -108,7 +108,8 @@ class BallMillDataSheet(Document):
 
 			if batch:
 				row.db_set('batch_no', batch)
-				frappe.db.set_value("Batch",batch,'customer',self.customer_name)
+				if self.customer_name:
+					frappe.db.set_value("Batch",batch,'customer',self.customer_name)
 				if self.lot_no:
 					frappe.db.set_value("Batch",batch,'sample_ref_no',self.lot_no)
 
