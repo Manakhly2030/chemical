@@ -52,6 +52,7 @@ class BallMillDataSheet(Document):
 	def on_submit(self):
 		se = frappe.new_doc("Stock Entry");
 		se.purpose = "Repack"
+		se.stock_entry_type = "Repack"
 		se.set_posting_time = 1
 		se.posting_date = self.date
 		se.posting_time = self.posting_time

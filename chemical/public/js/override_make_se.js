@@ -12,7 +12,7 @@ erpnext.work_order.make_se = function(frm, purpose) {
 		description: __("Max: {0}", [max]), 'default': max },
 		function(data) {
 			frappe.call({
-				method:"chemical.api.make_stock_entry",
+				method:"chemical.chemical.doc_events.work_order.make_stock_entry",
 				args: {
 					"work_order_id": frm.doc.name,
 					"purpose": purpose,

@@ -152,42 +152,42 @@ doctype_js = {
 #fixtures = ["Custom Field"]
 
 override_whitelisted_methods = {
-	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.api.enqueue_update_cost"
+	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost"
 }
 
 doc_events = {
 	"BOM": {
-		"before_save": "chemical.api.bom_before_save",
-		"validate": "chemical.api.bom_validate"	
+		"before_save": "chemical.chemical.doc_events.bom.bom_before_save",
+		"validate": "chemical.chemical.doc_events.bom.bom_validate"	
 	},
-	"Item Price": {
-		"before_save": "chemical.api.IP_before_save",
-	},
+	# "Item Price": {
+	# 	"before_save": "chemical.api.IP_before_save",
+	# },
 	"Customer":{
-		"before_rename": "chemical.api.customer_override_after_rename",
-		"autoname": "chemical.api.customer_auto_name",
+		"before_rename": "chemical.chemical.doc_events.customer.customer_override_after_rename",
+		"autoname": "chemical.chemical.doc_events.customer.customer_auto_name",
 	},
 	"Supplier":{
-		"before_rename": "chemical.api.supplier_override_after_rename",
-		"autoname": "chemical.api.supplier_auto_name",
+		"before_rename": "chemical.chemical.doc_events.supplier.supplier_override_after_rename",
+		"autoname": "chemical.chemical.doc_events.supplier.supplier_auto_name",
 	},
 	"Item": {
-		"validate": "chemical.api.item_validate",
+		"validate": "chemical.chemical.doc_events.item.item_validate",
 	},
 	"Stock Entry": {
 		"validate": [
-			# "chemical.api.stock_entry_validate",
+			# "chemical.chemical.doc_events.stock_entry.stock_entry_validate",
 			"chemical.batch_valuation.stock_entry_validate",
 		],
-		"before_save": "chemical.api.stock_entry_before_save",
-		"before_submit": "chemical.api.se_before_submit",
+		"before_save": "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",
+		"before_submit": "chemical.chemical.doc_events.stock_entry.se_before_submit",
 		"on_submit": [
-			"chemical.api.stock_entry_on_submit",
+			"chemical.chemical.doc_events.stock_entry.stock_entry_on_submit",
 			"chemical.batch_valuation.stock_entry_on_submit",
 		],
-		"before_cancel": "chemical.api.se_before_cancel",
+		"before_cancel": "chemical.chemical.doc_events.stock_entry.se_before_cancel",
 		"on_cancel": [
-			"chemical.api.stock_entry_on_cancel",
+			"chemical.chemical.doc_events.stock_entry.stock_entry_on_cancel",
 			"chemical.batch_valuation.stock_entry_on_cancel",
 		],
 	},
@@ -216,14 +216,14 @@ doc_events = {
 		],
 	},
 	"Delivery Note": {
-		"on_submit": "chemical.api.dn_on_submit",
-		"before_cancel": "chemical.api.dn_before_cancel",
+		"on_submit": "chemical.chemical.doc_events.delivery_note.dn_on_submit",
+		"before_cancel": "chemical.chemical.doc_events.delivery_note.dn_before_cancel",
 	},
 	"Sales Invoice": {
-		"before_submit": "chemical.api.si_before_submit"
+		"before_submit": "chemical.chemical.doc_events.sales_invoice.si_before_submit"
 	},
 	"Stock Ledger Entry": {
-		"before_submit": "chemical.api.sl_before_submit"
+		"before_submit": "chemical.chemical.doc_events.stock_ledger_entry.sl_before_submit"
 	},
 	"Sales Order": {
 		"on_cancel": "chemical.api.so_on_cancel"
@@ -232,7 +232,7 @@ doc_events = {
 
 scheduler_events = {
 	"daily":[
-		"chemical.api.update_item_price_daily"
+		"chemical.chemical.doc_events.bom.update_item_price_daily"
 	]
 }
 

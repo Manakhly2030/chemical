@@ -1,9 +1,8 @@
 
 frappe.ui.form.on("Production Plan", {
     refresh: function(frm){
-        console.log("Production")
 		frappe.call({
-			method:"chemical.api.override_proplan_functions",
+			method:"chemical.chemical.doc_events.production_plan.override_proplan_functions",
 			callback: function(r) {
                 refresh_field("sales_orders");
                 refresh_field("po_items");

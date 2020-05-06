@@ -90,7 +90,7 @@ frappe.ui.form.on("BOM", {
 
     update_price_list: function (frm) {
         frappe.call({
-            method: "chemical.api.upadte_item_price",
+            method: "chemical.chemical.doc_events.bom.upadte_item_price",
             args: {
                 docname: frm.doc.name,
                 item: frm.doc.item,

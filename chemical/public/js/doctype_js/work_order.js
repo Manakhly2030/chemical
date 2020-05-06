@@ -20,6 +20,7 @@ frappe.ui.form.on("Work Order", {
 			});
 			transfer_btn.addClass('btn-primary');
 		}
+		$("button[data-label='Start']").css({ 'display': 'none' })
 
 		if(frm.doc.skip_transfer && frm.doc.docstatus == 1 && frm.doc.status == "Not Started"){
 			if (flt(frm.doc.material_transferred_for_instruction) < flt(frm.doc.qty)) {
