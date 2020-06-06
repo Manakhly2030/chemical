@@ -180,6 +180,7 @@ doc_events = {
 			"chemical.batch_valuation.stock_entry_validate",
 		],
 		"before_save": "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",
+		"before_insert": "chemical.chemical.doc_events.stock_entry.before_insert",
 		"before_submit": "chemical.chemical.doc_events.stock_entry.se_before_submit",
 		"on_submit": [
 			"chemical.chemical.doc_events.stock_entry.stock_entry_on_submit",
@@ -202,6 +203,7 @@ doc_events = {
 		"on_cancel": "chemical.batch_valuation.pr_on_cancel",
 	},
 	"Purchase Invoice": {
+		"before_insert": "chemical.chemical.doc_events.purchase_invoice.before_insert",
 		"validate": "chemical.batch_valuation.pi_validate",
 		"on_cancel": "chemical.batch_valuation.pi_on_cancel",
 	},
@@ -220,6 +222,7 @@ doc_events = {
 		"before_cancel": "chemical.chemical.doc_events.delivery_note.dn_before_cancel",
 	},
 	"Sales Invoice": {
+		"before_insert": "chemical.chemical.doc_events.sales_invoice.before_insert",
 		"before_submit": "chemical.chemical.doc_events.sales_invoice.si_before_submit"
 	},
 	"Stock Ledger Entry": {
@@ -227,6 +230,9 @@ doc_events = {
 	},
 	"Sales Order": {
 		"on_cancel": "chemical.api.so_on_cancel"
+	},
+	("Sales Order", "Delivery Note", "Sales Invoice", "Purchase Order", "Purchase Receipt", "Purchase Invoice", "Payment Entry", "Stock Entry", "Journal Entry"):{
+		"before_naming": "chemical.api.before_naming"
 	}
 }
 
@@ -236,3 +242,8 @@ scheduler_events = {
 	]
 }
 
+from erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool import OpeningInvoiceCreationTool
+from chemical.chemical.doc_events.opening_invoice_creation_tool import get_invoice_dict, make_invoices
+
+OpeningInvoiceCreationTool.get_invoice_dict = get_invoice_dict
+OpeningInvoiceCreationTool.make_invoices = make_invoices

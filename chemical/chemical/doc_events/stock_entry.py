@@ -2,7 +2,13 @@ import frappe
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 
+def before_insert(self, method):
+	if not self.name and self.is_opening == "Yes":
+		self.naming_series = 'O' + self.naming_series
+
 def stock_entry_validate(self, method):
+	if self.volume:
+		self.volume_cost = self.volume * self.volume_rate
 	if self.purpose == "Material Receipt":
 		validate_batch_wise_item_for_concentration(self)
 
@@ -21,6 +27,9 @@ def stock_entry_on_submit(self, method):
 	update_po(self)
 
 def se_before_cancel(self, method):
+	if self.work_order:
+		wo = frappe.get_doc("Work Order",self.work_order)
+		wo.db_set('batch','')
 	override_wo_functions(self)
 
 def stock_entry_on_cancel(self, method):
