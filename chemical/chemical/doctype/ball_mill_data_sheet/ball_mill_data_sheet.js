@@ -2,13 +2,6 @@
 // For license information, please see license.txt
 
 cur_frm.add_fetch("batch_no", "concentration", "concentration");
-cur_frm.fields_dict.product_name.get_query = function(doc) {
-	return {
-		filters: {
-			"item_group": 'Finished Products'
-		}
-	}
-};
 cur_frm.fields_dict.default_source_warehouse.get_query = function(doc) {
 	return {
 		filters: {

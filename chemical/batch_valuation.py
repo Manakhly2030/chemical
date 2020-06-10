@@ -40,7 +40,7 @@ def stock_entry_validate(self, method):
 		if self.purpose not in ['Material Transfer', 'Material Transfer for Manufacture']:
 			make_batches(self, 't_warehouse')
 			
-	if self.purpose == ['Repack','Manufacture'] and cint(self.from_ball_mill) != 1:
+	if self.purpose == ['Repack','Manufacture','Material Issue'] and cint(self.from_ball_mill) != 1:
 		self.get_stock_and_rate()
 
 @frappe.whitelist()
@@ -165,8 +165,9 @@ def delete_batches(self, warehouse):
 			if self.get('work_order') and frappe.db.get_value("Work Order", self.work_order, 'batch'):
 				frappe.db.set_value("Work Order", self.work_order, 'batch', '')
 
-			row.batch_no = ''
-			check_if_doc_is_linked(batch_no)
+			row.db_set('batch_no', None)
+			# row.batch_no = ''
+			# check_if_doc_is_linked(batch_no)
 			frappe.delete_doc("Batch", batch_no.name)
 			row.db_set('batch_no', '')
 	else:

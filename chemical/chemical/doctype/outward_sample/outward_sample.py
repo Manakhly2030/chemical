@@ -11,7 +11,7 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.utils import nowdate,flt
 
-from chemical.api import naming_series_name
+from finbyzerp.api import naming_series_name
 
 class OutwardSample(Controller):
 	def before_save(self):
