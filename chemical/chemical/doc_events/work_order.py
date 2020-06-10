@@ -146,7 +146,7 @@ def get_items(self):
 def get_transfered_raw_materials(self):
 	transferred_materials = frappe.db.sql("""
 		select
-			item_name, original_item, item_code, qty, sed.t_warehouse as warehouse,
+			item_name, original_item, item_code, qty, sed.t_warehouse as warehouse, sed.s_warehouse as s_warehouse,
 			description, stock_uom, expense_account, cost_center, batch_no
 		from `tabStock Entry` se,`tabStock Entry Detail` sed
 		where
@@ -180,13 +180,23 @@ def get_transfered_raw_materials(self):
 		qty= item.qty
 		item_code = item.original_item or item.item_code
 		req_items = frappe.get_all('Work Order Item',
-			filters={'parent': self.work_order, 'item_code': item_code},
+			filters={'parent': self.work_order,'item_code':item_code},
 			fields=["required_qty", "consumed_qty"]
 			)
 		if not req_items:
-			frappe.msgprint(_("Did not found transfered item {0} in Work Order {1}, the item not added in Stock Entry")
-				.format(item_code, self.work_order))
-			continue
+			wo = frappe.get_doc("Work Order",self.work_order)
+			wo.append('required_items',{
+				'item_code': item.item_code,
+				'source_wareouse': item.s_warehouse
+			})
+			wo.save()
+			req_items = frappe.get_all('Work Order Item',
+				filters={'parent': self.work_order,'item_code':item_code},
+				fields=["required_qty", "consumed_qty"]
+			)
+			# frappe.msgprint(_("Did not found transfered item {0} in Work Order {1}, the item not added in Stock Entry")
+			# 	.format(item_code, self.work_order))
+
 
 		req_qty = flt(req_items[0].required_qty)
 		req_qty_each = flt(req_qty / manufacturing_qty)
@@ -234,7 +244,6 @@ def get_transfered_raw_materials(self):
 					"batch_no": item.batch_no
 				}
 			})
-
 
 def get_material_transfered_raw_materials(self):
 	mti_data = frappe.db.sql("""select name

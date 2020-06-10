@@ -28,12 +28,22 @@ this.frm.cscript.onload = function (frm) {
             frappe.throw(__("Please enter Item Code to get batch no"));
         }
         else {
-            return {
-                query: "chemical.batch_valuation.get_batch_no",
-                filters: {
-                    'item_code': d.item_code,
-                    'warehouse': d.warehouse,
-                    'customer': doc.customer
+            if (d.item_group == "Finished Products"){
+                return {
+                    query: "chemical.batch_valuation.get_batch_no",
+                    filters: {
+                        'item_code': d.item_code,
+                        'warehouse': d.warehouse,
+                        'customer': doc.customer
+                    }
+                }
+            } else {
+                return {
+                    query: "chemical.query.get_batch_no",
+                    filters: {
+                        'item_code': d.item_code,
+                        'warehouse': d.warehouse
+                    }
                 }
             }
         }

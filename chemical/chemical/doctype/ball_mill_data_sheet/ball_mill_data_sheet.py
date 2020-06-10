@@ -115,6 +115,11 @@ class BallMillDataSheet(Document):
 					frappe.db.set_value("Batch",batch,'sample_ref_no',self.lot_no)
 
 		frappe.db.commit()
+	
+	def before_cancel(self):
+		for item in self.packaging:
+			item.db_set('lot_no', None)
+			item.db_set('batch_no', None)
 		
 	def on_cancel(self):
 		if self.stock_entry:
@@ -125,7 +130,7 @@ class BallMillDataSheet(Document):
 
 			for row in self.packaging:
 				row.db_set('batch_no', '')
-		
+
 	def cal_total(self):
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
 		self.per_unit_amount = self.amount/ self.actual_qty
