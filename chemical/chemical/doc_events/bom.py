@@ -71,7 +71,7 @@ def cost_calculation(self):
 @frappe.whitelist()
 def enqueue_update_cost():
 	frappe.enqueue("chemical.chemical.doc_events.bom.update_cost")
-	frappe.msgprint(_("Queued for updating latest price in all Bill of Materials. It may take a few minutes."))
+	frappe.msgprint(_("Queued for updating latest price in all Bill of Materials. It may take a few minutes..."))
 
 def update_cost():
 	from erpnext.manufacturing.doctype.bom.bom import get_boms_in_bottom_up_order

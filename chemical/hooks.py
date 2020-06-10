@@ -2,6 +2,25 @@
 from __future__ import unicode_literals
 from . import __version__ as app_version
 
+from erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool import OpeningInvoiceCreationTool
+from chemical.chemical.doc_events.opening_invoice_creation_tool import get_invoice_dict, make_invoices
+
+OpeningInvoiceCreationTool.get_invoice_dict = get_invoice_dict
+OpeningInvoiceCreationTool.make_invoices = make_invoices
+
+import erpnext
+from chemical.batch_valuation_overrides import get_incoming_rate as my_incoming_rate, process_sle as my_process_sle, get_args_for_incoming_rate as my_get_args_for_incoming_rate, update_raw_materials_supplied_based_on_bom as my_update_raw_materials_supplied_based_on_bom, update_stock_ledger as my_update_stock_ledger
+from erpnext.stock.stock_ledger import update_entries_after
+from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+from erpnext.controllers.buying_controller import BuyingController
+from erpnext.controllers.selling_controller import SellingController
+
+erpnext.stock.utils.get_incoming_rate = my_incoming_rate
+update_entries_after.process_sle = my_process_sle
+StockEntry.get_args_for_incoming_rate = my_get_args_for_incoming_rate
+BuyingController.update_raw_materials_supplied_based_on_bom = my_update_raw_materials_supplied_based_on_bom
+SellingController.update_stock_ledger = my_update_stock_ledger
+
 app_name = "chemical"
 app_title = "Chemical"
 app_publisher = "FinByz Tech Pvt. Ltd."
@@ -152,7 +171,8 @@ doctype_js = {
 #fixtures = ["Custom Field"]
 
 override_whitelisted_methods = {
-	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost"
+	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
+	"erpnext.stock.utils.get_incoming_rate": "chemical.api.get_incoming_rate_"
 }
 
 doc_events = {
@@ -180,6 +200,7 @@ doc_events = {
 			"chemical.batch_valuation.stock_entry_validate",
 		],
 		"before_save": "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",
+		"before_insert": "chemical.chemical.doc_events.stock_entry.before_insert",
 		"before_submit": "chemical.chemical.doc_events.stock_entry.se_before_submit",
 		"on_submit": [
 			"chemical.chemical.doc_events.stock_entry.stock_entry_on_submit",
@@ -202,6 +223,7 @@ doc_events = {
 		"on_cancel": "chemical.batch_valuation.pr_on_cancel",
 	},
 	"Purchase Invoice": {
+		"before_insert": "chemical.chemical.doc_events.purchase_invoice.before_insert",
 		"validate": "chemical.batch_valuation.pi_validate",
 		"on_cancel": "chemical.batch_valuation.pi_on_cancel",
 	},
@@ -220,6 +242,7 @@ doc_events = {
 		"before_cancel": "chemical.chemical.doc_events.delivery_note.dn_before_cancel",
 	},
 	"Sales Invoice": {
+		"before_insert": "chemical.chemical.doc_events.sales_invoice.before_insert",
 		"before_submit": "chemical.chemical.doc_events.sales_invoice.si_before_submit"
 	},
 	"Stock Ledger Entry": {
@@ -227,7 +250,7 @@ doc_events = {
 	},
 	"Sales Order": {
 		"on_cancel": "chemical.api.so_on_cancel"
-	}
+	},
 }
 
 scheduler_events = {

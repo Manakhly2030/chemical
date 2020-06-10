@@ -2,6 +2,10 @@ import frappe
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 
+def before_insert(self, method):
+	if not self.name and self.is_opening == "Yes":
+		self.naming_series = 'O' + self.naming_series
+
 def stock_entry_validate(self, method):
 	if self.volume:
 		self.volume_cost = self.volume * self.volume_rate

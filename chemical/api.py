@@ -12,6 +12,8 @@ from frappe.contacts.doctype.contact.contact import get_contact_details, get_def
 from frappe.desk.notifications import get_filters_for
 from datetime import date
 
+from erpnext.stock.stock_ledger import update_entries_after
+
 # from erpnext.selling.doctype.customer.customer import Customer
 # from erpnext.buying.doctype.supplier.supplier import Supplier
 # from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
@@ -1276,20 +1278,6 @@ def get_open_count(doctype, name, links):
 # # 		self.total_planned_qty += flt(d.planned_qty)
 
 # call it on inward and outward sample js to get current value and update series value
-@frappe.whitelist()
-def check_counter_series(name = None,company_series=None):
-
-	name = naming_series_name(name, company_series)
-	
-	check = frappe.db.get_value('Series', name, 'current', order_by="name")
-	
-	if check == 0:
-		return 1
-	elif check == None:
-		frappe.db.sql("insert into tabSeries (name, current) values ('{}', 0)".format(name))
-		return 1
-	else:
-		return int(frappe.db.get_value('Series', name, 'current', order_by="name")) + 1
 
 def check_sub(string, sub_str): 
 	if (string.find(sub_str) == -1): 
@@ -1297,28 +1285,9 @@ def check_sub(string, sub_str):
 	else: 
 		return True
 
-def naming_series_name(name, company_series=None):
-	
-	if check_sub(name, '.fiscal.'):
-		current_fiscal = frappe.db.get_value('Global Defaults', None, 'current_fiscal_year')
-		fiscal = frappe.db.get_value("Fiscal Year", str(current_fiscal),'fiscal')
-		name = name.replace('.fiscal.', str(fiscal))
 
-	if check_sub(name, '.YYYY.'):
-		name = name.replace('.YYYY.', date.today().year)
+def get_fiscal(date):
+	fy = get_fiscal_year(date)[0]
+	fiscal = frappe.db.get_value("Fiscal Year", fy, 'fiscal')
 
-	if check_sub(name, '.YY.'):
-		name = name.replace('.YY.', str(date.today().year)[-2:])
-
-	if company_series:
-		if check_sub(name, 'company_series.'):
-			name = name.replace('company_series.', str(company_series))
-			
-	if check_sub(name, ".#"):
-		name = name.replace('#', '')
-		if name[-1] == '.':
-			name = name[:-1]
-	
-	return name
-
-	
+	return fiscal if fiscal else fy.split("-")[0][2:] + fy.split("-")[1][2:]
