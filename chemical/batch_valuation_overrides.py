@@ -1,4 +1,4 @@
-import frappe
+import frappe, erpnext
 from frappe import msgprint, _
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.stock.stock_ledger import update_entries_after

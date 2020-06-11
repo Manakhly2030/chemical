@@ -172,7 +172,7 @@ doctype_js = {
 
 override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
-	"erpnext.stock.utils.get_incoming_rate": "chemical.api.get_incoming_rate_"
+	"erpnext.stock.utils.get_incoming_rate": "chemical.batch_valuation_overrides.get_incoming_rate"
 }
 
 doc_events = {
