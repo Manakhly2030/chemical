@@ -247,14 +247,16 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	if batch_nos:
 		return batch_nos
 	else:
-		return frappe.db.sql("""select name, lot_no, expiry_date from `tabBatch` batch
-			where item = %(item_code)s
-			and name like %(txt)s
-			and docstatus < 2
-			{0}
-			{match_conditions}
-			order by expiry_date, name desc
-			limit %(start)s, %(page_len)s""".format(cond, match_conditions=get_match_cond(doctype)), args)
+		return []
+	# else:
+	# 	return frappe.db.sql("""select name, lot_no, expiry_date from `tabBatch` batch
+	# 		where item = %(item_code)s
+	# 		and name like %(txt)s
+	# 		and docstatus < 2
+	# 		{0}
+	# 		{match_conditions}
+	# 		order by expiry_date, name desc
+	# 		limit %(start)s, %(page_len)s""".format(cond, match_conditions=get_match_cond(doctype)), args)
 
 @frappe.whitelist()
 def lcv_validate(self, method):

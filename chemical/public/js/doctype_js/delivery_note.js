@@ -26,7 +26,6 @@ this.frm.cscript.onload = function (frm) {
                 filters: {
                     'item_code': d.item_code,
                     'warehouse': d.warehouse,
-                    'customer': doc.customer
                 }
             }
         }
