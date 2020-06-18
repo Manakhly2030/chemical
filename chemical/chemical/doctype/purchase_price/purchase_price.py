@@ -21,7 +21,7 @@ class PurchasePrice(Document):
 			item_price.item_code = self.product_name
 			item_price.price_list_rate = self.price
 			item_price.save()
-		frappe.db.commit()
+		#frappe.db.commit()
 		frappe.msgprint(_("Item Price Updated"))
 
 	def on_update_after_submit(self):

@@ -144,7 +144,7 @@ class JobworkFinish(Document):
 		if self.received_stock_entry:
 			se = frappe.get_doc("Stock Entry",self.received_stock_entry)
 			se.cancel()
-			frappe.db.commit()
+			#frappe.db.commit()
 			self.db_set('received_stock_entry','')
 			url = get_url_to_form("Stock Entry", se.name)
 			frappe.msgprint("Cancelled Stock Entry - <a href='{url}'>{doc}</a>".format(url=url, doc=frappe.bold(se.name)))
