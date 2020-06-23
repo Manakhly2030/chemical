@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
+from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 
 def before_insert(self, method):
 	if not self.name and self.is_opening == "Yes":
@@ -27,10 +28,12 @@ def stock_entry_on_submit(self, method):
 	update_po(self)
 
 def se_before_cancel(self, method):
+	StockEntry.delete_auto_created_batches = delete_auto_created_batches
 	if self.work_order:
 		wo = frappe.get_doc("Work Order",self.work_order)
 		wo.db_set('batch','')
 	override_wo_functions(self)
+	
 
 def stock_entry_on_cancel(self, method):
 	if self.work_order:
@@ -42,7 +45,7 @@ def stock_entry_on_cancel(self, method):
 		update_po_transfer_qty(self, pro_doc)
 
 		pro_doc.save()
-		frappe.db.commit()
+		#frappe.db.commit()
 
 
 def validate_batch_wise_item_for_concentration(self):
@@ -234,7 +237,7 @@ def update_po(self):
 			po.valuation_rate = last_item.valuation_rate
 
 		po.save()
-		frappe.db.commit()
+		#frappe.db.commit()
 
 def update_po_volume(self, po, ignore_permissions = True):
 	if not self.volume:
@@ -288,3 +291,7 @@ def update_po_items(self,po):
 
 	for child in po.required_items:
 		child.db_update()
+
+
+def delete_auto_created_batches(self):
+	pass

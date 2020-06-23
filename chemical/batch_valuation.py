@@ -71,7 +71,10 @@ def make_transfer_batches(self):
 			batch.batch_yield = flt(row.batch_yield, 3)
 			batch.concentration = flt(row.concentration, 3)
 			batch.valuation_rate = flt(row.valuation_rate, 4)
-			batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
+			try:
+				batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
+			except:
+				batch.posting_date = self.posting_date.strftime("%y%m%d")
 			batch.actual_quantity = flt(row.qty * row.conversion_factor)
 			batch.reference_doctype = self.doctype
 			batch.reference_name = self.name
@@ -102,8 +105,8 @@ def delete_transfer_batches(self):
 			frappe.delete_doc("Batch", batch_no.name)
 			row.db_set('batch_no', row.old_batch_no)
 			row.db_set('old_batch_no', '')
-	else:
-		frappe.db.commit()
+	# else:
+	# 	frappe.db.commit()
 
 def update_stock_ledger_batch(self):
 	for row in self.get('items'):
@@ -144,7 +147,10 @@ def make_batches(self, warehouse_field):
 				batch.batch_yield = flt(row.batch_yield, 3)
 				batch.concentration = flt(row.concentration, 3)
 				batch.valuation_rate = flt(row.valuation_rate, 4)
-				batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
+				try:
+					batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
+				except:
+					batch.posting_date = self.posting_date.strftime("%y%m%d")
 				batch.actual_quantity = flt(row.qty * row.conversion_factor)
 				batch.reference_doctype = self.doctype
 				batch.reference_name = self.name
@@ -168,10 +174,10 @@ def delete_batches(self, warehouse):
 			row.db_set('batch_no', None)
 			#row.batch_no = ''
 			#check_if_doc_is_linked(batch_no)
-			frappe.delete_doc("Batch", batch_no.name)
+			#frappe.delete_doc("Batch", batch_no.name)
 			row.db_set('batch_no', '')
-	else:
-		frappe.db.commit()
+	# else:
+	# 	frappe.db.commit()
 
 def validate_concentration(self, warehouse_field):
 	for row in self.items:
@@ -283,8 +289,8 @@ def update_batch_valuation(self):
 				batch_doc = frappe.get_doc("Batch", row.batch_no)
 				batch_doc.valuation_rate = row.valuation_rate
 				batch_doc.save()
-		else:
-			frappe.db.commit()
+		# else:
+		# 	frappe.db.commit()
 
 def validate_batch_actual_qty(self):
 	from erpnext.stock.doctype.batch.batch import get_batch_qty

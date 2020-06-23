@@ -114,7 +114,7 @@ class BallMillDataSheet(Document):
 				if self.lot_no:
 					frappe.db.set_value("Batch",batch,'sample_ref_no',self.lot_no)
 
-		frappe.db.commit()
+		#frappe.db.commit()
 	
 	def before_cancel(self):
 		for item in self.packaging:
@@ -126,7 +126,7 @@ class BallMillDataSheet(Document):
 			se = frappe.get_doc("Stock Entry",self.stock_entry)
 			se.cancel()
 			self.db_set('stock_entry','')
-			frappe.db.commit()
+			#frappe.db.commit()
 
 			for row in self.packaging:
 				row.db_set('batch_no', '')

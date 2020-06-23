@@ -36,7 +36,7 @@ class InwardSample(Document):
 			purchase_price.save()
 			# self.db_set('purchase_price', purchase_price.name)
 			purchase_price.submit()
-		frappe.db.commit()
+		#frappe.db.commit()
 		frappe.msgprint(_("Purchase Price Updated"))
 
 	def before_save(self):

@@ -243,7 +243,7 @@ doc_events = {
 	},
 	"Delivery Note": {
 		"on_submit": "chemical.chemical.doc_events.delivery_note.dn_on_submit",
-		"before_cancel": "chemical.chemical.doc_events.delivery_note.dn_before_cancel",
+		#"before_cancel": "chemical.chemical.doc_events.delivery_note.dn_before_cancel",
 	},
 	"Sales Invoice": {
 		"before_insert": "chemical.chemical.doc_events.sales_invoice.before_insert",
