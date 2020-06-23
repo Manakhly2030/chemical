@@ -19,11 +19,31 @@ def get_incoming_rate(args, raise_error_if_no_rate=True):
 	in_rate = 0
 	#finbyz changes
 	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
+	# finbyz changes
+	def get_batch_rate(args):
+		"""Get Batch Valuation Rate of Batch No"""
+		
+		item_code = args.get('item_code')
+		batch_no = args.get('batch_no')
+
+		conditions = f"and item_code = '{item_code}' and batch_no = '{batch_no}' "
+		
+		if args.get("warehouse"):
+			warehouse = args.get("warehouse")
+			conditions += f" and warehouse = '{warehouse}' "
+
+		if args.get("company"):
+			company =  args.get("company")
+			conditions += f" and company = '{company}' "
+
+		return flt(frappe.db.sql(f"""SELECT incoming_rate FROM `tabStock Ledger Entry` 
+			WHERE actual_qty > 0 and docstatus = 1 {conditions}""")[0][0])
 
 	#finbyz changes
 	if args.get("batch_no") and batch_wise_cost:
 		in_rate = get_batch_rate(args)
-		
+		#frappe.msgprint(f"inside:{in_rate}")
+
 	elif (args.get("serial_no") or "").strip():
 		in_rate = get_avg_purchase_rate(args.get("serial_no"))
 	
@@ -44,31 +64,15 @@ def get_incoming_rate(args, raise_error_if_no_rate=True):
 			currency=erpnext.get_company_currency(args.get('company')), company=args.get('company'),
 			raise_error_if_no_rate=raise_error_if_no_rate)
 
+	#frappe.msgprint(str(in_rate))
+
 	return in_rate
 
-# finbyz changes
-def get_batch_rate(args):
-	"""Get Batch Valuation Rate of Batch No"""
-	
-	item_code = args.get('item_code')
-	batch_no = args.get('batch_no')
-
-	conditions = f"and item_code = '{item_code}' and batch_no = '{batch_no}' "
-	
-	if args.get("warehouse"):
-		warehouse = args.get("warehouse")
-		conditions += f" and warehouse = '{warehouse}' "
-
-	if args.get("company"):
-		company =  args.get("company")
-		conditions += f" and company = '{company}' "
-
-	return flt(frappe.db.sql(f"""SELECT incoming_rate FROM `tabStock Ledger Entry` 
-		WHERE actual_qty > 0 and docstatus = 1 {conditions}""")[0][0])
 
 # Stock Ledger Overides
 
 def process_sle(self, sle):
+	#frappe.msgprint("Process SLE Called")
 	self.allow_negative_stock = cint(frappe.db.get_single_value("Stock Settings",
 				"allow_negative_stock"))
 	if (sle.serial_no and not self.via_landed_cost_voucher) or not cint(self.allow_negative_stock):
