@@ -36,6 +36,10 @@ def get_supplier_ref_code(item_code, supplier):
 	ref_code = frappe.db.get_value("Item Supplier", {'parent': item_code, 'supplier': supplier}, 'supplier_part_no')	
 	return ref_code 
 
+@frappe.whitelist
+def test(source_name = None):
+	return "Hello"
+
 
 @frappe.whitelist()
 def get_party_details(party=None, party_type="Customer", ignore_permissions=True):
