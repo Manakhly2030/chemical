@@ -160,9 +160,12 @@ override_whitelisted_methods = {
 
 #fixtures = ["Custom Field"]
 
+# after_migrate = [
+# 	'frappe.website.doctype.website_theme.website_theme.generate_theme_files_if_not_exist'
+# ]
+
 override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
-	"erpnext.education.api.enroll_student": "chemical.batch_valuation_overrides.get_incoming_rate"
 }
 
 doc_events = {

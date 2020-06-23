@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from chemical.api import naming_series_name
+from finbyzerp.api import naming_series_name
 
 class InwardSample(Document):
 	def onclick_update_price(self):
