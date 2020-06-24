@@ -92,7 +92,7 @@ class MaterialTransferInstruction(StockController):
 
 			pro_doc.db_set('status', status)
 			pro_doc.save()
-			frappe.db.commit()
+			#frappe.db.commit()
 
 	def check_stock_entries(self):
 		stock_entries = frappe.get_list("Stock Entry", filters={

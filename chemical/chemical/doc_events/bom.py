@@ -62,9 +62,9 @@ def cost_calculation(self):
 	self.db_set('per_unit_operational_cost',flt(flt(self.total_operational_cost)/self.quantity)* flt(self.cost_ratio_of_first_item/100.0))
 	self.db_set('per_unit_scrap_cost',flt(flt(self.total_scrap_cost)/self.quantity) * flt(self.cost_ratio_of_first_item/100.0))
 
-	if self.per_unit_price != per_unit_price:
-		self.db_set('per_unit_price', per_unit_price * flt(self.cost_ratio_of_first_item/100.0))
-	frappe.db.commit()
+	# if self.per_unit_price != per_unit_price:
+	self.db_set('per_unit_price', per_unit_price * flt(self.cost_ratio_of_first_item/100.0))
+	#frappe.db.commit()
 
 
 # override whitelisted method on hooks
@@ -112,7 +112,7 @@ def update_cost():
 			item_price.price_list_rate = per_unit_price
 			
 			item_price.save()
-		frappe.db.commit()
+		#frappe.db.commit()
 
 # update price in BOM
 # call it in bom.js

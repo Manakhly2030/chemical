@@ -11,7 +11,7 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.utils import nowdate,flt
 
-from finbyzerp.api import naming_series_name
+from finbyzerp.api import before_naming as naming_series
 
 class OutwardSample(Controller):
 	def before_save(self):
@@ -124,19 +124,7 @@ class OutwardSample(Controller):
 			self.last_sample = last_sample[0][0]
 		
 	def before_naming(self):
-		if not self.amended_from:
-			if self.series_value:
-				if self.series_value > 0:
-					name = naming_series_name(self.naming_series)
-					
-					check = frappe.db.get_value('Series', name, 'current', order_by="name")
-					if check == 0:
-						pass
-					elif not check:
-						frappe.db.sql("insert into tabSeries (name, current) values ('{}', 0)".format(name))
-					
-					frappe.db.sql("update `tabSeries` set current = {} where name = '{}'".format(int(self.series_value) - 1,name))
-
+		naming_series(self, 'save')
 
 @frappe.whitelist()
 def make_quotation(source_name, target_doc=None):

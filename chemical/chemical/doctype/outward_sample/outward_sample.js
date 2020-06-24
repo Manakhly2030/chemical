@@ -243,7 +243,7 @@ frappe.ui.form.on('Outward Sample', {
 	get_naming_series: function (frm) {
 		let naming_series = frm.doc.naming_series
 		frappe.call({
-			method: "chemical.api.check_counter_series",
+			method: "finbyzerp.api.check_counter_series",
 			args: {
 				'name': frm.doc.naming_series,
 			},
