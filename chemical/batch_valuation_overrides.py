@@ -8,7 +8,6 @@ import json
 @frappe.whitelist()
 def get_incoming_rate(args, raise_error_if_no_rate=True):
 	"""Get Incoming Rate based on valuation method"""
-	frappe.msgprint('finbyz get_incoming_rate_')
 	from erpnext.stock.stock_ledger import get_previous_sle, get_valuation_rate
 	from erpnext.stock.utils import get_fifo_rate, get_avg_purchase_rate, get_valuation_method
 	from erpnext.stock.stock_ledger import get_previous_sle
@@ -21,24 +20,6 @@ def get_incoming_rate(args, raise_error_if_no_rate=True):
 	#finbyz changes
 	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
 	# finbyz changes
-	def get_batch_rate(args):
-		"""Get Batch Valuation Rate of Batch No"""
-		
-		item_code = args.get('item_code')
-		batch_no = args.get('batch_no')
-
-		conditions = f"and item_code = '{item_code}' and batch_no = '{batch_no}' "
-		
-		if args.get("warehouse"):
-			warehouse = args.get("warehouse")
-			conditions += f" and warehouse = '{warehouse}' "
-
-		if args.get("company"):
-			company =  args.get("company")
-			conditions += f" and company = '{company}' "
-
-		return flt(frappe.db.sql(f"""SELECT incoming_rate FROM `tabStock Ledger Entry` 
-			WHERE actual_qty > 0 and docstatus = 1 {conditions}""")[0][0])
 
 	#finbyz changes
 	if args.get("batch_no") and batch_wise_cost:
@@ -69,6 +50,24 @@ def get_incoming_rate(args, raise_error_if_no_rate=True):
 
 	return in_rate
 
+def get_batch_rate(args):
+	"""Get Batch Valuation Rate of Batch No"""
+	
+	item_code = args.get('item_code')
+	batch_no = args.get('batch_no')
+
+	conditions = f"and item_code = '{item_code}' and batch_no = '{batch_no}' "
+	
+	if args.get("warehouse"):
+		warehouse = args.get("warehouse")
+		conditions += f" and warehouse = '{warehouse}' "
+
+	if args.get("company"):
+		company =  args.get("company")
+		conditions += f" and company = '{company}' "
+
+	return flt(frappe.db.sql(f"""SELECT incoming_rate FROM `tabStock Ledger Entry` 
+		WHERE actual_qty > 0 and docstatus = 1 {conditions}""")[0][0])
 
 # Stock Ledger Overides
 
