@@ -115,6 +115,7 @@ def update_additional_cost(self):
 							row.rate = abs(d.rate)
 							row.qty = flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)
 							row.amount = abs(d.rate)* flt(flt(self.fg_completed_qty * bom.quantity)/ bom.quantity)
+		self.db_set('total_additional_costs',sum([row.amount for row in self.additional_costs]))
 
 def cal_target_yield_cons(self):
 	cal_yield = 0
