@@ -42,6 +42,12 @@ def stock_entry_validate(self, method):
 			
 	if self.purpose == ['Repack','Manufacture','Material Issue'] and cint(self.from_ball_mill) != 1:
 		self.get_stock_and_rate()
+	validate_additional_cost(self,method)
+
+def validate_additional_cost(self,method):
+	if self.purpose in ['Material Transfer','Material Transfer for Manufacture','Repack','Manufacture'] and self._action == "submit":
+		if round(self.value_difference/100,0) != round(self.total_additional_costs/100,0):
+			frappe.throw("ValuationError: Value difference between incoming and outgoing amount is higher than additional cost")
 
 @frappe.whitelist()
 def stock_entry_on_submit(self, method):
