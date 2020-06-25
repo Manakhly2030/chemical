@@ -8,8 +8,8 @@ from chemical.chemical.doc_events.opening_invoice_creation_tool import get_invoi
 OpeningInvoiceCreationTool.get_invoice_dict = get_invoice_dict
 OpeningInvoiceCreationTool.make_invoices = make_invoices
 
-import erpnext
-erpnext.stock.utils.get_incoming_rate = my_incoming_rate
+#import erpnext
+#erpnext.stock.utils.get_incoming_rate = my_incoming_rate
 
 app_name = "chemical"
 app_title = "Chemical"
