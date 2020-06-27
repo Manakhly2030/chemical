@@ -154,7 +154,7 @@ def correcting_valuation():
 
 	print("Submiting Purchase Invoice")
 	for idx, item in enumerate(doc.cancelled_purchase_invoice[::-1]):
-		if idx > 434:
+		if idx > 0:
 			pi_doc = frappe.get_doc("Purchase Invoice", item.cancelled_purchase_invoice)
 			print(idx, pi_doc.name)
 			frappe.db.sql(f"UPDATE `tabPurchase Invoice Item` SET docstatus = 1 WHERE parent = '{pi_doc.name}'")
