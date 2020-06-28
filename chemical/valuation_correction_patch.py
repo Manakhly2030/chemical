@@ -154,7 +154,7 @@ def correcting_valuation():
 
 	print("Submiting Purchase Invoice")
 	for idx, item in enumerate(doc.cancelled_purchase_invoice[::-1]):
-		if idx > 0:
+		if idx >= 0:
 			pi_doc = frappe.get_doc("Purchase Invoice", item.cancelled_purchase_invoice)
 			print(idx, pi_doc.name)
 			frappe.db.sql(f"UPDATE `tabPurchase Invoice Item` SET docstatus = 1 WHERE parent = '{pi_doc.name}'")
@@ -166,7 +166,7 @@ def correcting_valuation():
 			
 	print("Submiting Stock Entry")
 	for idx, item in enumerate(doc.cancelled_stock_out_entry[::-1]):
-		if idx > 0:
+		if idx >= 0:
 			se_doc = frappe.get_doc("Stock Entry", item.cancelled_stock_out_entry)
 			print(idx, se_doc.name)
 			frappe.db.sql(f"UPDATE `tabStock Entry Detail` SET docstatus = 1 WHERE parent = '{se_doc.name}'")
@@ -178,7 +178,7 @@ def correcting_valuation():
 
 	print("Submiting Sales Invoice")
 	for idx, item in enumerate(doc.cancelled_invoice[::-1]):
-		if idx > 0:
+		if idx >= 0:
 			si_doc = frappe.get_doc("Sales Invoice", item.cancelled_invoice)
 			print(idx, si_doc.name)
 			frappe.db.sql(f"UPDATE `tabSales Invoice Item` SET docstatus = 1 WHERE parent = '{si_doc.name}'")
@@ -187,3 +187,6 @@ def correcting_valuation():
 			si_doc.save()
 			si_doc.submit()
 			si_doc.db_set('modified', item.modified_date)
+	
+	frappe.db.sql("SET SQL_SAFE_UPDATES=0")
+	frappe.db.sql("DELETE FROM `tabVersion` WHERE owner='Administrator' and modified > '2020-06-24 00:00:00'")
