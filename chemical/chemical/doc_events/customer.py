@@ -1,4 +1,5 @@
 import frappe
+from erpnext.selling.doctype.customer.customer import Customer
 
 @frappe.whitelist()
 def customer_auto_name(self, method):

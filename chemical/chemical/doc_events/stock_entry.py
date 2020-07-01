@@ -12,13 +12,15 @@ def stock_entry_validate(self, method):
 		self.volume_cost = self.volume * self.volume_rate
 	if self.purpose == "Material Receipt":
 		validate_batch_wise_item_for_concentration(self)
+	update_additional_cost(self)
+	
 
 def stock_entry_before_save(self, method):
 	get_based_on(self)
 	cal_target_yield_cons(self)
 	if self.purpose == 'Repack' and cint(self.from_ball_mill) != 1:
 		self.get_stock_and_rate()
-	update_additional_cost(self)
+	
 
 def se_before_submit(self, method):
 	override_wo_functions(self)
@@ -26,6 +28,18 @@ def se_before_submit(self, method):
 
 def stock_entry_on_submit(self, method):
 	update_po(self)
+	update_volume_cost_in_wo(self)
+
+def update_volume_cost_in_wo(self):
+	if self.purpose == "Manufacture" and self.work_order:
+		volume_cost, volume = frappe.db.get_value("Stock Entry",{'work_order': self.work_order,'purpose': 'Manufacture','docstatus':1},['sum(volume_cost)','sum(volume)'])
+		wo = frappe.get_doc('Work Order',self.work_order)
+		if volume_cost and volume:
+			wo.db_set('volume_cost',volume_cost)
+			wo.db_set('volume',volume)
+		else:
+			wo.db_set('volume_cost',0)
+			wo.db_set('volume',0)
 
 def se_before_cancel(self, method):
 	StockEntry.delete_auto_created_batches = delete_auto_created_batches
@@ -39,12 +53,13 @@ def stock_entry_on_cancel(self, method):
 	if self.work_order:
 		pro_doc = frappe.get_doc("Work Order", self.work_order)
 		set_po_status(self, pro_doc)
-		if self.volume:		
-			update_po_volume(self, pro_doc)
+		# if self.volume:	
+		# 	update_po_volume(self, pro_doc)
 			
 		update_po_transfer_qty(self, pro_doc)
+		update_volume_cost_in_wo(self)
 
-		pro_doc.save()
+		#pro_doc.save()
 		#frappe.db.commit()
 
 
@@ -223,8 +238,8 @@ def update_po(self):
 				 po.material_transferred_for_manufacturing = po.qty
 							
 		if self.purpose == 'Manufacture':	
-			if self.volume:
-				update_po_volume(self, po)
+			# if self.volume:
+			# 	update_po_volume(self, po)
 			
 			update_po_transfer_qty(self, po)
 			update_po_items(self, po)
