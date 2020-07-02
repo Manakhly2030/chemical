@@ -189,7 +189,7 @@ doc_events = {
 	},
 	"Stock Entry": {
 		"validate": [
-			# "chemical.chemical.doc_events.stock_entry.stock_entry_validate",
+			"chemical.chemical.doc_events.stock_entry.stock_entry_validate",
 			"chemical.batch_valuation.stock_entry_validate",
 		],
 		"before_save": "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",

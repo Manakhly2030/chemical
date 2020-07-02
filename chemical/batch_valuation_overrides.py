@@ -180,7 +180,7 @@ def get_batch_values(self, sle):
 # Stock Entry Overrides
 
 def get_args_for_incoming_rate(self, item):
-	frappe.msgprint('get_args_for_incoming_rate')
+	#frappe.msgprint('get_args_for_incoming_rate')
 	return frappe._dict({
 		"item_code": item.item_code,
 		"warehouse": item.s_warehouse or item.t_warehouse,
@@ -197,7 +197,7 @@ def get_args_for_incoming_rate(self, item):
 
 # Buying Controller overrides
 def update_raw_materials_supplied_based_on_bom(self, item, raw_material_table):
-	frappe.msgprint('update_raw_materials_supplied_based_on_bom')
+	#frappe.msgprint('update_raw_materials_supplied_based_on_bom')
 	from erpnext.controllers.buying_controller import get_items_from_bom
 	from erpnext.stock.doctype.stock_entry.stock_entry import get_used_alternative_items
 	from erpnext.stock.stock_ledger import get_valuation_rate
@@ -317,7 +317,7 @@ def append_raw_material_to_be_backflushed(self, fg_item_doc, raw_material_data, 
 
 # Selling Controller Overrides
 def update_stock_ledger(self):
-	frappe.msgprint('update_stock_ledger')
+	#frappe.msgprint('update_stock_ledger')
 	from erpnext.controllers.selling_controller import SellingController
 	from erpnext.controllers.stock_controller import StockController
 	from erpnext.stock.get_item_details import get_conversion_factor
