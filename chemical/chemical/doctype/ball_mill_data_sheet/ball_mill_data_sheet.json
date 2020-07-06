@@ -122,8 +122,7 @@
    "fieldname": "sample_no",
    "fieldtype": "Link",
    "label": "Sample No",
-   "options": "Outward Sample",
-   "read_only": 1
+   "options": "Outward Sample"
   },
   {
    "fetch_from": "sample_no.item_name",
@@ -286,7 +285,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2020-06-08 16:39:52.662649",
+ "modified": "2020-07-06 10:04:57.731823",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",

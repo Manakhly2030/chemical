@@ -35,6 +35,7 @@ def update_volume_cost_in_wo(self):
 		volume_cost, volume = frappe.db.get_value("Stock Entry",{'work_order': self.work_order,'purpose': 'Manufacture','docstatus':1},['sum(volume_cost)','sum(volume)'])
 		wo = frappe.get_doc('Work Order',self.work_order)
 		if volume_cost and volume:
+			frappe.msgprint(volume_cost)
 			wo.db_set('volume_cost',volume_cost)
 			wo.db_set('volume',volume)
 		else:
@@ -89,6 +90,7 @@ def update_additional_cost(self):
 	if self.purpose == "Manufacture" and self.bom_no:
 		bom = frappe.get_doc("BOM",self.bom_no)
 		abbr = frappe.db.get_value("Company",self.company,'abbr')
+		
 		if self.is_new() and not self.amended_from:
 			self.append("additional_costs",{
                 'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
@@ -246,11 +248,17 @@ def update_po(self):
 
 			last_item = self.items[-1]
 
-			po.batch_yield = last_item.batch_yield
-			po.concentration = last_item.concentration
-			po.batch = last_item.get('batch_no')
-			po.lot_no = last_item.lot_no
-			po.valuation_rate = last_item.valuation_rate
+			po.db_set('batch_yield',last_item.batch_yield)
+			po.db_set('concentration',last_item.concentration)
+			po.db_set('batch',last_item.get('batch_no'))
+			po.db_set('lot_no',last_item.lot_no)
+			po.db_set('valuation_rate',last_item.valuation_rate)
+
+			# po.batch_yield = last_item.batch_yield
+			# po.concentration = last_item.concentration
+			# po.batch = last_item.get('batch_no')
+			# po.lot_no = last_item.lot_no
+			# po.valuation_rate = last_item.valuation_rate
 
 		po.save()
 		#frappe.db.commit()
