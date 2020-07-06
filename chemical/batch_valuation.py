@@ -107,8 +107,10 @@ def delete_transfer_batches(self):
 				continue
 
 			row.batch_no = row.old_batch_no
-			check_if_doc_is_linked(batch_no)
-			frappe.delete_doc("Batch", batch_no.name)
+			if batch_no.reference_name == self.name:
+				frappe.db.set_value("Batch",batch_no.name,'reference_name',' ')
+			#check_if_doc_is_linked(batch_no)
+			#frappe.delete_doc("Batch", batch_no.name)
 			row.db_set('batch_no', row.old_batch_no)
 			row.db_set('old_batch_no', '')
 	# else:
