@@ -1,3 +1,10 @@
+
+# In Manufacturing settings increase over production and under production percentage
+# Re-open all stoped work orders
+# In delivery note py file comment sales invoice manadatory validation same way in purchase receipt
+# In batch valuation file comment delete_batches function
+# In make_transfer_batches under if has_batch_no condition keep only row.db_set('old_batch_no', row.batch_no), comment rest
+
 def correcting_valuation():
 	#doc=frappe.get_doc("Correcting Valuation", 'CV004')
 	doc=frappe.new_doc('Correcting Valuation')
