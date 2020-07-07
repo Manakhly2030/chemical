@@ -46,6 +46,14 @@ def correcting_valuation():
 		modified_date = se.modified
 		try:
 			se.flags.ignore_links = True
+			for item in se.items:
+			    if item.old_batch_no:
+				batch_doc = frappe.new_doc("Backup SE Batch")
+				batch_doc.stock_entry = se.name
+				batch_doc.stock_entry_item = item.name
+				batch_doc.old_batch = item.old_batch_no
+				batch_doc.new_batch = item.batch_no
+				batch_doc.save()
 			se.cancel()
 			doc.append('cancelled_stock_out_entry',{
 				'cancelled_stock_out_entry': x['name'],
@@ -190,3 +198,65 @@ def correcting_valuation():
 	
 	frappe.db.sql("SET SQL_SAFE_UPDATES=0")
 	frappe.db.sql("DELETE FROM `tabVersion` WHERE owner='Administrator' and modified > '2020-06-24 00:00:00'")
+	
+	
+# Difference in stock in hand account
+
+stock_ledger_list = frappe.db.sql("""
+select sum(stock_value_difference) as sle_diff, voucher_no as name
+from `tabStock Ledger Entry` 
+where docstatus=1 and company = 'Shubhlaxmi Industries'
+group by voucher_no
+""",as_dict=True)   
+# se_out_list = []
+print("Stock Entry Cancel:", len(stock_ledger_list))
+for idx, x in enumerate(stock_ledger_list):
+	sle_diff = x['sle_diff']
+	gl_debit = frappe.db.get_value("GL Entry",{'voucher_no':x['name'],'account':'Stock In Hand - SI'},'debit')
+	gl_credit = frappe.db.get_value("GL Entry",{'voucher_no':x['name'],'account':'Stock In Hand - SI'},'credit')
+	try:
+		if sle_diff < 0.0:
+			if abs(sle_diff) != gl_credit:			
+				print(x['name'])
+				print(sle_diff)
+				print(gl_debit)
+				print(gl_credit)
+		elif sle_diff >0:
+			if abs(sle_diff) != gl_debit:			
+				print(x['name'])
+				print(sle_diff)
+				print(gl_debit)
+				print(gl_credit)
+	except:
+		print('error',x['name'])	
+
+
+gl_entry_list = frappe.db.sql("""
+select debit, credit, voucher_no as name
+from `tabGL Entry` 
+where company = 'Shubhlaxmi Industries' and account = "Stock In Hand - SI"
+""",as_dict=True)   
+# se_out_list = []
+print("Stock Entry Cancel:", len(gl_entry_list))
+for idx, x in enumerate(gl_entry_list):
+	sle_diff =  frappe.db.get_value("Stock Ledger Entry",{'voucher_no':x['name']},'sum(stock_value_difference)')
+	if sle_diff == None:
+		print(x['name'])
+	gl_debit = x['debit']
+	gl_credit = x['credit']
+	try:
+		if sle_diff < 0.0:
+			if abs(sle_diff) != gl_credit:			
+				print(x['name'])
+				print(sle_diff)
+				print(gl_debit)
+				print(gl_credit)
+		elif sle_diff >0:
+			if abs(sle_diff) != gl_debit:			
+				print(x['name'])
+				print(sle_diff)
+				print(gl_debit)
+				print(gl_credit)
+	except:
+		print('error',x['name'])	
+
