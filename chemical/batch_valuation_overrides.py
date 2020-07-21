@@ -87,9 +87,8 @@ def process_sle(self, sle):
 	if sle.batch_no and batch_wise_cost:
 		get_batch_values(self,sle)
 		self.qty_after_transaction += flt(sle.actual_qty)
-		frappe.msgprint(str(self.valuation_rate))
+		
 		self.stock_value = flt(self.qty_after_transaction) * flt(self.valuation_rate)
-		frappe.msgprint(str(self.stock_value))
 	
 	elif sle.serial_no:
 		# Finbyz Changes end
@@ -118,8 +117,7 @@ def process_sle(self, sle):
 
 	# rounding as per precision
 	self.stock_value = flt(self.stock_value, self.precision)
-	frappe.msgprint(str(self.stock_value))
-	frappe.msgprint(str(f"Previous stock value {self.prev_stock_value}"))
+	
 	stock_value_difference = self.stock_value - self.prev_stock_value
 
 	self.prev_stock_value = self.stock_value
