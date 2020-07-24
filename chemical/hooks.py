@@ -67,6 +67,9 @@ doctype_js = {
 	"Customer": "public/js/doctype_js/customer.js",
 	"Supplier": "public/js/doctype_js/supplier.js",
 	"Production Plan": "public/js/doctype_js/production_plan.js",
+	"Purchase Receipt": "public/js/doctype_js/purchase_receipt.js",
+	"Item": "public/js/doctype_js/item.js",
+	"Batch": "public/js/doctype_js/batch.js"
 }
 
 # Home Pages
