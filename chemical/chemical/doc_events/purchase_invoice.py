@@ -1,6 +1,57 @@
+from __future__ import unicode_literals
 import frappe
-from frappe import msgprint, _
+from frappe import _,msgprint
+from frappe.utils import flt, cint, nowdate, cstr, now_datetime
+from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import PurchaseInvoice
+from chemical.api import cal_rate_qty, quantity_price_to_qty_rate
 
-def before_insert(self, method):
-	if not self.name and self.is_opening == "Yes":
-		self.naming_series = 'O' + self.naming_series
+
+def onload(self,method):
+    quantity_price_to_qty_rate(self)
+
+def validate(self,method):
+	cal_rate_qty(self)
+
+def before_submit(self, method):
+	override_pi_status_updater_args()
+
+def before_cancel(self, method):
+	override_pi_status_updater_args()
+
+
+def override_pi_status_updater_args():
+	PurchaseInvoice.update_status_updater_args = pi_update_status_updater_args
+
+def pi_update_status_updater_args(self):
+	if cint(self.update_stock):
+		self.status_updater.append({
+			'source_dt': 'Purchase Invoice Item',
+			'target_dt': 'Purchase Order Item',
+			'join_field': 'po_detail',
+			'target_field': 'received_qty',
+			'target_parent_dt': 'Purchase Order',
+			'target_parent_field': 'per_received',
+			'target_ref_field': 'quantity',
+			'source_field': 'quantity',
+			'second_source_dt': 'Purchase Receipt Item',
+			'second_source_field': 'quantity',
+			'second_join_field': 'purchase_order_item',
+			'percent_join_field':'purchase_order',
+			'overflow_type': 'receipt',
+			'extra_cond': """ and exists(select name from `tabPurchase Invoice`
+				where name=`tabPurchase Invoice Item`.parent and update_stock = 1)"""
+		})
+		if cint(self.is_return):
+			self.status_updater.append({
+				'source_dt': 'Purchase Invoice Item',
+				'target_dt': 'Purchase Order Item',
+				'join_field': 'po_detail',
+				'target_field': 'returned_qty',
+				'source_field': '-1 * quantity',
+				'second_source_dt': 'Purchase Receipt Item',
+				'second_source_field': '-1 * quantity',
+				'second_join_field': 'purchase_order_item',
+				'overflow_type': 'receipt',
+				'extra_cond': """ and exists (select name from `tabPurchase Invoice`
+					where name=`tabPurchase Invoice Item`.parent and update_stock=1 and is_return=1)"""
+			})

@@ -1,5 +1,32 @@
-frappe.require("/assets/chemical/js/override_make_se.js");
+//frappe.require("/assets/chemical/js/override_make_se.js");
 
+erpnext.work_order.make_se = function(frm, purpose) {
+	if(!frm.doc.skip_transfer){
+		var max = (purpose === "Manufacture") ?
+			flt(frm.doc.material_transferred_for_manufacturing) - flt(frm.doc.produced_qty) :
+			flt(frm.doc.qty) - flt(frm.doc.material_transferred_for_manufacturing);
+	} else {
+		var max = flt(frm.doc.qty) - flt(frm.doc.produced_qty);
+	}
+
+	max = flt(max, precision("qty"));
+	frappe.prompt({fieldtype:"Float", label: __("Qty for {0}", [purpose]), fieldname:"qty",
+		description: __("Max: {0}", [max]), 'default': max },
+		function(data) {
+			frappe.call({
+				method:"chemical.chemical.doc_events.work_order.make_stock_entry",
+				args: {
+					"work_order_id": frm.doc.name,
+					"purpose": purpose,
+					"qty": data.qty
+				},
+				callback: function(r) {
+					var doclist = frappe.model.sync(r.message);
+					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+				}
+			});
+		}, __("Select Quantity"), __("Make"));
+}
 
 this.frm.add_fetch('bom_no', 'based_on', 'based_on');
 this.frm.add_fetch('bom_no', 'batch_yield', 'batch_yield');
@@ -10,7 +37,6 @@ if(this.frm.doc.skip_transfer && !this.frm.doc.__islocal){
 		'items': ['Material Transfer Instruction']
 	});
 }
-
 frappe.ui.form.on("Work Order", {
 	refresh: function(frm){
 		$(".form-inner-toolbar").find("button[data-label=Finish]").css({"float":"right"})
@@ -39,8 +65,11 @@ frappe.ui.form.on("Work Order", {
 		}
 
 		if (frm.doc.based_on && frm.doc.based_on != "") {
-			cur_frm.set_df_property('based_on_qty', 'label', cstr(frm.doc.based_on) + " Qty");
+			cur_frm.set_df_property('based_on_qty', 'label', "Required "+ cstr(frm.doc.based_on) + " Qty");
 		}
+	},
+	production_item: function(frm){
+		//frm.trigger("add_finish_item");
 	},
 	before_save: function (frm) {
 		if (frm.doc.based_on_qty) {
@@ -53,20 +82,58 @@ frappe.ui.form.on("Work Order", {
 		}
 	},
 	bom_no: function (frm) {
-		frappe.db.get_value("BOM", frm.doc.bom_no, ["based_on", "batch_yield"], function (r) {
-			if (r) {
-				frm.set_value("based_on", r.based_on);
-				frm.set_value("batch_yield", r.batch_yield);
-			}
-		});
+		frm.doc.finish_item = []
+		frm.refresh_field("finish_item");
+		frappe.run_serially([
+			() => frappe.db.get_value("BOM", frm.doc.bom_no, ["based_on", "batch_yield","is_multiple_item"], function (r) {
+				if (r) {
+					frm.set_value("based_on", r.based_on);
+					frm.set_value("batch_yield", r.batch_yield);
+					frm.set_value("is_multiple_item",r.is_multiple_item);
+				}
+			}),
+			() => frm.trigger("add_finish_item"),
+		]);
 	},
-
-	based_on: function (frm) {
-		if (frm.doc.based_on) {
-			cur_frm.set_df_property('based_on_qty', 'label', cstr(frm.doc.based_on) + " Qty");
+	add_finish_item: function(frm){
+		if(frm.doc.bom_no){
+			if(frm.doc.is_multiple_item){
+				frappe.model.with_doc("BOM", frm.doc.bom_no, function(){
+					let tabletransfer = frappe.get_doc("BOM", frm.doc.bom_no)
+					$.each(tabletransfer.multiple_finish_item, function(index, row){
+						let d = cur_frm.add_child("finish_item");
+						d.item_code = row.item_code;
+						d.bom_cost_ratio = row.cost_ratio;
+						d.bom_qty_ratio = row.qty_ratio;
+						d.bom_qty = frm.doc.qty * d.bom_qty_ratio / 100 ;
+						d.bom_yield = row.batch_yield
+						frm.refresh_field("finish_item");
+					});
+				});
+			}
+			else{
+				frappe.model.with_doc("BOM", frm.doc.bom_no, function(){
+				let tabletransfer = frappe.get_doc("BOM", frm.doc.bom_no)
+				let d = cur_frm.add_child("finish_item");
+				d.item_code = tabletransfer.item
+				d.bom_cost_ratio = 100
+				d.bom_qty_ratio = 100
+				d.bom_qty = frm.doc.qty
+				d.bom_yield = tabletransfer.batch_yield
+				frm.refresh_field("finish_item");
+			});
+			}
+		}
+		else{
+			frm.doc.finish_item = []
+			frm.refresh_field("finish_item");
 		}
 	},
-
+	based_on: function (frm) {
+		if (frm.doc.based_on) {
+			cur_frm.set_df_property('based_on_qty', 'label',"Required " +cstr(frm.doc.based_on) + " Qty");
+		}
+	},
 	based_on_qty: function (frm) {
 		if (!frm.doc.based_on) {
 			frappe.db.get_value("BOM", frm.doc.bom_no, "based_on", function (r) {

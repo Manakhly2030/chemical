@@ -13,6 +13,7 @@ from erpnext.stock.stock_ledger import get_previous_sle, NegativeStockError, get
 from erpnext.stock.get_item_details import get_bin_details, get_conversion_factor, get_default_cost_center
 from erpnext.stock.doctype.batch.batch import get_batch_no, set_batch_nos, get_batch_qty
 import json
+from six import iteritems
 
 from erpnext.controllers.stock_controller import StockController
 
@@ -332,7 +333,7 @@ class MaterialTransferInstruction(StockController):
 		"""
 		item_dict = self.get_pro_order_required_items()
 		max_qty = flt(self.pro_doc.qty)
-		for item, item_details in item_dict.items():
+		for item, item_details in iteritems(item_dict):
 			pending_to_issue = flt(item_details.required_qty) - flt(item_details.transferred_qty)
 			desire_to_transfer = flt(self.fg_completed_qty) * flt(item_details.required_qty) / max_qty
 

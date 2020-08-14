@@ -8,45 +8,83 @@ frappe.ui.form.on("BOM", {
             amount += d.amount
         });
         frm.set_value("additional_amount", amount);
-		frm.trigger('second_item_qty_cal');
-		if(frm.doc.is_multiple_item){
-			frm.set_value('qty_ratio_of_second_item',flt(100 - frm.doc.qty_ratio_of_first_item))
-			frm.set_value('cost_ratio_of_second_item',flt(100 - frm.doc.cost_ratio_of_first_item))				
-		}
+        frm.events.cal_total(frm)
+		
+    },
+    cal_total:function(frm){
+        if(frm.doc.is_multiple_item){
+            frm.set_value("quantity",flt(frm.doc.multiple_finish_item[0].qty))
+        }
+        if(!frm.doc.is_multiple_item){
+            frm.doc.multiple_finish_item = []
+        }
+    },
+    cal_batch_yield: function(frm){
+        frm.doc.items.forEach(function (d){
+            if (frm.doc.based_on && frm.doc.based_on == d.item_code)
+            {
+                if(frm.doc.is_multiple_item){
+                    frm.doc.multiple_finish_item.forEach(function (row){
+                        row.batch_yield = flt(row.qty) / d.qty
+                    });
+                }
+            }
+        });
+        let total_yield = 0
+        frm.doc.multiple_finish_item.forEach(function (row){
+            total_yield += row.batch_yield
+        });
+        frm.set_value("batch_yield",total_yield)
+    },
+    total_quantity: function(frm){
+        if(frm.doc.multiple_finish_item){
+            frm.doc.multiple_finish_item.forEach(function (d){
+                if (d.qty_ratio != 0)
+                    d.qty = frm.doc.total_quantity * d.qty_ratio / 100;
+            });
+        }
+        frm.refresh_fields("mutiple_finish_item")
+        if(frm.doc.is_multiple_item){
+            frm.set_value("quantity",flt(frm.doc.multiple_finish_item[0].qty))
+        }
     },
     onload: function (frm) {
-		if(frm.doc.is_multiple_item){
-			cur_frm.set_df_property("quantity", "read_only",1);
-		}
+        if(!frm.doc.is_multiple_item){
+            frm.set_value("total_quantity",flt(frm.doc.quantity))
+        }
+        else{
+            frm.events.is_multiple_item(frm)
+        }
         if (frm.doc.__islocal && frm.doc.rm_cost_as_per == "Price List") {
             frm.set_value("buying_price_list", "Standard Buying");
+        }
+    },
+    quantity: function (frm){
+        if(!frm.doc.is_multiple_item){
+            frm.set_value("total_quantity",flt(frm.doc.quantity))
         }
     },
 	is_multiple_item: function(frm){
 		if(frm.doc.is_multiple_item){
 			cur_frm.set_df_property("quantity", "read_only",1);
-			cur_frm.set_df_property("quantity", "label",'First Item Quantity');
+            cur_frm.set_df_property("quantity", "label",'First Item Quantity');
+            if (frm.doc.item && (frm.doc.multiple_finish_item == undefined || frm.doc.multiple_finish_item.length == 0)){
+                var row = cur_frm.add_child("multiple_finish_item");
+                row.item_code = frm.doc.item;
+                row.qty = frm.doc.quantity;
+                row.cost_ratio = 100;
+                row.qty_ratio = 100;
+                row.batch_yield = 0
+                frm.refresh_fields("multiple_finish_item");
+            }
 		}
 		if(!frm.doc.is_multiple_item){
 			cur_frm.set_df_property("quantity", "read_only",0);
-			cur_frm.set_df_property("quantity", "label",'Quantity');
-		}
+            cur_frm.set_df_property("quantity", "label",'Quantity');
+            frm.doc.multiple_finish_item = []
+        }
 	},
-	cost_ratio_of_first_item:function(frm){
-		if(frm.doc.is_multiple_item){ 
-			frm.set_value('cost_ratio_of_second_item',flt(100 - frm.doc.cost_ratio_of_first_item))		
-		}
-	},
-	qty_ratio_of_first_item:function(frm){
-		if(frm.doc.is_multiple_item){
-			frm.set_value('qty_ratio_of_second_item',flt(100 - frm.doc.qty_ratio_of_first_item))		
-		}
-	},
-	second_item_qty_cal: function(frm){
-		if(frm.doc.is_multiple_item){
-			frm.set_value('second_item_qty',flt(frm.doc.total_quantity - frm.doc.quantity))
-		}
-	},
+	
     /* cal_operational_cost: function (frm) {
         let op_cost = flt(frm.doc.operational_cost * frm.doc.quantity);
         let total_cost = flt(op_cost + frm.doc.total_cost)
@@ -76,16 +114,22 @@ frappe.ui.form.on("BOM", {
     // },
 
     before_submit: function (frm) {
-        let cal_yield = 0;
-        frm.doc.items.forEach(function (d) {
-            if (frm.doc.based_on == d.item_code) {
-                cal_yield = frm.doc.quantity / d.qty;
-            }
-            else if (!frm.doc.based_on && d.item_code == "Vinyl Sulphone (V.S)") {
-                cal_yield = frm.doc.quantity / d.qty;
-            }
-        });
-        frm.set_value("batch_yield", cal_yield);
+        if(frm.doc.is_multiple_item){
+            let total_yield = 0
+            frm.doc.multiple_finish_item.forEach(function (row){
+                total_yield += row.batch_yield
+            });
+            frm.set_value("batch_yield",total_yield)
+        }
+        else{
+            let cal_yield = 0;
+            frm.doc.items.forEach(function (d) {
+                if (frm.doc.based_on == d.item_code) {
+                    cal_yield = frm.doc.quantity / d.qty;
+                }
+            });
+            frm.set_value("batch_yield", cal_yield);
+        }
     },
 
     update_price_list: function (frm) {
@@ -143,8 +187,9 @@ frappe.ui.form.on("BOM", {
 	},
 	etp_rate: function(frm){
 		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
-	}
+    },
 });
+
 frappe.ui.form.on("BOM Additional Cost", {
 	/* qty: function(frm, cdt, cdn){
 		let d = locals[cdt][cdn]
@@ -152,6 +197,35 @@ frappe.ui.form.on("BOM Additional Cost", {
 	}, */
 	rate: function(frm, cdt, cdn){
 		let d = locals[cdt][cdn]
-		frappe.model.set_value(d.doctype,d.name,'amount',flt(frm.doc.quantity*d.rate))
-	}
+		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
+    },
+    additional_cost_add:function(frm,cdt,cdn){
+        var row = frappe.get_doc(cdt, cdn)
+        if (!row.qty){
+            row.qty = frm.doc.total_quantity
+        }
+        if(!row.uom){
+            row.uom = "FG QTY"
+        }
+        frm.refresh_field('additional_cost');
+    }
+});
+frappe.ui.form.on("BOM Multiple Finish Item", {
+	/* qty: function(frm, cdt, cdn){
+		let d = locals[cdt][cdn]
+		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
+	}, */
+	qty: function(frm, cdt, cdn){
+        frm.events.cal_total(frm)
+        frm.events.quantity(frm)
+    },
+    qty_ratio: function(frm, cdt, cdn){
+        frm.events.total_quantity(frm)
+    },
+});
+
+frappe.ui.form.on("BOM Item", {
+    qty: function(frm, cdt, cdn){
+        frm.events.cal_batch_yield(frm)
+    },
 });

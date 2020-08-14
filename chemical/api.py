@@ -479,21 +479,22 @@ def set_organization_details(out, party, party_type):
 # 		po.save()
 # 		frappe.db.commit()
 
-# def update_po_volume(self, po, ignore_permissions = True):
-# 	if not self.volume:
-# 		frappe.throw(_("Please add volume before submitting the stock entry"))
+def update_po_volume(self, po, ignore_permissions = True):
+	#if not self.volume:
+		#frappe.throw(_("Please add volume before submitting the stock entry"))
 
-# 	if self._action == 'submit':
-# 		po.volume += self.volume
-# 		self.volume_cost = flt(flt(self.volume) * flt(self.volume_rate))		
-# 		po.volume_cost +=  self.volume_cost
-# 		#self.save(ignore_permissions = True)
-# 		po.save(ignore_permissions = True)
+	if self._action == 'submit':
+		#po.volume += self.volume
+		#self.volume_cost = flt(flt(self.volume) * flt(self.volume_rate))		
+		#po.volume_cost +=  self.volume_cost
+		#self.save(ignore_permissions = True)
+		po.save(ignore_permissions = True)
 
-# 	elif self._action == 'cancel':
-# 		po.volume -= self.volume
-# 		po.volume_cost -= self.volume_cost
-# 		po.save(ignore_permissions=True)
+	elif self._action == 'cancel':
+		# po.volume -= self.volume
+		# po.volume_cost -= self.volume_cost
+		po.db_set('batch','')
+		po.save(ignore_permissions=True)
 		
 # def update_po_transfer_qty(self, po):
 # 	for d in po.required_items:
@@ -531,6 +532,62 @@ def set_organization_details(out, party, party_type):
 # 	for child in po.required_items:
 # 		child.db_update()
 
+def stock_entry_before_cancel(self,method):
+	if self.work_order:
+		pro_doc = frappe.get_doc("Work Order", self.work_order)
+		pro_doc.db_set('batch','')
+		set_po_status(self, pro_doc)
+		update_po_volume(self, pro_doc)
+		pro_doc.save()
+		frappe.db.commit()
+
+def cal_rate_qty(self):
+	for d in self.items:
+		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
+		if maintain_as_is_stock:
+			if not d.concentration:
+		   		frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
+			if d.quantity:
+				d.qty = flt((d.quantity * 100.0) / d.concentration)
+			if d.price:
+				d.rate =  flt(d.quantity * d.price) / flt(d.qty)
+		else:
+			if d.quantity:
+				d.qty = d.quantity
+			if d.price:
+				d.rate= d.price
+
+			
+def se_cal_rate_qty(self):
+	for d in self.items:
+		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
+		if maintain_as_is_stock:
+			if not d.concentration and d.t_warehouse:
+		   		frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
+			concentration = 0
+			if d.batch_no:
+				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
+			else:
+				concentration = d.concentration
+			if d.quantity:
+				d.qty = flt((d.quantity * 100.0) / concentration)
+			if d.price:
+				d.basic_rate =  flt(d.quantity * d.price) / flt(d.qty)
+		else:
+			if d.quantity:
+				d.qty = d.quantity
+			if d.price:
+				d.basic_rate = d.price
+
+def cal_actual_valuations(self):
+	for row in self.items:
+		concentration = flt(row.concentration) or 100
+		if self.purpose != 'Material Receipt':
+			row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
+		elif self.purpose == 'Material Receipt':
+			row.basic_rate = flt(row.actual_valuation_rate * concentration)/100
+
+			
 # @frappe.whitelist()
 # def stock_entry_on_cancel(self, method):
 # 	if self.work_order:
@@ -544,13 +601,13 @@ def set_organization_details(out, party, party_type):
 # 		pro_doc.save()
 # 		frappe.db.commit()
 
-# def set_po_status(self, pro_doc):
-# 	status = None
-# 	if flt(pro_doc.material_transferred_for_instruction):
-# 		status = "In Process"
+def set_po_status(self, pro_doc):
+	status = None
+	if flt(pro_doc.material_transferred_for_instruction):
+		status = "In Process"
 
-# 	if status:
-# 		pro_doc.db_set('status', status)
+	if status:
+		pro_doc.db_set('status', status)
 
 # @frappe.whitelist()
 # def make_stock_entry(work_order_id, purpose, qty=None):
@@ -1295,3 +1352,11 @@ def get_fiscal(date):
 	fiscal = frappe.db.get_value("Fiscal Year", fy, 'fiscal')
 
 	return fiscal if fiscal else fy.split("-")[0][2:] + fy.split("-")[1][2:]
+
+def quantity_price_to_qty_rate(self):
+	for item in self.items:
+		if item.qty and item.quantity == 0:
+			item.db_set("quantity",flt(item.qty))
+		if item.rate and item.price ==0:
+			item.db_set("price",flt(item.rate))
+				

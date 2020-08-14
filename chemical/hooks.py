@@ -4,9 +4,25 @@ from . import __version__ as app_version
 
 from erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool import OpeningInvoiceCreationTool
 from chemical.chemical.doc_events.opening_invoice_creation_tool import get_invoice_dict, make_invoices
+from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
+from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 
 OpeningInvoiceCreationTool.get_invoice_dict = get_invoice_dict
 OpeningInvoiceCreationTool.make_invoices = make_invoices
+
+
+#Chemical
+from chemical.chemical.doc_events.stock_entry import validate_fg_completed_quantity, calculate_rate_and_amount
+from chemical.chemical.doc_events.work_order import get_status, update_work_order_qty, update_transaferred_qty_for_required_items, update_consumed_qty_for_required_items
+
+#Chemical
+StockEntry.validate_fg_completed_qty = validate_fg_completed_quantity
+StockEntry.calculate_rate_and_amount = calculate_rate_and_amount
+WorkOrder.get_status = get_status
+WorkOrder.update_work_order_qty = update_work_order_qty
+WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_for_required_items
+WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_required_items
+
 
 # import erpnext
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
@@ -194,17 +210,31 @@ doc_events = {
 		"validate": [
 			"chemical.chemical.doc_events.stock_entry.stock_entry_validate",
 			"chemical.batch_valuation.stock_entry_validate",
+			"chemical.chemical.doc_events.stock_entry.validate",
 		],
-		"before_save": "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",
-		"before_insert": "chemical.chemical.doc_events.stock_entry.before_insert",
-		"before_submit": "chemical.chemical.doc_events.stock_entry.se_before_submit",
+		"before_validate": "chemical.chemical.doc_events.stock_entry.before_validate",
+		"onload": "chemical.chemical.doc_events.stock_entry.onload",
+		"before_save": [
+			 "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",
+
+		],
+		"before_insert": "finbyzerp.api.before_insert",
+		"before_submit": [
+			"chemical.chemical.doc_events.stock_entry.se_before_submit",
+			"chemical.chemical.doc_events.stock_entry.before_submit",
+		],
 		"on_submit": [
 			"chemical.chemical.doc_events.stock_entry.stock_entry_on_submit",
+			"chemical.chemical.doc_events.stock_entry.on_submit",
 			"chemical.batch_valuation.stock_entry_on_submit",
 		],
-		"before_cancel": "chemical.chemical.doc_events.stock_entry.se_before_cancel",
+		"before_cancel":[
+			"chemical.chemical.doc_events.stock_entry.se_before_cancel",
+			"chemical.api.stock_entry_before_cancel",
+		],
 		"on_cancel": [
 			"chemical.chemical.doc_events.stock_entry.stock_entry_on_cancel",
+			"chemical.chemical.doc_events.stock_entry.on_cancel",
 			"chemical.batch_valuation.stock_entry_on_cancel",
 		],
 	},
@@ -212,17 +242,33 @@ doc_events = {
 		'before_naming': "chemical.batch_valuation.override_batch_autoname",
 	},
 	"Purchase Receipt": {
+		"onload":"chemical.chemical.doc_events.purchase_receipt.onload",
 		"validate": [
 			# "chemical.api.pr_validate",
 			"chemical.batch_valuation.pr_validate",
+		    "chemical.chemical.doc_events.purchase_receipt.validate",
 		],
 		"on_cancel": "chemical.batch_valuation.pr_on_cancel",
+		"before_submit": "chemical.chemical.doc_events.purchase_receipt.before_submit",
+		"before_cancel": "chemical.chemical.doc_events.purchase_receipt.before_cancel",
 	},
 	"Purchase Invoice": {
-		"before_insert": "chemical.chemical.doc_events.purchase_invoice.before_insert",
-		"validate": "chemical.batch_valuation.pi_validate",
+		"onload":"chemical.chemical.doc_events.purchase_invoice.onload",
+		"before_insert": "finbyzerp.api.before_insert",
+		"validate": [
+			"chemical.batch_valuation.pi_validate",
+			"chemical.chemical.doc_events.purchase_invoice.validate",
+		],
 		"on_cancel": "chemical.batch_valuation.pi_on_cancel",
+		"before_submit": "chemical.chemical.doc_events.purchase_invoice.before_submit",
+		"before_cancel": "chemical.chemical.doc_events.purchase_invoice.before_cancel",
+
 	},
+	"Purchase Order": {
+		"onload":"chemical.chemical.doc_events.purchase_order.onload",
+		"validate": "chemical.chemical.doc_events.purchase_order.validate"
+	},
+	
 	"Landed Cost Voucher": {
 		"validate": [
 			"chemical.batch_valuation.lcv_validate",
@@ -234,19 +280,38 @@ doc_events = {
 		],
 	},
 	"Delivery Note": {
-		"on_submit": "chemical.chemical.doc_events.delivery_note.dn_on_submit",
-		#"before_cancel": "chemical.chemical.doc_events.delivery_note.dn_before_cancel",
+		"onload":"chemical.chemical.doc_events.delivery_note.onload",
+		"on_submit": [
+			 "chemical.chemical.doc_events.delivery_note.dn_on_submit",
+			 "chemical.chemical.doc_events.delivery_note.on_submit",
+		],
+		"before_cancel": "chemical.chemical.doc_events.delivery_note.before_cancel",
+		"before_submit": "chemical.chemical.doc_events.delivery_note.before_submit",
+
+		"validate": "chemical.chemical.doc_events.delivery_note.validate",
 	},
 	"Sales Invoice": {
-		"before_insert": "chemical.chemical.doc_events.sales_invoice.before_insert",
-		"before_submit": "chemical.chemical.doc_events.sales_invoice.si_before_submit"
+		"onload":"chemical.chemical.doc_events.sales_invoice.onload",
+		"before_insert": "finbyzerp.api.before_insert",
+		"before_submit": [
+			"chemical.chemical.doc_events.sales_invoice.si_before_submit",
+			"chemical.chemical.doc_events.sales_invoice.before_submit",
+		],
+		"validate": "chemical.chemical.doc_events.sales_invoice.validate",
+		"before_cancel": "chemical.chemical.doc_events.sales_invoice.before_cancel",
+
 	},
 	"Stock Ledger Entry": {
 		"before_submit": "chemical.chemical.doc_events.stock_ledger_entry.sl_before_submit"
 	},
 	"Sales Order": {
-		"on_cancel": "chemical.api.so_on_cancel"
+		"onload":"chemical.chemical.doc_events.sales_order.onload",
+		"on_cancel": "chemical.api.so_on_cancel",
+		"validate": "chemical.chemical.doc_events.sales_order.validate"
 	},
+	"Journal Entry": {
+		"before_insert": "finbyzerp.api.before_insert"
+	}
 }
 
 scheduler_events = {
