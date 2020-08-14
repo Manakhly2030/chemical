@@ -50,7 +50,7 @@ app_license = "GPL 3.0"
 # 	"assets/js/timeline.min.js"
 # ]
 
-fixtures = ["Custom Field"]
+# fixtures = ["Custom Field"]
 
 app_include_css = [
 	"assets/css/summernote.min.css"
