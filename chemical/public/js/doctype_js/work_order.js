@@ -80,6 +80,7 @@ frappe.ui.form.on("Work Order", {
 			cost = flt(frm.doc.volume * frm.doc.volume_rate);
 			frm.set_value('volume_cost', cost);
 		}
+		frm.trigger("add_finish_item");
 	},
 	bom_no: function (frm) {
 		frm.doc.finish_item = []
@@ -92,10 +93,12 @@ frappe.ui.form.on("Work Order", {
 					frm.set_value("is_multiple_item",r.is_multiple_item);
 				}
 			}),
-			() => frm.trigger("add_finish_item"),
+			//() => frm.trigger("add_finish_item"),
 		]);
 	},
 	add_finish_item: function(frm){
+	if (!cur_frm.doc.finish_item.length)
+	{
 		if(frm.doc.bom_no){
 			if(frm.doc.is_multiple_item){
 				frappe.model.with_doc("BOM", frm.doc.bom_no, function(){
@@ -128,6 +131,7 @@ frappe.ui.form.on("Work Order", {
 			frm.doc.finish_item = []
 			frm.refresh_field("finish_item");
 		}
+	}
 	},
 	based_on: function (frm) {
 		if (frm.doc.based_on) {

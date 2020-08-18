@@ -93,7 +93,6 @@ cur_frm.fields_dict.items.grid.get_field("outward_sample").get_query = function(
 
 frappe.ui.form.on("Sales Order Item", {
     item_code: function(frm,cdt,cdn) {
-        console.log("call");
         let d = locals[cdt][cdn];
         frappe.model.set_value(d.doctype, d.name, 'outward_sample', "");
 		// frm.set_value('outward_sample',"")

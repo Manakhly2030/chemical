@@ -1,5 +1,5 @@
 {
- "creation": "2020-08-04 09:49:20.590457",
+ "creation": "2020-08-14 13:01:32.180390",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -12,6 +12,7 @@
  ],
  "fields": [
   {
+   "columns": 2,
    "fieldname": "item_code",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -20,26 +21,29 @@
    "reqd": 1
   },
   {
+   "columns": 2,
    "fieldname": "qty",
    "fieldtype": "Float",
    "in_list_view": 1,
    "label": "Qty",
-   "read_only": 1,
    "reqd": 1
   },
   {
+   "columns": 2,
    "fieldname": "cost_ratio",
    "fieldtype": "Percent",
    "in_list_view": 1,
    "label": "Cost Ratio"
   },
   {
+   "columns": 2,
    "fieldname": "qty_ratio",
    "fieldtype": "Percent",
    "in_list_view": 1,
    "label": "Qty Ratio"
   },
   {
+   "columns": 2,
    "fieldname": "batch_yield",
    "fieldtype": "Percent",
    "in_list_view": 1,
@@ -47,7 +51,7 @@
   }
  ],
  "istable": 1,
- "modified": "2020-08-05 17:46:57.677874",
+ "modified": "2020-08-14 14:08:20.532055",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "BOM Multiple Finish Item",
