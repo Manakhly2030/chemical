@@ -3,17 +3,29 @@ import frappe
 
 def execute():
     frappe.db.sql("""SET SQL_SAFE_UPDATES = 0""")
-    data = frappe.db.sql("select `name` from `tabBOM` where `docstatus` <> 2")
-    for d in data:
-        volume_quantity = frappe.db.get_value("BOM",d[0],'volume_quantity')
-        volume_rate = frappe.db.get_value("BOM",d[0],'volume_rate')
-        volume_amount = frappe.db.get_value("BOM",d[0],'volume_amount')
+    bom_name = frappe.db.sql("select `name` from `tabBOM` where `docstatus` <> 2")
 
-        etp_qty = frappe.db.get_value("BOM",d[0],'etp_qty')
-        etp_rate = frappe.db.get_value("BOM",d[0],'etp_rate')
-        etp_amount = frappe.db.get_value("BOM",d[0],'etp_amount') 
+    for bom in bom_name:
+        bom_doc = frappe.get_doc("BOM",bom[0])
+        if bom_doc.additional_cost:
+            for additional_cost in bom_doc.additional_cost:
+                if not additional_cost.qty:
+                    additional_cost.db_set("qty",bom_doc.quantity)
+                    additional_cost.db_set("amount",bom_doc.quantity * additional_cost.rate)
+                if not additional_cost.uom:
+                    additional_cost.db_set("uom","FG QTY")
+            for child in bom_doc.additional_cost:
+                child.db_update()
+
+        volume_quantity = frappe.db.get_value("BOM",bom[0],'volume_quantity')
+        volume_rate = frappe.db.get_value("BOM",bom[0],'volume_rate')
+        volume_amount = frappe.db.get_value("BOM",bom[0],'volume_amount')
+
+        etp_qty = frappe.db.get_value("BOM",bom[0],'etp_qty')
+        etp_rate = frappe.db.get_value("BOM",bom[0],'etp_rate')
+        etp_amount = frappe.db.get_value("BOM",bom[0],'etp_amount') 
         if etp_qty:
-            doc = frappe.get_doc("BOM",d[0])
+            doc = frappe.get_doc("BOM",bom[0])
             doc.append("additional_cost",{
                 "description" : "Volume",
                 "qty" : etp_qty,
@@ -26,7 +38,7 @@ def execute():
             frappe.db.commit()
 
         if volume_quantity:
-            doc = frappe.get_doc("BOM",d[0])
+            doc = frappe.get_doc("BOM",bom[0])
             doc.append("additional_cost",{
                 "description" : "Volume",
                 "qty" : volume_quantity,
@@ -42,7 +54,7 @@ def execute():
             from datetime import datetime, timedelta
             d = datetime.today() + timedelta(hours=5, minutes=0)
             d.strftime('%Y-%m-%d %H:00:00')
-            frappe.db.sql("SET SQL_SAFE_UPDATES=0")
             frappe.db.sql("DELETE FROM `tabVersion` WHERE owner='Administrator' and modified > %s",d)
+            frappe.db.sql("SET SQL_SAFE_UPDATES=1")
             frappe.db.commit()
 
