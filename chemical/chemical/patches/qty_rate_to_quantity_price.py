@@ -20,4 +20,3 @@ def execute():
     frappe.db.sql("""update `tabDelivery Note Item` set `price` = `rate`""")
     frappe.db.sql("""update `tabStock Entry Detail` set `price` = `basic_rate`""")
     frappe.db.sql("""SET SQL_SAFE_UPDATES = 1""")
-
