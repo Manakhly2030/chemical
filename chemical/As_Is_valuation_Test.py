@@ -46,6 +46,7 @@ if not frappe.db.exists("Item","TEST_ITEM_1"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.stock_uom = "Kg"
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
     warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Stores"},"name") #it will Fetch the warehouse of the given Company
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
@@ -62,6 +63,7 @@ if not frappe.db.exists("Item","TEST_ITEM_2"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.stock_uom = "Kg"
     item_create.append("item_defaults",{
             "company":company,
             "default_warehouse":default_warehouse
@@ -75,6 +77,7 @@ if not frappe.db.exists("Item","TEST_ITEM_3"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.stock_uom = "Kg"
     item_create.append("item_defaults",{
             "company":company,
             "default_warehouse":default_warehouse
@@ -89,6 +92,7 @@ if not frappe.db.exists("Item","TEST_ITEM_4"):
     item_create.maintain_as_is_stock= 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.stock_uom = "Kg"
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
     warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Stores"},"name") #it will Fetch the warehouse of the given Company
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
@@ -105,6 +109,7 @@ if not frappe.db.exists("Item","FINISH_TEST_ITEM"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.stock_uom = "Kg"
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
     item_create.append("item_defaults",{
             "company":company,
@@ -119,6 +124,7 @@ if not frappe.db.exists("Item","SECOND_FINISH_TEST_ITEM"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.stock_uom = "Kg"
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
     item_create.append("item_defaults",{
             "company":company,
@@ -134,6 +140,7 @@ if not frappe.db.exists("Item","AsIs_Finish_item"):
     item_create.maintain_as_is_stock= 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.stock_uom = "Kg"
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
     warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Stores"},"name") #it will Fetch the warehouse of the given Company
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
@@ -896,8 +903,6 @@ bom2_create.append("multiple_finish_item",{
     "batch_yield": 2.5,
 })
 
-
-
 bom2_create.save()
 bom2_name = bom2_create.name
 bom2_create.submit()
@@ -986,12 +991,15 @@ work_order_create.based_on = "TEST_ITEM_1"
 d = datetime.datetime.now() - timedelta(days=1,hours=10)
 d.strftime("%d-%m-%Y %H:%M:%S")
 work_order_create.planned_start_date = d
+work_order_store_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
+
 work_order_create.append("finish_item",{
     "item_code": "FINISH_TEST_ITEM",
     "bom_cost_ratio": 60,
     "bom_qty_ratio" : 50,
     "bom_qty": 100,
     "bom_yield": 5,
+    "source_warehouse" : work_order_store_warehouse
 })
 work_order_create.append("finish_item",{
     "item_code": "SECOND_FINISH_TEST_ITEM",
@@ -999,6 +1007,7 @@ work_order_create.append("finish_item",{
     "bom_qty_ratio":25,
     "bom_qty": 50,
     "bom_yield": 2.5,
+    "source_warehouse" : work_order_store_warehouse
 })
 work_order_create.append("finish_item",{
     "item_code": "AsIs_Finish_item",
@@ -1006,11 +1015,13 @@ work_order_create.append("finish_item",{
     "bom_qty_ratio":25,
     "bom_qty": 50,
     "bom_yield": 2.5,
+    "source_warehouse" : work_order_store_warehouse
 })
 
 work_order_create.save()
 work_name = work_order_create.name
 work_order_create.submit()
+
 
 # mtm = Material Transfer For Manufacture
 # Create Stock Entry of Material Transfer For Manufacture (mtm)
@@ -1665,30 +1676,30 @@ msg = "MAAsIsFinal: Valuation Rate doesn't Match"
 assert asis_final_ma_item_valuation_rate == round(asis_final_ma_item_amount/ asis_final_ma_item_qty,3),msg
 
 
-material_issue_delete = frappe.get_doc("Stock Entry",stock_entry_mi_name)
-material_issue_delete.cancel()
-material_issue_delete.delete()
-frappe.db.commit()
+# material_issue_delete = frappe.get_doc("Stock Entry",stock_entry_mi_name)
+# material_issue_delete.cancel()
+# material_issue_delete.delete()
+# frappe.db.commit()
 
 
-sales_invoice_delete = frappe.get_doc("Sales Invoice",second_si_name)
-sales_invoice_delete.cancel()
-sales_invoice_delete.delete()
-frappe.db.commit()
+# sales_invoice_delete = frappe.get_doc("Sales Invoice",second_si_name)
+# sales_invoice_delete.cancel()
+# sales_invoice_delete.delete()
+# frappe.db.commit()
 
 
-frappe.db.set_value("Batch",stock_entry_mr_2_batch_no,"reference_name","")
-frappe.db.commit()
+# frappe.db.set_value("Batch",stock_entry_mr_2_batch_no,"reference_name","")
+# frappe.db.commit()
 
-material_receipt_2_delete = frappe.get_doc("Stock Entry",stock_entry_mr_2_name)
-material_receipt_2_delete.flags.ignore_links = True
-material_receipt_2_delete.cancel()
-material_receipt_2_delete.delete()
-frappe.db.commit()
+# material_receipt_2_delete = frappe.get_doc("Stock Entry",stock_entry_mr_2_name)
+# material_receipt_2_delete.flags.ignore_links = True
+# material_receipt_2_delete.cancel()
+# material_receipt_2_delete.delete()
+# frappe.db.commit()
 
-batch_material_receipt_2_delete = frappe.get_doc("Batch",stock_entry_mr_2_batch_no)
-batch_material_receipt_2_delete.delete()
-frappe.db.commit()
+# batch_material_receipt_2_delete = frappe.get_doc("Batch",stock_entry_mr_2_batch_no)
+# batch_material_receipt_2_delete.delete()
+# frappe.db.commit()
 
 frappe.db.set_value("Batch",final_item_batch_no,"reference_name","")
 frappe.db.commit()
@@ -1706,15 +1717,15 @@ frappe.db.commit()
 frappe.db.set_value("Batch",stock_entry_mr_1_batch_no,"reference_name","")
 frappe.db.commit()
 
-material_receipt_1_delete = frappe.get_doc("Stock Entry",stock_entry_mr_1_name)
-material_receipt_1_delete.flags.ignore_links = True
-material_receipt_1_delete.cancel()
-material_receipt_1_delete.delete()
-frappe.db.commit()
+# material_receipt_1_delete = frappe.get_doc("Stock Entry",stock_entry_mr_1_name)
+# material_receipt_1_delete.flags.ignore_links = True
+# material_receipt_1_delete.cancel()
+# material_receipt_1_delete.delete()
+# frappe.db.commit()
 
-batch_material_receipt_1_delete = frappe.get_doc("Batch",stock_entry_mr_1_batch_no)
-batch_material_receipt_1_delete.delete()
-frappe.db.commit()
+# batch_material_receipt_1_delete = frappe.get_doc("Batch",stock_entry_mr_1_batch_no)
+# batch_material_receipt_1_delete.delete()
+# frappe.db.commit()
 
 material_transfer_delete = frappe.get_doc("Stock Entry",stock_entry_mtm_name)
 material_transfer_delete.flags.ignore_links = True
@@ -1733,9 +1744,25 @@ bom_delete.cancel()
 bom_delete.delete()
 frappe.db.commit()
 
+bom2_delete = frappe.get_doc("BOM",bom2_name)
+bom2_delete.cancel()
+bom2_delete.delete()
+frappe.db.commit()
+
+bom3_delete = frappe.get_doc("BOM",bom3_name)
+bom3_delete.cancel()
+bom3_delete.delete()
+frappe.db.commit()
+
+fourth_pr = frappe.get_doc("Purchase Receipt",fourth_pr_name)
 third_pr = frappe.get_doc("Purchase Receipt",third_pr_name)
 second_pr = frappe.get_doc("Purchase Receipt",second_pr_name)
 first_pr = frappe.get_doc("Purchase Receipt",first_pr_name)
+
+fourth_pr.ignore_mandatory = True
+fourth_pr.ignore_links = True
+fourth_pr.cancel()
+fourth_pr.delete()
 
 third_pr.ignore_mandatory = True
 third_pr.ignore_links = True
@@ -1767,9 +1794,28 @@ if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"TEST_I
 else:
     frappe.msgprint("test item 3 doc is linked with purchase receipt or sales invoice or BIN")
 
+item_delete_4 = frappe.get_doc("Item","TEST_ITEM_4")
+if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"TEST_ITEM_4"},"name"):
+    item_delete_4.delete()
+else:
+    frappe.msgprint("test item 4 doc is linked with purchase receipt or sales invoice or BIN")
+
+
 item_delete_finish = frappe.get_doc("Item","FINISH_TEST_ITEM")
 if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"FINISH_TEST_ITEM"},"name"):
     item_delete_finish.delete()
+else:
+    frappe.msgprint("test item finish doc is linked with purchase receipt or sales invoice or BIN")
+
+item_delete_second_finish = frappe.get_doc("Item","SECOND_FINISH_TEST_ITEM")
+if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"SECOND_FINISH_TEST_ITEM"},"name"):
+    item_delete_second_finish.delete()
+else:
+    frappe.msgprint("test item finish doc is linked with purchase receipt or sales invoice or BIN")
+
+item_delete_asis_finish = frappe.get_doc("Item","AsIs_Finish_item")
+if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"AsIs_Finish_item"},"name"):
+    item_delete_asis_finish.delete()
 else:
     frappe.msgprint("test item finish doc is linked with purchase receipt or sales invoice or BIN")
 

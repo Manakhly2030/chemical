@@ -56,5 +56,4 @@ def execute():
         d = datetime.today() + timedelta(hours=5, minutes=0)
         d.strftime('%Y-%m-%d %H:00:00')
         frappe.db.sql("DELETE FROM `tabVersion` WHERE owner='Administrator' and modified > %s",d)
-        frappe.db.sql("SET SQL_SAFE_UPDATES=1")
         frappe.db.commit()
