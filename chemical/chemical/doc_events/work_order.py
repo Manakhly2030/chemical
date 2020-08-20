@@ -7,7 +7,7 @@ from six import itervalues
 
 def before_submit(self, method):
 	validate_multiple_item_bom(self)
-	
+
 @frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):
 	#from erpnext.stock.doctype.stock_entry.stock_entry import get_additional_costs
