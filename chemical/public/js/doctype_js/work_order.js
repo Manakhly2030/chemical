@@ -30,6 +30,8 @@ erpnext.work_order.make_se = function(frm, purpose) {
 
 this.frm.add_fetch('bom_no', 'based_on', 'based_on');
 this.frm.add_fetch('bom_no', 'batch_yield', 'batch_yield');
+this.frm.add_fetch('bom_no', 'is_multiple_item', 'is_multiple_item');
+
 
 if(this.frm.doc.skip_transfer && !this.frm.doc.__islocal){
 	this.frm.dashboard.add_transactions({
@@ -38,6 +40,21 @@ if(this.frm.doc.skip_transfer && !this.frm.doc.__islocal){
 	});
 }
 frappe.ui.form.on("Work Order", {
+	onload: function(frm){
+		if (frm.doc.__islocal){
+			if (frm.doc.bom_no)
+			{
+				frappe.db.get_value("BOM", frm.doc.bom_no, ["based_on", "batch_yield","is_multiple_item"], function (r) {
+					if (r) {
+						frm.set_value("based_on", r.based_on);
+						frm.set_value("batch_yield", r.batch_yield);
+						frm.set_value("is_multiple_item",r.is_multiple_item);
+					}
+				})
+			}
+		}
+		
+	},
 	refresh: function(frm){
 		$(".form-inner-toolbar").find("button[data-label=Finish]").css({"float":"right"})
 		if(frm.doc.status != 'Completed' && !frm.doc.skip_transfer && frm.doc.docstatus == 1){
@@ -80,10 +97,9 @@ frappe.ui.form.on("Work Order", {
 			cost = flt(frm.doc.volume * frm.doc.volume_rate);
 			frm.set_value('volume_cost', cost);
 		}
-		frm.trigger("add_finish_item");
+		frm.trigger("add_finish_item")
 	},
 	bom_no: function (frm) {
-		frm.doc.finish_item = []
 		frm.refresh_field("finish_item");
 		frappe.run_serially([
 			() => frappe.db.get_value("BOM", frm.doc.bom_no, ["based_on", "batch_yield","is_multiple_item"], function (r) {
@@ -108,7 +124,7 @@ frappe.ui.form.on("Work Order", {
 						d.item_code = row.item_code;
 						d.bom_cost_ratio = row.cost_ratio;
 						d.bom_qty_ratio = row.qty_ratio;
-						d.bom_qty = frm.doc.qty * d.bom_qty_ratio / 100 ;
+						d.bom_qty = cur_frm.doc.qty * d.bom_qty_ratio / 100 ;
 						d.bom_yield = row.batch_yield
 						frm.refresh_field("finish_item");
 					});

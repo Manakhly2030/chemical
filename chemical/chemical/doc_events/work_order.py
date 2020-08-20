@@ -5,6 +5,9 @@ from frappe import msgprint, _
 from frappe.utils import nowdate, flt, cint, cstr
 from six import itervalues
 
+def before_submit(self, method):
+	validate_multiple_item_bom(self)
+	
 @frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):
 	#from erpnext.stock.doctype.stock_entry.stock_entry import get_additional_costs
@@ -468,3 +471,9 @@ def update_consumed_qty_for_required_items(self):
 				})[0][0]
 
 		d.db_set('consumed_qty', flt(consumed_qty), update_modified = False)		
+
+def validate_multiple_item_bom(self):
+	for item in self.finish_item:
+		bom = frappe.db.sql("""select name from `tabBOM` where item = %s and is_default = 1""",item.item_code)
+		if not bom:
+			frappe.throw(_("Create BOM for Finish Item {}".format(item.item_code)))

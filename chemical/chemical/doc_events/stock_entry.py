@@ -63,6 +63,14 @@ def on_cancel(self,method):
 		update_work_order_on_cancel(self,method)
 	except Exception as e:
 		frappe.throw(str(e))
+	
+	for item in self.items:
+		if item.t_warehouse:
+			item.batch_no = None
+			item.db_set("batch_no",None)
+
+	for data in frappe.get_all("Batch",{'reference_name': self.name, 'reference_doctype': self.doctype}):
+		frappe.delete_doc("Batch", data.name)
 
 def stock_entry_on_cancel(self, method):
 	if self.work_order:

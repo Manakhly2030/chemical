@@ -49,11 +49,13 @@ frappe.ui.form.on("BOM", {
         }
     },
     onload: function (frm) {
-        if(!frm.doc.is_multiple_item){
-            frm.set_value("total_quantity",flt(frm.doc.quantity))
-        }
-        else{
-            frm.events.is_multiple_item(frm)
+        if (frm.doc.__islocal){
+            if(!frm.doc.is_multiple_item){
+                frm.set_value("total_quantity",flt(frm.doc.quantity))
+            }
+            else{
+                frm.events.is_multiple_item(frm)
+            }
         }
         if (frm.doc.__islocal && frm.doc.rm_cost_as_per == "Price List") {
             frm.set_value("buying_price_list", "Standard Buying");

@@ -206,6 +206,9 @@ doc_events = {
 	"Item": {
 		"validate": "chemical.chemical.doc_events.item.item_validate",
 	},
+	"Work Order":{
+		"before_submit": "chemical.chemical.doc_events.work_order.before_submit",
+	},
 	"Stock Entry": {
 		"validate": [
 			"chemical.chemical.doc_events.stock_entry.stock_entry_validate",
