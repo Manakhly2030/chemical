@@ -36,10 +36,6 @@ def get_supplier_ref_code(item_code, supplier):
 	ref_code = frappe.db.get_value("Item Supplier", {'parent': item_code, 'supplier': supplier}, 'supplier_part_no')	
 	return ref_code 
 
-@frappe.whitelist
-def test(source_name = None):
-	return "Hello"
-
 
 @frappe.whitelist()
 def get_party_details(party=None, party_type="Customer", ignore_permissions=True):
@@ -564,7 +560,7 @@ def se_cal_rate_qty(self):
 		if maintain_as_is_stock:
 			if not d.concentration and d.t_warehouse:
 		   		frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-			concentration = 0
+			concentration = 0.0
 			if d.batch_no:
 				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
 			else:
@@ -579,13 +575,13 @@ def se_cal_rate_qty(self):
 			if d.price:
 				d.basic_rate = d.price
 
-def cal_actual_valuations(self):
-	for row in self.items:
-		concentration = flt(row.concentration) or 100
-		if self.purpose != 'Material Receipt':
-			row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
-		elif self.purpose == 'Material Receipt':
-			row.basic_rate = flt(row.actual_valuation_rate * concentration)/100
+# def cal_actual_valuations(self):
+# 	for row in self.items:
+# 		concentration = flt(row.concentration) or 100
+# 		if self.purpose != 'Material Receipt':
+# 			row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
+# 		elif self.purpose == 'Material Receipt':
+# 			row.basic_rate = flt(row.actual_valuation_rate * concentration)/100
 
 			
 # @frappe.whitelist()

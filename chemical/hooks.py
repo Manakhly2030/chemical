@@ -219,7 +219,6 @@ doc_events = {
 		"onload": "chemical.chemical.doc_events.stock_entry.onload",
 		"before_save": [
 			 "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",
-
 		],
 		"before_insert": "finbyzerp.api.before_insert",
 		"before_submit": [

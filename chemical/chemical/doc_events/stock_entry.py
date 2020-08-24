@@ -2,7 +2,7 @@ import frappe
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-from chemical.api import se_cal_rate_qty,cal_actual_valuations
+from chemical.api import se_cal_rate_qty
 from six import iteritems
 from frappe import msgprint, _
 
@@ -12,7 +12,6 @@ def onload(self,method):
 def before_validate(self,method):
 	fg_completed_quantity_to_fg_completed_qty(self)
 	se_cal_rate_qty(self)
-	cal_actual_valuations(self)
 
 def validate(self,method):
 	get_based_on(self)
