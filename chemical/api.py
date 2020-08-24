@@ -557,6 +557,19 @@ def cal_rate_qty(self):
 			if d.price:
 				d.rate= d.price
 
+def po_cal_rate_qty(self):
+	for d in self.items:
+		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
+		if maintain_as_is_stock:
+			if d.quantity:
+				d.qty = flt((d.quantity * 100.0) / d.concentration)
+			if d.price:
+				d.rate =  flt(d.quantity * d.price) / flt(d.qty)
+		else:
+			if d.quantity:
+				d.qty = d.quantity
+			if d.price:
+				d.rate= d.price
 			
 def se_cal_rate_qty(self):
 	for d in self.items:

@@ -10,11 +10,11 @@ frappe.ui.form.on("Item", {
             }, __("View"));
         }
         //added
-        // const stock_exists = (frm.doc.__onload
-		// 	&& frm.doc.__onload.stock_exists) ? 1 : 0;
+        const stock_exists = (frm.doc.__onload
+			&& frm.doc.__onload.stock_exists) ? 1 : 0;
 
-		// ['maintain_as_is_stock'].forEach((fieldname) => {
-		// 	frm.set_df_property(fieldname, 'read_only', stock_exists);
-		// });
+		['maintain_as_is_stock'].forEach((fieldname) => {
+			frm.set_df_property(fieldname, 'read_only', stock_exists);
+		});
     },
 });
