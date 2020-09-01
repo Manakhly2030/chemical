@@ -75,35 +75,26 @@ frappe.ui.form.on("Purchase Receipt", {
     },
     cal_tot_quantity: function(frm){
         let total_quantity = 0;
-		frm.doc.items.forEach(function (d) {
-			console.log('call');
-            total_quantity += flt(d.quantity);
-            console.log(total_quantity)
+		frm.doc.items.forEach(function (d) {	
+            total_quantity += flt(d.quantity);   
 		});
 		frm.set_value("total_quantity", total_quantity);
-        console.log(total_quantity)
 
     },
     tot_sup_qty: function(frm){
         let total_supplier_qty = 0;
 		frm.doc.items.forEach(function (d) {
-			console.log('call');
             total_supplier_qty += flt(d.supplier_qty);
-            console.log(total_supplier_qty)
 		});
 		frm.set_value("total_supplier_qty", total_supplier_qty);
-        console.log(total_supplier_qty)
 
     },
     tot_sup_quantity: function(frm){
         let total_supplier_quantity = 0;
 		frm.doc.items.forEach(function (d) {
-			console.log('call');
             total_supplier_quantity += flt(d.supplier_quantity);
-            console.log(total_supplier_quantity)
 		});
 		frm.set_value("total_supplier_quantity", total_supplier_quantity);
-        console.log(total_supplier_quantity)
 
     },
     cal_rate_qty: function (frm, cdt, cdn) {

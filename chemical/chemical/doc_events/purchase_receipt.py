@@ -67,7 +67,7 @@ def cal_total(self):
 	total_quantity = 0
 	total_supplier_qty=0
 	total_supplier_quantity = 0
-	for row in self.items:
+	for d in self.items:
 		total_quantity = total_quantity + flt(d.quantity)
 		total_supplier_qty = total_supplier_qty + flt(d.supplier_qty)
 		total_supplier_quantity = total_supplier_quantity + flt(d.supplier_quantity)
