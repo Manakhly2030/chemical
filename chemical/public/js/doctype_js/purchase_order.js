@@ -35,7 +35,13 @@ frappe.ui.form.on("Purchase Order", {
 					}
 				}
 			})
-        });
+		});
+		total_quantity = 0;
+		$.each(frm.doc.items, function(d) {
+			console.log('call')
+			total_quantity += flt(d.quantity);
+		});
+		frm.set_value("total_quantity", total_quantity);
 	},
 	
     company: function (frm) {

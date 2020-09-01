@@ -249,6 +249,7 @@ doc_events = {
 		"validate": [
 			# "chemical.api.pr_validate",
 			"chemical.batch_valuation.pr_validate",
+			"chemical.chemical.doc_events.purchase_receipt.t_validate",
 		],
 		"on_cancel": "chemical.batch_valuation.pr_on_cancel",
 		"before_submit": "chemical.chemical.doc_events.purchase_receipt.before_submit",

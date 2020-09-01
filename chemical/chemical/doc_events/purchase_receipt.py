@@ -14,6 +14,9 @@ def before_submit(self, method):
 def before_cancel(self, method):
 	pr_update_status_updater_args(self)
 
+def t_validate(self,method):
+	cal_total(self)
+
 def pr_update_status_updater_args(self):
 	self.status_updater = [{
 		'source_dt': 'Purchase Receipt Item',
@@ -60,6 +63,19 @@ def pr_update_status_updater_args(self):
 				where name=`tabPurchase Invoice Item`.parent and is_return=1 and update_stock=1)"""
 		})
 	# self.update_qty()
+def cal_total(self):
+	total_quantity = 0
+	total_supplier_qty=0
+	total_supplier_quantity = 0
+	for row in self.items:
+		total_quantity = total_quantity + flt(d.quantity)
+		total_supplier_qty = total_supplier_qty + flt(d.supplier_qty)
+		total_supplier_quantity = total_supplier_quantity + flt(d.supplier_quantity)
+	
+	total_quantity= self.total_quantity
+	total_supplier_qty= self.total_supplier_qty
+	total_supplier_quantity= self.total_supplier_quantity
+
 
 # def pr_update_default_status_updater_args(self):
 # 	self.status_updater = [{
