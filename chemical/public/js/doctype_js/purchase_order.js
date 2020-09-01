@@ -38,21 +38,6 @@ frappe.ui.form.on("Purchase Order", {
 		});
 
 	},
-	
-    company: function (frm) {
-        frappe.call({
-            method: "chemical.api.company_address",
-            args: {
-                'company': frm.doc.company
-            },
-            callback: function (r) {
-				console.log(r.message)
-                if (r.message) {
-                    frm.set_value("billing_address", r.message.company_address);
-                 }
-            }
-        })
-    },
 
 	cal_rate_qty: function (frm, cdt, cdn) {
 		let d = locals[cdt][cdn];

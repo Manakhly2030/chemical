@@ -21,7 +21,7 @@ $.extend(cur_frm.cscript, new erpnext.stock.PurchaseReceiptController({ frm: cur
 frappe.ui.form.on("Purchase Receipt", {
     validate: function(frm) {
         frm.trigger("cal_tot_quantity");
-        
+        frm.trigger("tot_packages");
         frm.doc.items.forEach(function (d) {     
             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
                 if (!d.supplier_qty) {
@@ -95,6 +95,14 @@ frappe.ui.form.on("Purchase Receipt", {
             total_supplier_quantity += flt(d.supplier_quantity);
 		});
 		frm.set_value("total_supplier_quantity", total_supplier_quantity);
+
+    },
+    tot_packages: function(frm){
+        let total_packages = 0;
+		frm.doc.items.forEach(function (d) {
+            total_packages += flt(d.no_of_packages);
+		});
+		frm.set_value("total_packages", total_packages);
 
     },
     cal_rate_qty: function (frm, cdt, cdn) {

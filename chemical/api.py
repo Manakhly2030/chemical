@@ -9,7 +9,6 @@ from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 #from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.contacts.doctype.address.address import get_address_display, get_default_address
 from frappe.contacts.doctype.contact.contact import get_contact_details, get_default_contact
-from frappe.contacts.doctype.address.address import get_company_address
 from frappe.desk.notifications import get_filters_for
 from datetime import date
 
@@ -37,9 +36,6 @@ def get_supplier_ref_code(item_code, supplier):
 	ref_code = frappe.db.get_value("Item Supplier", {'parent': item_code, 'supplier': supplier}, 'supplier_part_no')	
 	return ref_code 
 
-@frappe.whitelist()
-def company_address(company):
-	return get_company_address(company)
 
 @frappe.whitelist()
 def get_party_details(party=None, party_type="Customer", ignore_permissions=True):

@@ -67,14 +67,17 @@ def cal_total(self):
 	total_quantity = 0
 	total_supplier_qty=0
 	total_supplier_quantity = 0
+	total_packages = 0
 	for d in self.items:
 		total_quantity = total_quantity + flt(d.quantity)
 		total_supplier_qty = total_supplier_qty + flt(d.supplier_qty)
 		total_supplier_quantity = total_supplier_quantity + flt(d.supplier_quantity)
+		total_packages = total_packages + (d.no_of_packages)
 	
 	total_quantity= self.total_quantity
 	total_supplier_qty= self.total_supplier_qty
 	total_supplier_quantity= self.total_supplier_quantity
+	total_packages= self.total_packages
 
 
 # def pr_update_default_status_updater_args(self):
