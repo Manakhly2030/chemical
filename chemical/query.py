@@ -10,7 +10,7 @@ def new_item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 	conditions = []
 
 	return db.sql("""
-		select tabItem.name, tabItem.item_customer_code, tabItem.item_group,
+		select tabItem.name, tabItem.item_customer_code, tabItem.item_group, tabItem.item_other_name,
 			if(length(tabItem.item_name) > 40, concat(substr(tabItem.item_name, 1, 40), "..."), item_name) as item_name,
 			tabItem.item_group, if(length(tabItem.description) > 40, concat(substr(tabItem.description, 1, 40), "..."), description) as decription
 		from tabItem
@@ -22,7 +22,8 @@ def new_item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 			and (tabItem.`{key}` LIKE %(txt)s
 				or tabItem.item_name LIKE %(txt)s
 				or tabItem.item_group LIKE %(txt)s
-				or tabItem.item_customer_code LIKE %(txt)s)
+				or tabItem.item_customer_code LIKE %(txt)s
+				or tabItem.item_other_name LIKE %(txt)s)
 			{fcond} {mcond}
 		order by
 			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),

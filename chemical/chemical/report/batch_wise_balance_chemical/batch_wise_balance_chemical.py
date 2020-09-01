@@ -26,20 +26,41 @@ def execute(filters=None):
 					# 	flt(qty_dict.bal_qty, float_precision),
 					# 	 item_map[item]["stock_uom"]
 					# ])
-					data.append({
-						'item_code': item,
-						'item_group': item_map[item]["item_group"],
-						'warehouse': wh,
-						'batch_no': batch,
-						'lot_no': lot_no,
-						'concentration': concentration,
-						'packaging_material': packaging_material,
-						'packing_size': packing_size,
-						'bal_qty': flt(qty_dict.bal_qty, float_precision),
-						'as_is_qty': flt((qty_dict.bal_qty*100)/concentration, float_precision),
-						'valuation_rate':valuation_rate,
-						'uom': item_map[item]["stock_uom"]
-					})
+
+					if item_map[item]["maintain_as_is_stock"]:
+						data.append({
+							'item_code': item,
+							'item_group': item_map[item]["item_group"],
+							'warehouse': wh,
+							'batch_no': batch,
+							'lot_no': lot_no,
+							'concentration': concentration,
+							'packaging_material': packaging_material,
+							'packing_size': packing_size,
+							'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
+							'bal_qty': flt(qty_dict.bal_qty*concentration/100, float_precision),
+							'amount': flt((qty_dict.bal_qty*concentration/100) * flt(valuation_rate*100/concentration) , float_precision),
+							'as_is_qty': flt(qty_dict.bal_qty, float_precision),
+							'valuation_rate':flt(valuation_rate*100/concentration,float_precision),
+							'uom': item_map[item]["stock_uom"]
+						})
+					else:
+						data.append({
+							'item_code': item,
+							'item_group': item_map[item]["item_group"],
+							'warehouse': wh,
+							'batch_no': batch,
+							'lot_no': lot_no,
+							'concentration': concentration,
+							'packaging_material': packaging_material,
+							'packing_size': packing_size,
+							'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
+							'bal_qty': flt(qty_dict.bal_qty, float_precision),
+							'amount': flt(qty_dict.bal_qty*valuation_rate, float_precision),
+							'as_is_qty': flt(qty_dict.bal_qty, float_precision),
+							'valuation_rate':valuation_rate,
+							'uom': item_map[item]["stock_uom"]
+						})
 
 	return columns, data
 
@@ -83,8 +104,20 @@ def get_columns(filters):
 		{
 			"label": _("Concentration"),
 			"fieldname": "concentration",
-			"fieldtype": "Float",
+			"fieldtype": "Percent",
 			"width": 80
+		},
+		{
+			"label": _("Packages"),
+			"fieldname": "packages",
+			"fieldtype": "Int",
+			"width": 50
+		},		
+		{
+			"label": _("Size"),
+			"fieldname": "packing_size",
+			"fieldtype": "Data",
+			"width": 50
 		},
 		{
 			"label": _("Packaging Material"),
@@ -94,16 +127,22 @@ def get_columns(filters):
 			"width": 70
 		},
 		{
-			"label": _("Packing Size"),
-			"fieldname": "packing_size",
-			"fieldtype": "int",
-			"width": 70
-		},
-		{
-			"label": _("Balance Qty"),
+			"label": _("Qty"),
 			"fieldname": "bal_qty",
 			"fieldtype": "Float",
 			"width": 90
+		},
+		{
+			"label": _("Price"),
+			"fieldname": "valuation_rate",
+			"fieldtype": "Currency",
+			"width": 80
+		},
+		{
+			"label": _("Amount"),
+			"fieldname": "amount",
+			"fieldtype": "Currency",
+			"width": 80
 		},
 		{
 			"label": _("As is Qty"),
@@ -111,12 +150,7 @@ def get_columns(filters):
 			"fieldtype": "Float",
 			"width": 100
 		},
-		{
-			"label": _("Valuation Rate"),
-			"fieldname": "valuation_rate",
-			"fieldtype": "Currency",
-			"width": 80
-		},
+		
 		{
 			"label": _("UOM"),
 			"fieldname": "uom",
@@ -135,6 +169,9 @@ def get_conditions(filters):
 	else:
 		frappe.throw(_("'To Date' is required"))
 
+	if filters.get("company"):
+		conditions += " and company = '%s'" % filters["company"]
+
 	if filters.get("warehouse"):
 		conditions += " and warehouse = '%s'" % filters["warehouse"]
 
@@ -147,7 +184,7 @@ def get_conditions(filters):
 def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
 	return frappe.db.sql("""
-		select item_code, batch_no, warehouse, posting_date, sum(actual_qty) as actual_qty
+		select item_code, batch_no, warehouse, posting_date,company, sum(actual_qty) as actual_qty
 		from `tabStock Ledger Entry`
 		where docstatus < 2 and ifnull(batch_no, '') != '' %s
 		group by voucher_no, batch_no, item_code, warehouse
@@ -183,7 +220,7 @@ def get_item_warehouse_batch_map(filters, float_precision):
 
 def get_item_details(filters):
 	item_map = {}
-	for d in frappe.db.sql("select name, item_name, description, stock_uom, item_group from tabItem", as_dict=1):
+	for d in frappe.db.sql("select name, item_name, description, stock_uom, item_group, maintain_as_is_stock from tabItem", as_dict=1):
 		item_map.setdefault(d.name, d)
 
 	return item_map

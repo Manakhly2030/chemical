@@ -3,14 +3,14 @@ import frappe
 from frappe import _,msgprint
 from frappe.utils import flt, cint, nowdate, cstr, now_datetime
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import PurchaseInvoice
-from chemical.api import cal_rate_qty, quantity_price_to_qty_rate
+from chemical.api import purchase_cal_rate_qty, quantity_price_to_qty_rate
 
 
 def onload(self,method):
     quantity_price_to_qty_rate(self)
 
-def validate(self,method):
-	cal_rate_qty(self)
+def before_validate(self,method):
+	purchase_cal_rate_qty(self)
 
 def before_submit(self, method):
 	override_pi_status_updater_args()

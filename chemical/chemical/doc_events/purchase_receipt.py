@@ -1,12 +1,12 @@
 import frappe
 from frappe.utils import flt, cint
-from chemical.api import cal_rate_qty, quantity_price_to_qty_rate
+from chemical.api import purchase_cal_rate_qty, quantity_price_to_qty_rate
 
 def onload(self,method):
 	quantity_price_to_qty_rate(self)
 
-def validate(self,method):
-	cal_rate_qty(self)
+def before_validate(self,method):
+	purchase_cal_rate_qty(self)
 
 def before_submit(self, method):
 	pr_update_status_updater_args(self)

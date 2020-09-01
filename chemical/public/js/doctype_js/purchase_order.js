@@ -1,3 +1,4 @@
+
 // Add searchfield to Item query
 this.frm.cscript.onload = function(frm) {
 	this.frm.set_query("item_code", "items", function() {
@@ -36,6 +37,22 @@ frappe.ui.form.on("Purchase Order", {
 			})
         });
 	},
+	
+    company: function (frm) {
+        frappe.call({
+            method: "gopinath.api.company_address",
+            args: {
+                'company': frm.doc.company
+            },
+            callback: function (r) {
+				console.log(r.message)
+                if (r.message) {
+                    frm.set_value("billing_address", r.message.company_address);
+                 }
+            }
+        })
+    },
+
 	cal_rate_qty: function (frm, cdt, cdn) {
 		let d = locals[cdt][cdn];
 		frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {

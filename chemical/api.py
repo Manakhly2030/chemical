@@ -541,39 +541,108 @@ def cal_rate_qty(self):
 	for d in self.items:
 		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
 		if maintain_as_is_stock:
-			if not d.concentration:
-		   		frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-			if d.quantity:
-				d.qty = flt((d.quantity * 100.0) / d.concentration)
-			if d.price:
-				d.rate =  flt(d.quantity * d.price) / flt(d.qty)
+			if not d.concentration and d.t_warehouse:
+				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
+			concentration = 0.0
+			if d.get('batch_no'):
+				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
+			else:
+				concentration = d.concentration
+		if d.get('packing_size') and d.get('no_of_packages'):
+			d.qty = d.packing_size * d.no_of_packages
+			if maintain_as_is_stock:
+				if d.get('batch_no'):
+					concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
+				else:
+					concentration = d.concentration
+				d.quantity = d.qty * concentration / 100
+				if d.price:
+					d.rate =  flt(d.quantity * d.price) / flt(d.qty)
+			else:
+				d.quantity = d.qty
+				if d.price:
+					d.rate= d.price
 		else:
-			if d.quantity:
-				d.qty = d.quantity
-			if d.price:
-				d.rate= d.price
+			if maintain_as_is_stock:
+				if d.quantity:
+					d.qty = flt((d.quantity * 100.0) / d.concentration)
+				if d.price:
+					d.rate =  flt(d.quantity * d.price) / flt(d.qty)
+			else:
+				if d.quantity:
+					d.qty = d.quantity
+				if d.price:
+					d.rate= d.price
 
+def purchase_cal_rate_qty(self):
+	for d in self.items:
+		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
+		if maintain_as_is_stock:
+			if not d.supplier_concentration:
+				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
+		if not d.supplier_qty:
+			d.supplier_qty = d.qty
+
+		if d.get('packing_size') and d.get('no_of_packages'):
+			d.qty = (d.packing_size * d.no_of_packages)
+
+			if maintain_as_is_stock:
+				d.quantity = d.qty * d.concentration / 100
+				d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
+			else:
+				d.quantity = d.qty
+				d.supplier_quantity = flt(d.supplier_qty)
+			
+		else:
+			if maintain_as_is_stock:
+				if d.quantity:
+					d.qty = flt((d.quantity * 100.0) / d.concentration)
+					d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
+				
+			else:
+				if d.quantity:
+					d.qty = d.quantity
+					d.supplier_quantity = flt(d.supplier_qty)
+				
+		if not d.qty:
+			frappe.throw(f"Row:{d.idx} Please input the Received Qty")
+
+		d.supplier_amount = flt(d.supplier_quantity * d.price)
+		d.rate = flt(d.supplier_amount / d.qty)
+		d.amount_difference = (d.supplier_amount) - (d.quantity * d.price)
 			
 def se_cal_rate_qty(self):
 	for d in self.items:
 		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
 		if maintain_as_is_stock:
 			if not d.concentration and d.t_warehouse:
-		   		frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
+				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
 			concentration = 0.0
 			if d.batch_no:
 				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
 			else:
 				concentration = d.concentration
-			if d.quantity:
-				d.qty = flt((d.quantity * 100.0) / concentration)
-			if d.price:
-				d.basic_rate =  flt(d.quantity * d.price) / flt(d.qty)
+		if d.get('packing_size') and d.get('no_of_packages'):
+			d.qty = d.packing_size * d.no_of_packages
+			if maintain_as_is_stock:
+				d.quantity = d.qty * concentration / 100
+				if d.price:
+					d.basic_rate =  flt(d.quantity * d.price) / flt(d.qty)
+			else:
+				d.quantity = d.qty
+				if d.price:
+					d.basic_rate = d.price
 		else:
-			if d.quantity:
-				d.qty = d.quantity
-			if d.price:
-				d.basic_rate = d.price
+			if maintain_as_is_stock:
+				if d.quantity:
+					d.qty = flt((d.quantity * 100.0) / concentration)
+				if d.price:
+					d.basic_rate =  flt(d.quantity * d.price) / flt(d.qty)
+			else:
+				if d.quantity:
+					d.qty = d.quantity
+				if d.price:
+					d.basic_rate = d.price
 
 # def cal_actual_valuations(self):
 # 	for row in self.items:

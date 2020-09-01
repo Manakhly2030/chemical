@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 /* eslint-disable */
 
-frappe.query_reports["Batch-Wise Balance History Chemical"] = {
+frappe.query_reports["Batch Wise Balance Chemical"] = {
 	"filters": [
 		{
 			"fieldname": "to_date",
@@ -12,10 +12,17 @@ frappe.query_reports["Batch-Wise Balance History Chemical"] = {
 			"default": frappe.datetime.get_today()
 		},
 		{
+			"fieldname": "company",
+			"label": __("Company"),
+			"fieldtype": "Link",
+			"options": "Company",
+			"width": "80",
+		},
+		{
 			"fieldname": "item_code",
 			"label": __("Item"),
 			"fieldtype": "Link",
-			"options":"Item",
+			"options": "Item",
 			"width": "80",
 		},
 		{
@@ -25,5 +32,6 @@ frappe.query_reports["Batch-Wise Balance History Chemical"] = {
 			"options": "Warehouse",
 			"width": "80",
 		}
+		
 	]
 };
