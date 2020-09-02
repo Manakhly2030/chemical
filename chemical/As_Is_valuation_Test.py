@@ -38,7 +38,9 @@ if not frappe.db.exists("Supplier","Test_Supplier_1"):
     supplier_create.save()
 
 #Create New Item
-
+company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
+warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Stores"},"name") #it will Fetch the warehouse of the given Company
+    
 if not frappe.db.exists("Item","TEST_ITEM_1"):
     item_create = frappe.new_doc("Item")
     item_create.item_code = "TEST_ITEM_1"
@@ -64,6 +66,7 @@ if not frappe.db.exists("Item","TEST_ITEM_2"):
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
     item_create.append("item_defaults",{
             "company":company,
             "default_warehouse":default_warehouse
@@ -78,6 +81,7 @@ if not frappe.db.exists("Item","TEST_ITEM_3"):
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
     item_create.append("item_defaults",{
             "company":company,
             "default_warehouse":default_warehouse
@@ -209,7 +213,7 @@ first_pr.append("items",{
     "warehouse":warehouse,
     "cost_center":cost_center,
     "price":250.00,
-    "rate":250,
+    "rate":250.00,
     "received_qty": math.ceil(flt(25*24*(0.95*100/100))),
     "qty": math.ceil(flt(25*24*(0.95*100/100))),
     "quantity": math.ceil(flt(25*24*(0.95*100/100))),
@@ -244,6 +248,7 @@ first_pr.append("items",{
     "lot_no":"Test/4",
     "no_of_packages":30,
     "concentration":90, # type = percent
+    "supplier_concentration":90,
     "warehouse": warehouse,
     "cost_center":cost_center,
     "price":40,
@@ -336,6 +341,7 @@ second_pr.append("items",{
     "lot_no":"Test/4",
     "no_of_packages":20,
     "concentration":90, # type = percent
+    "supplier_concentration":90,
     "warehouse": warehouse,
     "cost_center":cost_center,
     "price":48,
@@ -429,7 +435,8 @@ third_pr.append("items",{
     "packaging_material": packaging_material,
     "lot_no":"Test/4",
     "no_of_packages":60,
-    "concentration":90, # type = percent
+    "concentration":90, # type = percent,
+    "supplier_concentration":90,
     "warehouse": warehouse,
     "cost_center":cost_center,
     "price":50,
@@ -465,7 +472,8 @@ fourth_pr.append("items",{
     "packaging_material": packaging_material,
     "lot_no":"Test/4",
     "no_of_packages":60,
-    "concentration":90, # type = percent
+    "concentration":90, # type = percent,
+    "supplier_concentration":90,
     "warehouse": warehouse,
     "cost_center":cost_center,
     "price":55,
@@ -1022,6 +1030,8 @@ work_order_create.save()
 work_name = work_order_create.name
 work_order_create.submit()
 
+work_order_create.submit()
+
 
 # mtm = Material Transfer For Manufacture
 # Create Stock Entry of Material Transfer For Manufacture (mtm)
@@ -1112,19 +1122,19 @@ stock_entry_ma.to_warehouse = target_warehouse
 # stock_entry_ma.items[3].concentration = 85
 for item in stock_entry_ma.items:
     if item.item_code == "TEST_ITEM_1":
-        stock_entry_ma.items[item.idx-1].batch_no = first_pr_batch_no
+        # stock_entry_ma.items[item.idx-1].batch_no = first_pr_batch_no
         stock_entry_ma.items[item.idx-1].quantity = 40
         stock_entry_ma.items[item.idx-1].qty = 40
     elif item.item_code == "TEST_ITEM_2":
-        stock_entry_ma.items[item.idx-1].batch_no = second_pr_batch_no
+        # stock_entry_ma.items[item.idx-1].batch_no = second_pr_batch_no
         stock_entry_ma.items[item.idx-1].quantity = 40
         stock_entry_ma.items[item.idx-1].qty = 40
     elif item.item_code == "TEST_ITEM_3":
-        stock_entry_ma.items[item.idx-1].batch_no = third_pr_batch_no
+        # stock_entry_ma.items[item.idx-1].batch_no = third_pr_batch_no
         stock_entry_ma.items[item.idx-1].quantity = 40
         stock_entry_ma.items[item.idx-1].qty = 40
     elif item.item_code == "TEST_ITEM_4":
-        stock_entry_ma.items[item.idx-1].batch_no = fourth_pr_batch_no
+        # stock_entry_ma.items[item.idx-1].batch_no = fourth_pr_batch_no
         stock_entry_ma.items[item.idx-1].quantity = 40
         stock_entry_ma.items[item.idx-1].qty = 44.444
     elif item.item_code == "FINISH_TEST_ITEM":
@@ -1613,10 +1623,10 @@ else:
     frappe.msgprint(("MA4:Quantity should be < 0"))
 
 msg="MAFinal: Incoming Rate doesn't Match"
-assert (round(final_sl_ma_stock_val_diff )/ final_sl_ma_qty) == final_sl_ma_incoming_rate,msg
+assert (round(final_sl_ma_stock_val_diff )/ final_sl_ma_qty) == round(final_sl_ma_incoming_rate,2),msg
 
 msg="MASecondFinal: Incoming Rate doesn't Match"
-assert (round(second_final_sl_ma_stock_val_diff )/ second_final_sl_ma_qty) == second_final_sl_ma_incoming_rate,msg
+assert round(second_final_sl_ma_stock_val_diff / second_final_sl_ma_qty,2) == round(second_final_sl_ma_incoming_rate,2),msg
 
 msg="MAAsIs: Incoming Rate doesn't Match"
 assert round(asis_final_sl_ma_stock_val_diff/ asis_final_sl_ma_qty,2) == round(asis_final_sl_ma_incoming_rate,2),msg
@@ -1640,10 +1650,10 @@ msg = "MAFinal: Amount doesn't Match"
 assert final_ma_item_amount == final_ma_item_basic_amount + final_ma_item_additional_cost,msg
 
 msg = "MAFinal: Basic Rate doesn't Match"
-assert final_ma_item_basic_rate == flt(final_ma_item_basic_amount/ final_ma_item_qty),msg
+assert round(final_ma_item_basic_rate,2) == round(flt(final_ma_item_basic_amount/ final_ma_item_qty),2),msg
 
 msg = "MAFinal: Valuation Rate doesn't Match"
-assert final_ma_item_valuation_rate == flt(final_ma_item_amount/ final_ma_item_qty),msg
+assert round(final_ma_item_valuation_rate,2) == round(flt(final_ma_item_amount/ final_ma_item_qty),2),msg
 
 msg = "MASecondFinal: Basic Amount doesn't Match"
 assert second_final_ma_item_basic_amount == flt(ma_total_outgoing_value * second_final_wo_bom_cost_ratio / 100),msg
@@ -1655,10 +1665,10 @@ msg = "MASecondFinal: Amount doesn't Match"
 assert second_final_ma_item_amount == second_final_ma_item_basic_amount + second_final_ma_item_additional_cost,msg
 
 msg = "MASecondFinal: Basic Rate doesn't Match"
-assert second_final_ma_item_basic_rate == flt(second_final_ma_item_basic_amount/ second_final_ma_item_qty),msg
+assert round(second_final_ma_item_basic_rate,2) == round(flt(second_final_ma_item_basic_amount/ second_final_ma_item_qty),2),msg
 
 msg = "MASecondFinal: Valuation Rate doesn't Match"
-assert second_final_ma_item_valuation_rate == flt(second_final_ma_item_amount/ second_final_ma_item_qty),msg
+assert round(second_final_ma_item_valuation_rate,2) == round(flt(second_final_ma_item_amount/ second_final_ma_item_qty),2),msg
 
 msg = "MAAsIsFInal: Basic Amount doesn't Match"
 assert asis_final_ma_item_basic_amount == flt(ma_total_outgoing_value * asis_final_wo_bom_cost_ratio / 100),msg
@@ -1670,10 +1680,10 @@ msg = "MAAsIsFinal: Amount doesn't Match"
 assert asis_final_ma_item_amount == asis_final_ma_item_basic_amount + asis_final_ma_item_additional_cost,msg
 
 msg = "MAAsIsFinal: Basic Rate doesn't Match"
-assert asis_final_ma_item_basic_rate == round(asis_final_ma_item_basic_amount/ asis_final_ma_item_qty,3),msg
+assert round(asis_final_ma_item_basic_rate,2) == round(asis_final_ma_item_basic_amount/ asis_final_ma_item_qty,2),msg
 
 msg = "MAAsIsFinal: Valuation Rate doesn't Match"
-assert asis_final_ma_item_valuation_rate == round(asis_final_ma_item_amount/ asis_final_ma_item_qty,3),msg
+assert round(asis_final_ma_item_valuation_rate,2) == round(asis_final_ma_item_amount/ asis_final_ma_item_qty,2),msg
 
 
 # material_issue_delete = frappe.get_doc("Stock Entry",stock_entry_mi_name)
@@ -1714,8 +1724,8 @@ batch_manufacture_delete = frappe.get_doc("Batch",final_item_batch_no)
 batch_manufacture_delete.delete()
 frappe.db.commit()
 
-frappe.db.set_value("Batch",stock_entry_mr_1_batch_no,"reference_name","")
-frappe.db.commit()
+# frappe.db.set_value("Batch",stock_entry_mr_1_batch_no,"reference_name","")
+# frappe.db.commit()
 
 # material_receipt_1_delete = frappe.get_doc("Stock Entry",stock_entry_mr_1_name)
 # material_receipt_1_delete.flags.ignore_links = True
