@@ -6,6 +6,7 @@ from erpnext.utilities.product import get_price
 from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.utils import nowdate, flt
 
+@frappe.whitelist()
 def new_item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
 	conditions = []
 

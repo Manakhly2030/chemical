@@ -584,7 +584,7 @@ def purchase_cal_rate_qty(self):
 			d.supplier_qty = d.qty
 
 		if d.get('packing_size') and d.get('no_of_packages'):
-			d.qty = (d.packing_size * d.no_of_packages)
+			d.qty = d.received_qty = (d.packing_size * d.no_of_packages)
 
 			if maintain_as_is_stock:
 				d.quantity = d.qty * d.concentration / 100
@@ -596,12 +596,12 @@ def purchase_cal_rate_qty(self):
 		else:
 			if maintain_as_is_stock:
 				if d.quantity:
-					d.qty = flt((d.quantity * 100.0) / d.concentration)
+					d.qty = d.received_qty = flt((d.quantity * 100.0) / d.concentration)
 					d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
 				
 			else:
 				if d.quantity:
-					d.qty = d.quantity
+					d.qty = d.received_qty = d.quantity
 					d.supplier_quantity = flt(d.supplier_qty)
 				
 		if not d.qty:
