@@ -20,8 +20,6 @@ $.extend(cur_frm.cscript, new erpnext.stock.PurchaseReceiptController({ frm: cur
 
 frappe.ui.form.on("Purchase Receipt", {
     validate: function(frm) {
-        frm.trigger("cal_tot_quantity");
-        frm.trigger("tot_packages");
         frm.doc.items.forEach(function (d) {     
             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
                 if (!d.supplier_qty) {
@@ -70,41 +68,28 @@ frappe.ui.form.on("Purchase Receipt", {
         
     },
     before_save: function (frm) {
-        frm.trigger("tot_sup_qty");
-        frm.trigger("tot_sup_quantity");
+        frm.trigger("cal_total");
     },
-    cal_tot_quantity: function(frm){
+    cal_total: function(frm){
         let total_quantity = 0;
+        let total_supplier_qty = 0;
+        let total_supplier_quantity = 0;
+        let total_packages = 0;
+
 		frm.doc.items.forEach(function (d) {	
-            total_quantity += flt(d.quantity);   
+            total_quantity += flt(d.quantity);  
+            total_supplier_qty += flt(d.supplier_qty);
+            total_supplier_quantity += flt(d.supplier_quantity);
+            total_packages += flt(d.no_of_packages);
+
 		});
 		frm.set_value("total_quantity", total_quantity);
-
-    },
-    tot_sup_qty: function(frm){
-        let total_supplier_qty = 0;
-		frm.doc.items.forEach(function (d) {
-            total_supplier_qty += flt(d.supplier_qty);
-		});
 		frm.set_value("total_supplier_qty", total_supplier_qty);
-
-    },
-    tot_sup_quantity: function(frm){
-        let total_supplier_quantity = 0;
-		frm.doc.items.forEach(function (d) {
-            total_supplier_quantity += flt(d.supplier_quantity);
-		});
 		frm.set_value("total_supplier_quantity", total_supplier_quantity);
-
-    },
-    tot_packages: function(frm){
-        let total_packages = 0;
-		frm.doc.items.forEach(function (d) {
-            total_packages += flt(d.no_of_packages);
-		});
 		frm.set_value("total_packages", total_packages);
 
     },
+    
     cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
@@ -115,9 +100,7 @@ frappe.ui.form.on("Purchase Receipt", {
                 frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
                 frappe.model.set_value(d.doctype, d.name, 'received_qty', flt(d.packing_size * d.no_of_packages));
                 if (r.maintain_as_is_stock) {
-                    if (!d.supplier_concentration) {
-                        frappe.throw("Please add concentration for Item " + d.item_code)
-                    }
+                    
                     frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
                     frappe.model.set_value(d.doctype, d.name, 'supplier_quantity', flt(d.supplier_qty * d.supplier_concentration / 100));
                 }
@@ -128,9 +111,7 @@ frappe.ui.form.on("Purchase Receipt", {
             }
             else {
                 if (r.maintain_as_is_stock) {
-                    if (!d.supplier_concentration) {
-                        frappe.throw("Please add concentration for Item " + d.item_code)
-                    }
+                   
                     if (d.quantity) {
                         frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / d.concentration));
                         frappe.model.set_value(d.doctype, d.name, 'received_qty', flt((d.quantity * 100.0) / d.concentration));
