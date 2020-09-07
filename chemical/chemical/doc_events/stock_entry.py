@@ -62,7 +62,7 @@ def on_cancel(self,method):
 		update_work_order_on_cancel(self,method)
 	except Exception as e:
 		frappe.throw(str(e))
-	
+
 	for item in self.items:
 		if item.t_warehouse:
 			item.batch_no = None
@@ -460,4 +460,5 @@ def update_po_items(self,po):
 
 def delete_auto_created_batches(self):
 	pass
+
 

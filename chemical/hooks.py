@@ -173,9 +173,7 @@ doctype_js = {
 # Overriding Whitelisted Methods
 # ------------------------------
 #
-override_whitelisted_methods = {
-	"erpnext.education.api.enroll_student": "chemical.api.test"
-}
+
 
 #fixtures = ["Custom Field"]
 

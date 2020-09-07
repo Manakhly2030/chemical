@@ -38,7 +38,6 @@ frappe.ui.form.on("Purchase Order", {
 		});
 
 	},
-
 	cal_rate_qty: function (frm, cdt, cdn) {
 		let d = locals[cdt][cdn];
 		frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
