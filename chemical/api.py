@@ -610,7 +610,8 @@ def purchase_cal_rate_qty(self):
 		d.supplier_amount = flt(d.supplier_quantity * d.price)
 		d.rate = flt(d.supplier_amount / d.qty)
 		d.amount_difference = (d.supplier_amount) - (d.quantity * d.price)
-			
+
+
 def se_cal_rate_qty(self):
 	for d in self.items:
 		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')

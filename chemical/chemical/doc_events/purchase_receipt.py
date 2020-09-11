@@ -1,6 +1,7 @@
 import frappe
 from frappe.utils import flt, cint
 from chemical.api import purchase_cal_rate_qty, quantity_price_to_qty_rate
+from erpnext.stock.doctype.purchase_receipt.purchase_receipt import PurchaseReceipt
 
 def onload(self,method):
 	quantity_price_to_qty_rate(self)
@@ -13,6 +14,7 @@ def before_submit(self, method):
 
 def before_cancel(self, method):
 	pr_update_status_updater_args(self)
+	PurchaseReceipt.delete_auto_created_batches = delete_auto_created_batches
 
 def t_validate(self,method):
 	cal_total(self)
@@ -78,6 +80,9 @@ def cal_total(self):
 	self.total_supplier_qty = total_supplier_qty
 	self.total_supplier_quantity = total_supplier_quantity
 	self.total_packages = total_packages
+
+def delete_auto_created_batches(self):
+	pass
 
 
 # def pr_update_default_status_updater_args(self):
