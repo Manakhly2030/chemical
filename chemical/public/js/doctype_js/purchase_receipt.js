@@ -135,9 +135,6 @@ frappe.ui.form.on("Purchase Receipt", {
 });
 
 frappe.ui.form.on("Purchase Receipt Item", {
-	quantity: function(frm,cdt,cdn){
-        frm.events.cal_rate_qty(frm,cdt,cdn)
-    },
     price:function(frm,cdt,cdn){
         frm.events.cal_rate_qty(frm,cdt,cdn)
     },  
