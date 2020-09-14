@@ -91,6 +91,19 @@ def execute(filters=None):
 			data.append(report_data)
 
 	add_additional_uom_columns(columns, data, include_uom, conversion_factors)
+	filter_company = filters.get("company")
+	for row in data:
+		has_batch_no = frappe.db.get_value("Item",row['item_code'],"has_batch_no")
+		item_code = row['item_code']
+		if has_batch_no:
+			row['batch_wise'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}'
+			onClick=view_batch_wise_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('to_date'))>View Batch Detail</button>"""
+		
+		row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}'
+			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'))>View Stock Ledger</button>"""
+		
 	return columns, data
 
 def get_columns(filters):
@@ -112,7 +125,9 @@ def get_columns(filters):
 		{"label": _("Valuation Rate"), "fieldname": "val_rate", "fieldtype": "Currency", "width": 90, "convertible": "rate", "options": "currency"},
 		{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100}
+		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100},
+		{"label": _("View Batch Detail"), "fieldname": "batch_wise", "fieldtype": "button", "width": 100},
+		{"label": _("View Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 100},
 	]
 
 	if filters.get('show_stock_ageing_data'):
