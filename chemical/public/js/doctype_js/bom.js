@@ -1,4 +1,10 @@
 frappe.ui.form.on("BOM", {
+    refresh: function(frm){
+        if (frm.doc.is_multiple_item){
+            cur_frm.set_df_property("quantity", "read_only",1);
+            cur_frm.set_df_property("quantity", "label",'First Item Quantity');
+        }
+    },
     before_save: function (frm) {
         let unit_qty = flt(frm.doc.total_cost / frm.doc.quantity);
         frm.set_value("per_unit_price", unit_qty);
@@ -55,6 +61,8 @@ frappe.ui.form.on("BOM", {
             }
             else{
                 frm.events.is_multiple_item(frm)
+                cur_frm.set_df_property("quantity", "read_only",1);
+                cur_frm.set_df_property("quantity", "label",'First Item Quantity');
             }
         }
         if (frm.doc.__islocal && frm.doc.rm_cost_as_per == "Price List") {
