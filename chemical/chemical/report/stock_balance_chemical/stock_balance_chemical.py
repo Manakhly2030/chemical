@@ -126,8 +126,8 @@ def get_columns(filters):
 		{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100},
-		{"label": _("View Batch Detail"), "fieldname": "batch_wise", "fieldtype": "button", "width": 120},
-		{"label": _("View Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 120},
+		{"label": _("Batch Wise"), "fieldname": "batch_wise", "fieldtype": "button", "width": 120},
+		{"label": _("Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 120},
 	]
 
 	if filters.get('show_stock_ageing_data'):
