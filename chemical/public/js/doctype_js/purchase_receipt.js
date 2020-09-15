@@ -18,7 +18,27 @@ erpnext.stock.PurchaseReceiptController = erpnext.stock.PurchaseReceiptControlle
 
 $.extend(cur_frm.cscript, new erpnext.stock.PurchaseReceiptController({ frm: cur_frm }));
 
+
 frappe.ui.form.on("Purchase Receipt", {
+    refresh: function(frm){
+        if (frm.doc.docstatus != 1)
+        {
+            frm.add_custom_button("Rename", function() {
+                frappe.call({
+                    method: "chemical.chemical.doc_events.purchase_receipt.rename_po",
+                    args:{
+                        "existing_name": cur_frm.doc.name,
+                        "series_value": cur_frm.doc.series_value
+                    },
+                    callback: function(r){
+                        if(r.message){
+                            frappe.set_route('Form', 'Purchase Receipt', r.message)
+                        }
+                    }
+                })
+            },)
+        }
+    },
     validate: function(frm) {
         frm.doc.items.forEach(function (d) {     
             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {

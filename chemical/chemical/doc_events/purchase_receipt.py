@@ -9,6 +9,9 @@ def onload(self,method):
 def before_validate(self,method):
 	purchase_cal_rate_qty(self)
 
+def before_save(self,method):
+	rename_po(self)
+		
 def before_submit(self, method):
 	pr_update_status_updater_args(self)
 
@@ -83,6 +86,23 @@ def cal_total(self):
 
 def delete_auto_created_batches(self):
 	pass
+
+@frappe.whitelist()
+def rename_po(existing_name, series_value):
+	last_3_digit_remove = str(existing_name[:-3])
+	new_name = ""
+	if series_value:
+		len_series_value = len(str(series_value))
+		if len_series_value == 1:
+			new_name = last_3_digit_remove + "00" + str(series_value)
+		elif len_series_value == 2:
+			new_name = last_3_digit_remove + "0" + str(series_value)
+		elif len_series_value == 3:
+			new_name = last_3_digit_remove + str(series_value)
+		if new_name != existing_name:
+			frappe.rename_doc("Purchase Receipt", existing_name, new_name, force=True)
+			frappe.db.set_value("Purchase Receipt",new_name,"series_value",series_value)
+			return new_name
 
 
 # def pr_update_default_status_updater_args(self):
