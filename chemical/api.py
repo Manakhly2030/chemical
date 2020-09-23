@@ -535,7 +535,7 @@ def stock_entry_before_cancel(self,method):
 		set_po_status(self, pro_doc)
 		update_po_volume(self, pro_doc)
 		pro_doc.save()
-		frappe.db.commit()
+		#frappe.db.commit()
 
 def cal_rate_qty(self):
 	for d in self.items:
@@ -584,7 +584,7 @@ def purchase_cal_rate_qty(self):
 			d.supplier_qty = d.qty
 
 		if d.get('packing_size') and d.get('no_of_packages'):
-			d.qty = d.received_qty = (d.packing_size * d.no_of_packages)
+			d.qty = d.received_qty = (d.packing_size * d.no_of_packages)			
 
 			if maintain_as_is_stock:
 				d.quantity = d.qty * d.concentration / 100
@@ -645,13 +645,18 @@ def se_cal_rate_qty(self):
 				if d.price:
 					d.basic_rate = d.price
 
-# def cal_actual_valuations(self):
-# 	for row in self.items:
-# 		concentration = flt(row.concentration) or 100
-# 		if self.purpose != 'Material Receipt':
-# 			row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
-# 		elif self.purpose == 'Material Receipt':
-# 			row.basic_rate = flt(row.actual_valuation_rate * concentration)/100
+def cal_actual_valuations(self):
+	for row in self.items:
+		maintain_as_is_stock = frappe.db.get_value("Items",row.item_code,"maintain_as_is_stock")
+		if maintain_as_is_stock:
+			concentration = flt(row.concentration) or 100
+			if self.purpose != 'Material Receipt':
+				row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
+		else:
+			concentration = flt(row.concentration) or 100
+			if self.purpose != 'Material Receipt':
+				row.actual_valuation_rate = flt(row.valuation_rate)
+
 
 			
 # @frappe.whitelist()

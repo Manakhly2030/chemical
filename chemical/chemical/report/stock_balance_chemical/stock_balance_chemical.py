@@ -114,6 +114,7 @@ def get_columns(filters):
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
 		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
+		{"label": _("As Is Qty"), "fieldname": "as_is_qty", "fieldtype": "Float", "width": 100},
 		{"label": _("Balance Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Balance Value"), "fieldname": "bal_val", "fieldtype": "Currency", "width": 100, "options": "currency"},
 		{"label": _("Opening Qty"), "fieldname": "opening_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
@@ -191,7 +192,9 @@ def get_stock_ledger_entries(filters, items):
 	for sle in raw_sle:
 		# if sle.item_code == "3,5 DABA":
 		# 	frappe.msgprint("default: " + str(sle))
+		sle.as_is_qty = sle.actual_qty
 		if sle.maintain_as_is_stock:
+			
 			sle.actual_qty = flt(sle.actual_qty) * flt(sle.concentration) / 100
 			sle.qty_after_transaction = flt(sle.qty_after_transaction) * flt(sle.concentration) /100
 
@@ -215,15 +218,17 @@ def get_item_warehouse_map(filters, sle):
 				"in_qty": 0.0, "in_val": 0.0,
 				"out_qty": 0.0, "out_val": 0.0,
 				"bal_qty": 0.0, "bal_val": 0.0,
-				"val_rate": 0.0
+				"val_rate": 0.0, "as_is_qty":0.0
 			})
 
 		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
 
 		if d.voucher_type == "Stock Reconciliation":
 			qty_diff = flt(d.qty_after_transaction) - flt(qty_dict.bal_qty)
+			as_is_qty_diff = flt(d.qty_after_transaction) - flt(qty_dict.bal_qty)
 		else:
 			qty_diff = flt(d.actual_qty)
+			as_is_qty_diff = flt(d.as_is_qty)
 
 		value_diff = flt(d.stock_value_difference)
 
@@ -240,6 +245,7 @@ def get_item_warehouse_map(filters, sle):
 				qty_dict.out_val += abs(value_diff)
 
 		qty_dict.bal_qty += qty_diff
+		qty_dict.as_is_qty += as_is_qty_diff
 		qty_dict.bal_val += value_diff
 		if qty_dict.bal_qty != 0:
 			qty_dict.val_rate = qty_dict.bal_val/ qty_dict.bal_qty

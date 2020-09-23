@@ -6,6 +6,7 @@ from frappe.utils.background_jobs import enqueue
 def bom_validate(self, method):
 	price_overrides(self)
 	cost_calculation(self)
+	set_fg_qty_in_additional_cost(self)
 
 def bom_before_save(self, method):
 	multiple_finish_item(self)
@@ -13,6 +14,12 @@ def bom_before_save(self, method):
 	cost_calculation(self)
 	yield_cal(self)
 	
+def set_fg_qty_in_additional_cost(self):
+	for row in self.additional_cost:
+		row.amount = flt(row.qty * row.rate)
+		if row.uom == "FG QTY":
+			row.qty = self.total_quantity
+
 def price_overrides(self):
 	for row in self.items:
 		if row.from_price_list:

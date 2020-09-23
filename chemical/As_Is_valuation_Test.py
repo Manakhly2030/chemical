@@ -1082,7 +1082,7 @@ fourth_stock_ledger_mtm_item_name = frappe.db.get_value("Stock Ledger Entry",{"v
 # stock_entry_mr.set_posting_time = 1
 # stock_entry_mr.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -1)
 # company = frappe.db.get_value("Company",{},"company_name") 
-# warehouse = frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Stores"},"name")
+# warehouse = frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Finished Goods"},"name")
 # packaging_material = frappe.db.get_value("Packaging Material",{},"name")
 # stock_entry_mr.to_warehouse = warehouse
 # stock_entry_mr.append("items",{
