@@ -16,7 +16,7 @@ def bom_before_save(self, method):
 	
 def set_fg_qty_in_additional_cost(self):
 	for row in self.additional_cost:
-		row.amount = flt(row.qty * row.rate)
+		row.amount = flt(flt(row.qty) * flt(row.rate))
 		if row.uom == "FG QTY":
 			row.qty = self.total_quantity
 

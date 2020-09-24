@@ -171,7 +171,7 @@ def add_additional_cost(stock_entry,self,qty=None):
 			stock_entry.append("additional_costs",{
 				'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
 				'description': additional_cost.description,
-				'qty': additional_cost.qty,
+				'qty': stock_entry.fg_completed_qty,
 				'rate': additional_cost.rate,
 				'amount': additional_cost.amount
 			})
