@@ -293,14 +293,32 @@ def update_po(self):
 
 def update_work_order_on_cancel(self, method):
 	if self.purpose == 'Manufacture' and self.work_order:
-		frappe.db.set_value("Work Order",self.work_order,"batch_yield", 0)
-		frappe.db.set_value("Work Order",self.work_order,"concentration",0)
-		frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
-		frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
-		frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
+		doc = frappe.get_doc("Work Order",self.work_order)
+		doc.db_set('batch_yield',0)
+		doc.db_set('concentration',0)
+		doc.db_set('valuation_rate',0)
+		doc.db_set('produced_quantity',0)
+		doc.db_set('lot_no','')
+		for item in doc.finish_item:
+			item.db_set("actual_qty",0)
+			item.db_set("actual_valuation",0)
+			item.db_set("lot_no",'')
+			item.db_set("packing_size",0)
+			item.db_set("no_of_packages",0)
+			item.db_set("purity",0)
+			item.db_set("batch_yield",0)
+			item.db_set("batch_no",'')
+			item.db_update()
+		doc.db_update()
+		# frappe.db.set_value("Work Order",self.work_order,"batch_yield", 0)
+		# frappe.db.set_value("Work Order",self.work_order,"concentration",0)
+		# frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
+		# frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
+		# frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
+
 		# frappe.db.sql("""delete from `tabWork Order Finish Item`
 		# 	where parent = %s""", self.work_order)
-		#frappe.db.commit()
+		# frappe.db.commit()
 
 def set_po_status(self, pro_doc):
 	status = None
