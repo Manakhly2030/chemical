@@ -5,6 +5,8 @@
 // this.frm.add_fetch('batch_no', 'batch_yield', 'batch_yield');
 // this.frm.add_fetch('batch_no', 'concentration', 'concentration');
 // this.frm.add_fetch('item_code', 'item_group', 'item_group');
+
+
 cur_frm.fields_dict.from_warehouse.get_query = function (doc) {
 	return {
 		filters: {
