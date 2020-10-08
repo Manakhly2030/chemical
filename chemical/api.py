@@ -584,7 +584,10 @@ def purchase_cal_rate_qty(self):
 			d.supplier_qty = d.qty
 
 		if d.get('packing_size') and d.get('no_of_packages'):
-			d.qty = d.received_qty = (d.packing_size * d.no_of_packages)			
+			if hasattr(self, "tare_weight"):
+				d.qty = d.received_qty = ((d.packing_size - d.tare_weight) * d.no_of_packages)
+			else:
+				d.qty = d.received_qty = (d.packing_size * d.no_of_packages)			
 
 			if maintain_as_is_stock:
 				d.quantity = d.qty * d.concentration / 100
@@ -628,7 +631,7 @@ def se_cal_rate_qty(self):
 			if maintain_as_is_stock:
 				d.quantity = d.qty * concentration / 100
 				if d.price:
-					d.basic_rate =  flt(d.quantity * d.price) / flt(d.qty)
+					d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 			else:
 				d.quantity = d.qty
 				if d.price:
@@ -638,7 +641,7 @@ def se_cal_rate_qty(self):
 				if d.quantity:
 					d.qty = flt((d.quantity * 100.0) / concentration)
 				if d.price:
-					d.basic_rate =  flt(d.quantity * d.price) / flt(d.qty)
+					d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 			else:
 				if d.quantity:
 					d.qty = d.quantity

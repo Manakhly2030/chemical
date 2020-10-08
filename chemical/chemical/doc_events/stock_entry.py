@@ -10,16 +10,19 @@ def onload(self,method):
 	quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
-	fg_completed_quantity_to_fg_completed_qty(self)
 	se_cal_rate_qty(self)
+	fg_completed_quantity_to_fg_completed_qty(self)
 	cal_actual_valuations(self)
+	validate_fg_completed_quantity(self)
 
 def validate(self,method):
+	calculate_rate_and_amount(self)
+	cal_target_yield_cons(self)
+	cal_validate_additional_cost_qty(self)
 	get_based_on(self)
 	#update_additional_cost(self)
 	update_additional_cost_scrap(self)
-	calculate_rate_and_amount(self)
-	cal_target_yield_cons(self)
+
 	
 def stock_entry_validate(self, method):
 	if self.purpose == "Material Receipt":
@@ -95,7 +98,7 @@ def validate_fg_completed_quantity(self):
 			if item.t_warehouse:
 				fg_qty += item.qty
 				fg_quantity += item.quantity
-		self.fg_completed_qty = fg_qty
+		self.fg_completed_qty = round(fg_qty,3)
 		self.fg_completed_quantity = fg_quantity
 		# if fg_quantity != self.fg_completed_quantity:
 		# 	frappe.throw(_("Finished product quantity <b>{0}</b> and For Quantity <b>{1}</b> cannot be different")
@@ -200,10 +203,18 @@ def cal_target_yield_cons(self):
 
 			last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)		
 
+def cal_validate_additional_cost_qty(self):
+	if self.additional_costs:
+		for addi_cost in self.additional_costs:
+			if addi_cost.uom == "FG QTY":
+				addi_cost.qty = self.fg_completed_quantity
+				addi_cost.amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
+
+
 def fg_completed_quantity_to_fg_completed_qty(self):
 	if self.fg_completed_qty == 0:
 		self.fg_completed_qty = self.fg_completed_quantity
-		
+	
 def validate_concentration(self):
 	if self.work_order and self.purpose == "Manufacture":
 		wo_item = frappe.db.get_value("Work Order",self.work_order,'production_item')
@@ -282,14 +293,32 @@ def update_po(self):
 
 def update_work_order_on_cancel(self, method):
 	if self.purpose == 'Manufacture' and self.work_order:
-		frappe.db.set_value("Work Order",self.work_order,"batch_yield", 0)
-		frappe.db.set_value("Work Order",self.work_order,"concentration",0)
-		frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
-		frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
-		frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
-		frappe.db.sql("""delete from `tabWork Order Finish Item`
-			where parent = %s""", self.work_order)
-		#frappe.db.commit()
+		doc = frappe.get_doc("Work Order",self.work_order)
+		doc.db_set('batch_yield',0)
+		doc.db_set('concentration',0)
+		doc.db_set('valuation_rate',0)
+		doc.db_set('produced_quantity',0)
+		doc.db_set('lot_no','')
+		for item in doc.finish_item:
+			item.db_set("actual_qty",0)
+			item.db_set("actual_valuation",0)
+			item.db_set("lot_no",'')
+			item.db_set("packing_size",0)
+			item.db_set("no_of_packages",0)
+			item.db_set("purity",0)
+			item.db_set("batch_yield",0)
+			item.db_set("batch_no",'')
+			item.db_update()
+		doc.db_update()
+		# frappe.db.set_value("Work Order",self.work_order,"batch_yield", 0)
+		# frappe.db.set_value("Work Order",self.work_order,"concentration",0)
+		# frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
+		# frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
+		# frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
+
+		# frappe.db.sql("""delete from `tabWork Order Finish Item`
+		# 	where parent = %s""", self.work_order)
+		# frappe.db.commit()
 
 def set_po_status(self, pro_doc):
 	status = None
@@ -459,6 +488,36 @@ def update_po_items(self,po):
 	for child in po.required_items:
 		child.db_update()
 
+def validate_finished_goods(self):
+	"""validation: finished good quantity should be same as manufacturing quantity"""
+	if not self.work_order: return
+
+	items_with_target_warehouse = []
+	allowance_percentage = flt(frappe.db.get_single_value("Manufacturing Settings",
+		"overproduction_percentage_for_work_order"))
+
+	production_item, wo_qty = frappe.db.get_value("Work Order",
+		self.work_order, ["production_item", "qty"])
+
+	for d in self.get('items'):
+		if (self.purpose != "Send to Subcontractor" and d.bom_no
+			and flt(round(d.transfer_qty,3)) > flt(round(self.fg_completed_qty,3)) and d.item_code == production_item):
+			frappe.throw(_("Quantity in row {0} ({1}) must be same as manufactured quantity {2}"). \
+				format(d.idx, round(d.transfer_qty,3), round(self.fg_completed_qty,3)))
+
+		if self.work_order and self.purpose == "Manufacture" and d.t_warehouse:
+			items_with_target_warehouse.append(d.item_code)
+
+	if self.work_order and self.purpose == "Manufacture":
+		allowed_qty = wo_qty + (allowance_percentage/100 * wo_qty)
+		#Finbyz Changes: self.fg_completed_qty to self.if self.fg_completed_quantity
+		if self.fg_completed_quantity > allowed_qty:
+			frappe.throw(_("For quantity {0} should not be grater than work order quantity {1}")
+				.format(flt(self.fg_completed_quantity), wo_qty))
+
+		if production_item not in items_with_target_warehouse:
+			frappe.throw(_("Finished Item {0} must be entered for Manufacture type entry")
+				.format(production_item))
 
 def delete_auto_created_batches(self):
 	pass

@@ -2,6 +2,7 @@ import frappe
 from frappe.utils import flt, cint
 from chemical.api import purchase_cal_rate_qty, quantity_price_to_qty_rate
 from erpnext.stock.doctype.purchase_receipt.purchase_receipt import PurchaseReceipt
+import re
 
 def onload(self,method):
 	quantity_price_to_qty_rate(self)
@@ -89,21 +90,58 @@ def delete_auto_created_batches(self):
 
 @frappe.whitelist()
 def rename_po(existing_name, series_value):
-	last_3_digit_remove = str(existing_name[:-3])
-	new_name = ""
+	new_name = re.findall("^(.*[\\\/])",existing_name)[0] # Before Slash
+	last_digits = re.findall("[^\/]+$",existing_name)[0] # After Slash
+	len_last_digits = len(last_digits) # After Slash
 	if series_value:
-		len_series_value = len(str(series_value))
-		if len_series_value == 1:
-			new_name = last_3_digit_remove + "00" + str(series_value)
-		elif len_series_value == 2:
-			new_name = last_3_digit_remove + "0" + str(series_value)
-		elif len_series_value == 3:
-			new_name = last_3_digit_remove + str(series_value)
+		if len(series_value) > 4:
+			frappe.throw("Please Enter 4 Digit Series Value")
+		temp_digits = last_digits.replace(last_digits,series_value)
+		if len(temp_digits)!=4:
+			temp_digits = temp_digits.rjust((4-len(temp_digits)) + len(temp_digits),'0')
+		new_name += temp_digits
 		if new_name != existing_name:
 			frappe.rename_doc("Purchase Receipt", existing_name, new_name, force=True)
 			frappe.db.set_value("Purchase Receipt",new_name,"series_value",series_value)
 			return new_name
+			#last_digits.replace(last_digits[-(len(series_value)):],series_value) 
+	# last_3_digit_remove = str(existing_name[:-4])
+	# len_after_slash = len(re.findall("[^\/]+$",existing_name)[0])
+	# new_name = ""
+	# if series_value and len_after_slash == 3:
+	# 	if len(series_value) > 4:
+	# 		frappe.throw("Please Enter 4 Digit Series Value")
+	# 	last_3_digit_remove += "/"
+	# 	len_series_value = len(str(series_value))
+	# 	if len_series_value == 1:
+	# 		new_name = last_3_digit_remove + "00" + str(series_value)
+	# 	elif len_series_value == 2:
+	# 		new_name = last_3_digit_remove + "0" + str(series_value)
+	# 	elif len_series_value == 3 or len_series_value == 4:
+	# 		new_name = last_3_digit_remove + str(series_value)
+		# if new_name != existing_name:
+		# 	frappe.rename_doc("Purchase Receipt", existing_name, new_name, force=True)
+		# 	frappe.db.set_value("Purchase Receipt",new_name,"series_value",series_value)
+		# 	return new_name
 
+	# elif series_value:
+	# 	if len(series_value) > 4:
+	# 		frappe.throw("Please Enter 4 Digit Series Value")
+	# 	len_series_value = len(str(series_value))
+	# 	if len_series_value == 1:
+	# 		new_name = last_3_digit_remove + "000" + str(series_value)
+	# 	elif len_series_value == 2:
+	# 		new_name = last_3_digit_remove + "00" + str(series_value)
+	# 	elif len_series_value == 3:
+	# 		new_name = last_3_digit_remove + "0" +  str(series_value)
+	# 	elif len_series_value == 4:
+	# 		new_name = last_3_digit_remove + str(series_value)
+				
+	# 	if new_name != existing_name:
+	# 		frappe.rename_doc("Purchase Receipt", existing_name, new_name, force=True)
+	# 		frappe.db.set_value("Purchase Receipt",new_name,"series_value",series_value)
+	# 		return new_name
+		
 
 # def pr_update_default_status_updater_args(self):
 # 	self.status_updater = [{

@@ -8,6 +8,7 @@ from erpnext.manufacturing.doctype.work_order.work_order import StockOverProduct
 
 def before_submit(self, method):
 	validate_multiple_item_bom(self)
+	validate_finish_item_table(self)
 
 @frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):
@@ -171,9 +172,10 @@ def add_additional_cost(stock_entry,self,qty=None):
 			stock_entry.append("additional_costs",{
 				'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
 				'description': additional_cost.description,
-				'qty': stock_entry.fg_completed_qty,
+				'qty': stock_entry.fg_completed_quantity,
 				'rate': additional_cost.rate,
-				'amount': additional_cost.amount
+				'amount': flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
+				'uom':"FG QTY"
 			})
 		else:
 			stock_entry.append("additional_costs",{
@@ -335,6 +337,7 @@ def add_to_stock_entry_detail(self, item_dict, bom_no=None):
 		se_child.description = item_dict[d]["description"]
 		se_child.uom = item_dict[d]["uom"] if item_dict[d].get("uom") else stock_uom
 		se_child.stock_uom = stock_uom
+		se_child.qty = flt(item_dict[d]["qty"], se_child.precision("qty"))
 		se_child.quantity = flt(item_dict[d]["quantity"], se_child.precision("quantity"))
 		se_child.expense_account = item_dict[d].get("expense_account")
 		se_child.cost_center = item_dict[d].get("cost_center") or cost_center
@@ -438,7 +441,7 @@ def update_transaferred_qty_for_required_items(self):
 
 	for d in self.required_items:
 		# Finbyz Changes: changed qty to quantity
-		transferred_qty = frappe.db.sql('''select sum(quantity)
+		transferred_qty = frappe.db.sql('''select sum(qty)
 			from `tabStock Entry` entry, `tabStock Entry Detail` detail
 			where
 				entry.work_order = %(name)s
@@ -460,7 +463,7 @@ def update_consumed_qty_for_required_items(self):
 			the work order'''
 	for d in self.required_items:
 		#Finbyz Changes: changed qty to quantity
-		consumed_qty = frappe.db.sql('''select sum(quantity)
+		consumed_qty = frappe.db.sql('''select sum(qty)
 			from `tabStock Entry` entry, `tabStock Entry Detail` detail
 			where
 				entry.work_order = %(name)s
@@ -480,3 +483,25 @@ def validate_multiple_item_bom(self):
 		bom = frappe.db.sql("""select name from `tabBOM` where item = %s and is_default = 1""",item.item_code)
 		if not bom:
 			frappe.throw(_("Create BOM for Finish Item {}".format(item.item_code)))
+
+def validate_finish_item_table(self):
+	if not self.finish_item:
+		if self.bom_no:
+			bom_doc = frappe.get_doc("BOM",self.bom_no)
+			if self.is_multiple_item:
+				for bom_fi in bom_doc.multiple_finish_item:
+					self.append("finish_item",{
+						"item_code":bom_fi.item_code,
+						"bom_cost_ratio":bom_fi.cost_ratio,
+						"bom_qty_ratio":bom_fi.qty_ratio,
+						"bom_qty":self.qty * bom_fi.qty_ratio / 100,
+						"bom_yield":bom_fi.batch_yield
+					})
+			else:
+				self.append("finish_item",{
+					"item_code": bom_doc.item,
+					"bom_cost_ratio": 100,
+					"bom_qty_ratio": 100,
+					"bom_qty": self.qty,
+					"bom_yield": bom_doc.batch_yield
+				})
