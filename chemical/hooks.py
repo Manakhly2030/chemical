@@ -12,12 +12,13 @@ OpeningInvoiceCreationTool.make_invoices = make_invoices
 
 
 #Chemical
-from chemical.chemical.doc_events.stock_entry import validate_fg_completed_quantity, calculate_rate_and_amount
+from chemical.chemical.doc_events.stock_entry import validate_fg_completed_quantity, calculate_rate_and_amount, validate_finished_goods
 from chemical.chemical.doc_events.work_order import get_status, update_work_order_qty, update_transaferred_qty_for_required_items, update_consumed_qty_for_required_items
 
 #Chemical
-StockEntry.validate_fg_completed_qty = validate_fg_completed_quantity
+StockEntry.validate_finished_goods = validate_finished_goods
 StockEntry.calculate_rate_and_amount = calculate_rate_and_amount
+StockEntry.validate_fg_completed_qty = validate_fg_completed_quantity
 WorkOrder.get_status = get_status
 WorkOrder.update_work_order_qty = update_work_order_qty
 WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_for_required_items
