@@ -11,13 +11,9 @@ def onload(self,method):
 
 def before_validate(self,method):
 	se_cal_rate_qty(self)
-<<<<<<< HEAD
 	fg_completed_quantity_to_fg_completed_qty(self)
 	cal_actual_valuations(self)
 	validate_fg_completed_quantity(self)
-=======
-	cal_actual_valuations(self)
->>>>>>> 8521864612512b186dcc5405fca990ff935403a7
 
 def validate(self,method):
 	calculate_rate_and_amount(self)
