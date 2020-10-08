@@ -33,7 +33,14 @@ def cost_calculation(self):
 		row.per_unit_rate = flt(row.amount)/self.quantity
 	for row in self.scrap_items:
 		row.per_unit_rate = flt(row.amount)/self.quantity
-		
+	
+	if self.is_multiple_item:
+		for item in self.multiple_finish_item:
+			if self.item == item.item_code:
+				self.db_set('per_unit_rmc',flt(flt(self.raw_material_cost * item.qty_ratio / 100)/self.quantity))
+	else:
+		self.db_set('per_unit_rmc',flt(flt(self.raw_material_cost)/self.quantity))
+
 	additional_amount = sum(flt(d.amount) for d in self.additional_cost)
 	self.additional_amount = additional_amount
 	self.db_set('total_operational_cost',flt(self.additional_amount) + flt(self.volume_amount) + etp_amount)
@@ -42,7 +49,6 @@ def cost_calculation(self):
 	per_unit_price = flt(self.total_cost) / flt(self.quantity)
 	self.db_set('per_unit_volume_cost',flt(self.volume_amount/self.quantity))	
 	self.db_set('per_unit_additional_cost',flt(flt(self.additional_amount)/self.quantity))
-	self.db_set('per_unit_rmc',flt(flt(self.raw_material_cost)/self.quantity))
 	self.db_set('per_unit_operational_cost',flt(flt(self.total_operational_cost)/self.quantity))
 	self.db_set('per_unit_scrap_cost',flt(flt(self.total_scrap_cost)/self.quantity))
 
