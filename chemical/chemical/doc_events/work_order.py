@@ -4,6 +4,7 @@ import frappe.defaults
 from frappe import msgprint, _
 from frappe.utils import nowdate, flt, cint, cstr
 from six import itervalues
+from erpnext.manufacturing.doctype.work_order.work_order import StockOverProductionError
 
 def before_submit(self, method):
 	validate_multiple_item_bom(self)
@@ -171,7 +172,7 @@ def add_additional_cost(stock_entry,self,qty=None):
 			stock_entry.append("additional_costs",{
 				'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
 				'description': additional_cost.description,
-				'qty': additional_cost.qty,
+				'qty': stock_entry.fg_completed_qty,
 				'rate': additional_cost.rate,
 				'amount': additional_cost.amount
 			})
@@ -409,15 +410,16 @@ def update_work_order_qty(self):
 			and purpose=%s""", (self.name, purpose))[0][0])
 
 		completed_qty = self.qty + (allowance_percentage/100 * self.qty)
-		if qty > completed_qty:
-			frappe.throw(_("{0} ({1}) cannot be greater than planned quantity ({2}) in Work Order {3}").format(\
-				self.meta.get_label(fieldname), qty, completed_qty, self.name), StockOverProductionError)
 
 		#Finbyz Changes: For multiple material transfer
 		if not self.skip_transfer:
-			if purpose == "Material Transfer for Manufacture" and self.material_transferred_for_manufacturing > self.qty:
-				qty = self.qty
-
+			if purpose == "Material Transfer for Manufacture":
+				qty = min(qty,self.qty)
+				
+		if qty > completed_qty:
+			frappe.throw(_("{0} ({1}) cannot be greater than planned quantity ({2}) in Work Order {3}").format(\
+				self.meta.get_label(fieldname), qty, completed_qty, self.name), StockOverProductionError)
+		
 		self.db_set(fieldname, qty)
 
 		from erpnext.selling.doctype.sales_order.sales_order import update_produced_qty_in_so_item
@@ -448,6 +450,7 @@ def update_transaferred_qty_for_required_items(self):
 					'name': self.name,
 					'item': d.item_code
 				})[0][0]
+		
 
 		d.db_set('transferred_qty', flt(transferred_qty), update_modified = False)
 

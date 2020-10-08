@@ -11,9 +11,13 @@ def onload(self,method):
 
 def before_validate(self,method):
 	se_cal_rate_qty(self)
+<<<<<<< HEAD
 	fg_completed_quantity_to_fg_completed_qty(self)
 	cal_actual_valuations(self)
 	validate_fg_completed_quantity(self)
+=======
+	cal_actual_valuations(self)
+>>>>>>> 8521864612512b186dcc5405fca990ff935403a7
 
 def validate(self,method):
 	calculate_rate_and_amount(self)
@@ -60,19 +64,18 @@ def se_before_cancel(self, method):
 		wo = frappe.get_doc("Work Order",self.work_order)
 		wo.db_set('batch','')
 
-def on_cancel(self,method):
-	try:
-		update_work_order_on_cancel(self,method)
-	except Exception as e:
-		frappe.throw(str(e))
-	
+def on_cancel(self,method):	
+	update_work_order_on_cancel(self,method)
+
 	for item in self.items:
 		if item.t_warehouse:
 			item.batch_no = None
 			item.db_set("batch_no",None)
 
 	for data in frappe.get_all("Batch",{'reference_name': self.name, 'reference_doctype': self.doctype}):
-		frappe.delete_doc("Batch", data.name)
+		frappe.db.set_value('Batch',data.name,'reference_name','')
+		frappe.db.set_value('Batch',data.name,'valuation_rate',0)
+		#frappe.delete_doc("Batch", data.name)
 
 def stock_entry_on_cancel(self, method):
 	if self.work_order:
@@ -148,7 +151,7 @@ def sum_total_additional_costs(self):
 
 def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, raise_error_if_no_rate=True):
 	if self.purpose == 'Manufacture' and self.bom_no:
-		se_cal_rate_qty(self)
+		#se_cal_rate_qty(self)
 		is_multiple_finish  = 0
 		for d in self.items:
 			if d.t_warehouse:
@@ -246,6 +249,7 @@ def update_po(self):
 					total_qty += row.qty
 					actual_total_qty += row.quantity
 					valuation_rate += flt(row.qty)*flt(row.valuation_rate)
+					actual_valuation = 0
 					lot.append(row.lot_no)
 
 					for finish_items in po.finish_item:
@@ -259,6 +263,7 @@ def update_po(self):
 							finish_items.db_set("purity",row.concentration)
 							finish_items.db_set("batch_yield",row.batch_yield)
 							finish_items.db_set("batch_no",row.batch_no)
+							actual_valuation = row.actual_valuation_rate
 					# finished_item['item_code'] = row.item_code
 					# finished_item['quantity']  = row.quantity
 					# finished_item['actual_valuation'] = row.actual_valuation_rate
@@ -275,7 +280,7 @@ def update_po(self):
 				child.db_update()
 			po.db_set("batch_yield", flt(batch_yield/count))
 			po.db_set("concentration", flt(concentration/count))
-			po.db_set("valuation_rate", flt(valuation_rate/total_qty))
+			po.db_set("valuation_rate", flt(actual_valuation))
 			po.db_set("produced_qty", total_qty)
 			po.db_set("produced_quantity",actual_total_qty)
 			if len(lot)!=0:
@@ -470,4 +475,5 @@ def cal_validate_additional_cost_qty(self):
 
 def delete_auto_created_batches(self):
 	pass
+
 

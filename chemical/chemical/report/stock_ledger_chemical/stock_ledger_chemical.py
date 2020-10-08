@@ -34,7 +34,8 @@ def execute(filters=None):
 				'actual_qty': (flt(sle.actual_qty) * flt(concentration))/100,
 				'incoming_rate': (flt(sle.incoming_rate) * 100)/flt(concentration),
 				'valuation_rate': (flt(sle.valuation_rate) * 100)/flt(concentration),
-				'as_is_balance_qty': flt(sle.qty_after_transaction)
+				'as_is_balance_qty': flt(sle.qty_after_transaction),
+				'qty_after_transaction': flt(sle.qty_after_transaction * flt(concentration))/100
 			})
 		else:
 			sle.update({
