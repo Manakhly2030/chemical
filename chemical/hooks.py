@@ -173,9 +173,7 @@ doctype_js = {
 # Overriding Whitelisted Methods
 # ------------------------------
 #
-override_whitelisted_methods = {
-	"erpnext.education.api.enroll_student": "chemical.api.test"
-}
+
 
 #fixtures = ["Custom Field"]
 
@@ -245,10 +243,11 @@ doc_events = {
 	},
 	"Purchase Receipt": {
 		"onload":"chemical.chemical.doc_events.purchase_receipt.onload",
+		#"before_validate": "chemical.chemical.doc_events.purchase_receipt.before_validate",
 		"validate": [
 			# "chemical.api.pr_validate",
 			"chemical.batch_valuation.pr_validate",
-		    "chemical.chemical.doc_events.purchase_receipt.validate",
+			"chemical.chemical.doc_events.purchase_receipt.t_validate",
 		],
 		"on_cancel": "chemical.batch_valuation.pr_on_cancel",
 		"before_submit": "chemical.chemical.doc_events.purchase_receipt.before_submit",
@@ -257,9 +256,9 @@ doc_events = {
 	"Purchase Invoice": {
 		"onload":"chemical.chemical.doc_events.purchase_invoice.onload",
 		"before_insert": "finbyzerp.api.before_insert",
+		"before_validate": "chemical.chemical.doc_events.purchase_invoice.before_validate",
 		"validate": [
 			"chemical.batch_valuation.pi_validate",
-			"chemical.chemical.doc_events.purchase_invoice.validate",
 		],
 		"on_cancel": "chemical.batch_valuation.pi_on_cancel",
 		"before_submit": "chemical.chemical.doc_events.purchase_invoice.before_submit",

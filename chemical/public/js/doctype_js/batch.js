@@ -8,7 +8,6 @@ frappe.ui.form.on("Batch", {
 				};
 				frappe.set_route("query-report", "Stock Ledger Chemical");
 			});
-			frm.trigger('make_dashboard');
         }
     },
 });

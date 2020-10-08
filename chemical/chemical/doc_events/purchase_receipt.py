@@ -1,18 +1,26 @@
 import frappe
 from frappe.utils import flt, cint
-from chemical.api import cal_rate_qty, quantity_price_to_qty_rate
+from chemical.api import purchase_cal_rate_qty, quantity_price_to_qty_rate
+from erpnext.stock.doctype.purchase_receipt.purchase_receipt import PurchaseReceipt
 
 def onload(self,method):
 	quantity_price_to_qty_rate(self)
 
-def validate(self,method):
-	cal_rate_qty(self)
+def before_validate(self,method):
+	purchase_cal_rate_qty(self)
 
+def before_save(self,method):
+	rename_po(self)
+		
 def before_submit(self, method):
 	pr_update_status_updater_args(self)
 
 def before_cancel(self, method):
 	pr_update_status_updater_args(self)
+	PurchaseReceipt.delete_auto_created_batches = delete_auto_created_batches
+
+def t_validate(self,method):
+	cal_total(self)
 
 def pr_update_status_updater_args(self):
 	self.status_updater = [{
@@ -60,6 +68,42 @@ def pr_update_status_updater_args(self):
 				where name=`tabPurchase Invoice Item`.parent and is_return=1 and update_stock=1)"""
 		})
 	# self.update_qty()
+def cal_total(self):
+	total_quantity = 0
+	total_supplier_qty=0
+	total_supplier_quantity = 0
+	total_packages = 0
+	for d in self.items:
+		total_quantity = total_quantity + flt(d.quantity)
+		total_supplier_qty = total_supplier_qty + flt(d.supplier_qty)
+		total_supplier_quantity = total_supplier_quantity + flt(d.supplier_quantity)
+		total_packages = total_packages + (d.no_of_packages)
+	
+	self.total_quantity = total_quantity
+	self.total_supplier_qty = total_supplier_qty
+	self.total_supplier_quantity = total_supplier_quantity
+	self.total_packages = total_packages
+
+def delete_auto_created_batches(self):
+	pass
+
+@frappe.whitelist()
+def rename_po(existing_name, series_value):
+	last_3_digit_remove = str(existing_name[:-3])
+	new_name = ""
+	if series_value:
+		len_series_value = len(str(series_value))
+		if len_series_value == 1:
+			new_name = last_3_digit_remove + "00" + str(series_value)
+		elif len_series_value == 2:
+			new_name = last_3_digit_remove + "0" + str(series_value)
+		elif len_series_value == 3:
+			new_name = last_3_digit_remove + str(series_value)
+		if new_name != existing_name:
+			frappe.rename_doc("Purchase Receipt", existing_name, new_name, force=True)
+			frappe.db.set_value("Purchase Receipt",new_name,"series_value",series_value)
+			return new_name
+
 
 # def pr_update_default_status_updater_args(self):
 # 	self.status_updater = [{

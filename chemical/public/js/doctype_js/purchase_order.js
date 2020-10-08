@@ -1,3 +1,4 @@
+
 // Add searchfield to Item query
 this.frm.cscript.onload = function(frm) {
 	this.frm.set_query("item_code", "items", function() {
@@ -34,7 +35,8 @@ frappe.ui.form.on("Purchase Order", {
 					}
 				}
 			})
-        });
+		});
+
 	},
 	cal_rate_qty: function (frm, cdt, cdn) {
 		let d = locals[cdt][cdn];

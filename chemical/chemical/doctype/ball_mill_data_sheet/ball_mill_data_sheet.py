@@ -52,11 +52,14 @@ class BallMillDataSheet(Document):
 	def on_submit(self):
 		se = frappe.new_doc("Stock Entry");
 		se.purpose = "Repack"
+		se.company = self.company
 		se.stock_entry_type = "Repack"
 		se.set_posting_time = 1
 		se.posting_date = self.date
 		se.posting_time = self.posting_time
 		se.from_ball_mill = 1
+		cost_center = frappe.db.get_value("Company",self.company,"cost_center")
+
 		for row in self.items:
 			se.append('items',{
 				'item_code': row.item_name,
@@ -65,6 +68,7 @@ class BallMillDataSheet(Document):
 				'basic_rate': row.basic_rate,
 				'basic_amount': row.basic_amount,
 				'qty': row.quantity,
+				'cost_center': cost_center
 			})
 
 		for d in self.packaging:	
@@ -79,7 +83,8 @@ class BallMillDataSheet(Document):
 				'concentration': self.concentration,
 				'basic_rate': self.per_unit_amount,
 				'valuation_rate': self.per_unit_amount,
-				'basic_amount': flt(d.qty * self.per_unit_amount)
+				'basic_amount': flt(d.qty * self.per_unit_amount),
+				'cost_center': cost_center
 			})
 
 		try:
