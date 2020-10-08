@@ -2,7 +2,7 @@ import frappe
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-from chemical.api import se_cal_rate_qty
+from chemical.api import se_cal_rate_qty, cal_actual_valuations
 from six import iteritems
 from frappe import msgprint, _
 
@@ -10,15 +10,18 @@ def onload(self,method):
 	quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
-	fg_completed_quantity_to_fg_completed_qty(self)
 	se_cal_rate_qty(self)
+	fg_completed_quantity_to_fg_completed_qty(self)
+	cal_actual_valuations(self)
+	validate_fg_completed_quantity(self)
 
 def validate(self,method):
+	calculate_rate_and_amount(self)
+	cal_target_yield_cons(self)
+	cal_validate_additional_cost_qty
 	get_based_on(self)
 	#update_additional_cost(self)
 	update_additional_cost_scrap(self)
-	calculate_rate_and_amount(self)
-	cal_target_yield_cons(self)
 	
 def stock_entry_validate(self, method):
 	if self.purpose == "Material Receipt":
@@ -285,8 +288,8 @@ def update_work_order_on_cancel(self, method):
 		frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
 		frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
 		frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
-		frappe.db.sql("""delete from `tabWork Order Finish Item`
-			where parent = %s""", self.work_order)
+		# frappe.db.sql("""delete from `tabWork Order Finish Item`
+		# 	where parent = %s""", self.work_order)
 		frappe.db.commit()
 
 def set_po_status(self, pro_doc):
@@ -456,6 +459,13 @@ def update_po_items(self,po):
 
 	for child in po.required_items:
 		child.db_update()
+
+def cal_validate_additional_cost_qty(self):
+	if self.additional_costs:
+		for addi_cost in self.additional_costs:
+			if addi_cost.uom == "FG QTY":
+				addi_cost.qty = self.fg_completed_quantity
+				addi_cost.amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
 
 
 def delete_auto_created_batches(self):

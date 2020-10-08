@@ -113,7 +113,7 @@ frappe.ui.form.on("Work Order", {
 		]);
 	},
 	add_finish_item: function(frm){
-	if (!cur_frm.doc.finish_item.length)
+	if (!frm.doc.finish_item || frm.doc.finish_item==undefined || frm.doc.finish_item.length==0)
 	{
 		if(frm.doc.bom_no){
 			if(frm.doc.is_multiple_item){
