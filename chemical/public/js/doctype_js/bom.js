@@ -153,6 +153,8 @@ frappe.ui.form.on("BOM", {
             },
             callback: function (r) {
                 frappe.msgprint(r.message);
+                refresh_field("items");
+                frm.refresh_fields();
                 frm.reload_doc();
             }
         });
@@ -188,7 +190,10 @@ frappe.ui.form.on("BOM", {
             },
             callback: function (r) {
                 frm.events.update_price_list(frm);
-                if (!r.exc) frm.refresh_fields();
+                refresh_field("items");
+                if (!r.exc){
+                    frm.refresh_fields();
+                }
             }
         });
     },

@@ -38,6 +38,10 @@ def cost_calculation(self):
 
 	for row in self.items:
 		row.per_unit_rate = flt(row.amount)/self.quantity
+		row.valuation_amount = flt(row.valuation_rate)*flt(row.qty)
+		row.last_purchase_amount = flt(row.last_purchase_rate)*flt(row.qty)
+		
+
 	for row in self.scrap_items:
 		row.per_unit_rate = flt(row.amount)/self.quantity
 		
@@ -104,8 +108,8 @@ def yield_cal(self):
 # override whitelisted method on hooks
 @frappe.whitelist()
 def enqueue_update_cost():
-	frappe.enqueue("chemical.chemical.doc_events.bom.update_cost")
 	frappe.msgprint(_("Queued for updating latest price in all Bill of Materials. It may take a few minutes..."))
+	frappe.enqueue("chemical.chemical.doc_events.bom.update_cost")
 
 def update_cost():
 	from erpnext.manufacturing.doctype.bom.bom import get_boms_in_bottom_up_order
@@ -131,12 +135,15 @@ def update_cost():
 		bom_obj.db_set('per_unit_rmc',flt(flt(bom_obj.raw_material_cost)/bom_obj.quantity))
 		bom_obj.db_set('per_unit_operational_cost',flt(flt(bom_obj.total_operational_cost)/bom_obj.quantity))
 		bom_obj.db_set('per_unit_scrap_cost',flt(flt(bom_obj.total_scrap_cost)/bom_obj.quantity))
-
+		bom_obj.db_update()
 		# if bom_obj.per_unit_price != per_unit_price:
 			# bom_obj.db_set('per_unit_price', per_unit_price)
 		if frappe.db.exists("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list}):
 			name = frappe.db.get_value("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list},'name')
-			frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
+			# frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
+			item_doc = frappe.get_doc("Item Price",name)
+			item_doc.db_set("price_list_rate",per_unit_price)
+			item_doc.db_update()
 		else:
 			item_price = frappe.new_doc("Item Price")
 			item_price.price_list = bom_obj.buying_price_list
@@ -166,10 +173,13 @@ def upadte_item_price(docname,item, price_list, per_unit_price):
 	doc.db_set('per_unit_rmc',flt(flt(doc.raw_material_cost)/doc.quantity))
 	doc.db_set('per_unit_operational_cost',flt(flt(doc.total_operational_cost)/doc.quantity))
 	doc.db_set('per_unit_scrap_cost',flt(flt(doc.total_scrap_cost)/doc.quantity))
-	
+	doc.db_update()
 	if frappe.db.exists("Item Price",{"item_code":item,"price_list":price_list}):
 		name = frappe.db.get_value("Item Price",{"item_code":item,"price_list":price_list},'name')
-		frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
+		# frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
+		item_doc = frappe.get_doc("Item Price",name)
+		item_doc.db_set("price_list_rate",per_unit_price)
+		item_doc.db_update()
 	else:
 		item_price = frappe.new_doc("Item Price")
 		item_price.price_list = price_list
@@ -177,7 +187,6 @@ def upadte_item_price(docname,item, price_list, per_unit_price):
 		item_price.price_list_rate = per_unit_price
 		
 		item_price.save()
-	frappe.db.commit()
 		
 	return "Item Price Updated!"
 

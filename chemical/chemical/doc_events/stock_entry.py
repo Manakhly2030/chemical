@@ -18,11 +18,12 @@ def before_validate(self,method):
 def validate(self,method):
 	calculate_rate_and_amount(self)
 	cal_target_yield_cons(self)
-	cal_validate_additional_cost_qty
+	cal_validate_additional_cost_qty(self)
 	get_based_on(self)
 	#update_additional_cost(self)
 	update_additional_cost_scrap(self)
 	
+
 def stock_entry_validate(self, method):
 	if self.purpose == "Material Receipt":
 		validate_batch_wise_item_for_concentration(self)
@@ -486,13 +487,6 @@ def update_po_items(self,po):
 
 	for child in po.required_items:
 		child.db_update()
-
-def cal_validate_additional_cost_qty(self):
-	if self.additional_costs:
-		for addi_cost in self.additional_costs:
-			if addi_cost.uom == "FG QTY":
-				addi_cost.qty = self.fg_completed_quantity
-				addi_cost.amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
 
 def validate_finished_goods(self):
 	"""validation: finished good quantity should be same as manufacturing quantity"""
