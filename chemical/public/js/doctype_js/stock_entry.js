@@ -57,29 +57,48 @@ erpnext.stock.StockController = erpnext.stock.StockController.extend({
 $.extend(cur_frm.cscript, new erpnext.stock.StockController({ frm: cur_frm }));
 
 // Add searchfield to Item query
-this.frm.cscript.onload = function (frm) {
-    this.frm.set_query("batch_no", "items", function (doc, cdt, cdn) {
-        let d = locals[cdt][cdn];
-        if (!d.item_code) {
-            frappe.msgprint(__("Please select Item Code"));
-        }
-        else if (!d.s_warehouse) {
-            frappe.msgprint(__("Please select source warehouse"));
-        }
-        else {
-            return {
-                query: "chemical.query.get_batch_no",
-                filters: {
-                    'item_code': d.item_code,
-                    'warehouse': d.s_warehouse
-                }
-            }
-        }
-    });
-}
+// this.frm.cscript.onload = function (frm) {
+//     this.frm.set_query("batch_no", "items", function (doc, cdt, cdn) {
+//         let d = locals[cdt][cdn];
+//         console.log('call')
+//         if (!d.item_code) {
+//             frappe.msgprint(__("Please select Item Code"));
+//         }
+//         else if (!d.s_warehouse) {
+//             frappe.msgprint(__("Please select source warehouse"));
+//         }
+//         else {
+//             return {
+//                 query: "chemical.query.get_batch_no",
+//                 filters: {
+//                     'item_code': d.item_code,
+//                     'warehouse': d.s_warehouse
+//                 }
+//             }
+//         }
+//     });
+// }
 
 frappe.ui.form.on("Stock Entry", {
 	onload: function(frm){
+        frm.set_query("batch_no", "items", function (doc, cdt, cdn) {
+            let d = locals[cdt][cdn];
+            if (!d.item_code) {
+                frappe.msgprint(__("Please select Item Code"));
+            }
+            else if (!d.s_warehouse) {
+                frappe.msgprint(__("Please select source warehouse"));
+            }
+            else {
+                return {
+                    query: "chemical.query.get_batch_no",
+                    filters: {
+                        'item_code': d.item_code,
+                        'warehouse': d.s_warehouse
+                    }
+                }
+            }
+        })
         frm.doc.items.forEach(function (d){
             if (d.qty && d.quantity == 0) {
                 frappe.model.set_value(d.doctype, d.name, "quantity", d.qty);
