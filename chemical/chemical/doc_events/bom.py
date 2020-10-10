@@ -124,7 +124,14 @@ def update_cost():
 			row.db_set('per_unit_rate', flt(row.amount)/bom_obj.quantity)
 		for row in bom_obj.scrap_items:
 			row.db_set('per_unit_rate', flt(row.amount)/bom_obj.quantity)
-			
+
+		if bom_obj.is_multiple_item:
+			for item in bom_obj.multiple_finish_item:
+				if bom_obj.item == item.item_code:
+					bom_obj.db_set('per_unit_rmc',flt(flt(bom_obj.raw_material_cost * item.qty_ratio / 100)/bom_obj.quantity))
+		else:
+			bom_obj.db_set('per_unit_rmc',flt(flt(bom_obj.raw_material_cost)/bom_obj.quantity))
+		
 		bom_obj.db_set("volume_amount",flt(bom_obj.volume_quantity) * flt(bom_obj.volume_rate))
 		bom_obj.db_set("etp_amount",flt(bom_obj.etp_qty) * flt(bom_obj.etp_rate))
 		bom_obj.db_set('total_operational_cost',flt(bom_obj.additional_amount) + flt(bom_obj.volume_amount) + flt(bom_obj.etp_amount))
@@ -134,7 +141,6 @@ def update_cost():
 		bom_obj.db_set('per_unit_price',flt(bom_obj.total_cost) / flt(bom_obj.quantity))
 		bom_obj.db_set('per_unit_volume_cost',flt(bom_obj.volume_amount/bom_obj.quantity))	
 		bom_obj.db_set('per_unit_additional_cost',flt(flt(bom_obj.additional_amount)/bom_obj.quantity))
-		bom_obj.db_set('per_unit_rmc',flt(flt(bom_obj.raw_material_cost)/bom_obj.quantity))
 		bom_obj.db_set('per_unit_operational_cost',flt(flt(bom_obj.total_operational_cost)/bom_obj.quantity))
 		bom_obj.db_set('per_unit_scrap_cost',flt(flt(bom_obj.total_scrap_cost)/bom_obj.quantity))
 
@@ -161,6 +167,14 @@ def upadte_item_price(docname,item, price_list, per_unit_price):
 		row.db_set('per_unit_rate', flt(row.amount)/doc.quantity)
 	for row in doc.scrap_items:
 		row.db_set('per_unit_rate', flt(row.amount)/doc.quantity)
+	
+	if doc.is_multiple_item:
+		for item in doc.multiple_finish_item:
+			if doc.item == item.item_code:
+				doc.db_set('per_unit_rmc',flt(flt(doc.raw_material_cost * item.qty_ratio / 100)/doc.quantity))
+	else:
+		doc.db_set('per_unit_rmc',flt(flt(doc.raw_material_cost)/doc.quantity))
+
 	doc.db_set('volume_amount',flt(doc.volume_quantity) * flt(doc.volume_rate))
 	doc.db_set('etp_amount',flt(doc.etp_qty) * flt(doc.etp_rate))
 	doc.db_set('total_operational_cost',flt(doc.additional_amount) + flt(doc.volume_amount) + flt(doc.etp_amount))
@@ -169,7 +183,6 @@ def upadte_item_price(docname,item, price_list, per_unit_price):
 	doc.db_set('per_unit_price',flt(doc.total_cost) / flt(doc.quantity))
 	doc.db_set('per_unit_volume_cost',flt(doc.volume_amount/doc.quantity))	
 	doc.db_set('per_unit_additional_cost',flt(flt(doc.additional_amount)/doc.quantity))
-	doc.db_set('per_unit_rmc',flt(flt(doc.raw_material_cost)/doc.quantity))
 	doc.db_set('per_unit_operational_cost',flt(flt(doc.total_operational_cost)/doc.quantity))
 	doc.db_set('per_unit_scrap_cost',flt(flt(doc.total_scrap_cost)/doc.quantity))
 	

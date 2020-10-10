@@ -580,39 +580,46 @@ def purchase_cal_rate_qty(self):
 		if maintain_as_is_stock:
 			if not d.supplier_concentration:
 				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-		if not d.supplier_qty:
-			d.supplier_qty = d.qty
+		if hasattr(self, "supplier_qty"):
+			if not d.supplier_qty:
+				d.supplier_qty = d.qty
 
 		if d.get('packing_size') and d.get('no_of_packages'):
 			if hasattr(self, "tare_weight"):
 				d.qty = d.received_qty = ((d.packing_size - d.tare_weight) * d.no_of_packages)
 			else:
 				d.qty = d.received_qty = (d.packing_size * d.no_of_packages)			
-
+		
 			if maintain_as_is_stock:
 				d.quantity = d.qty * d.concentration / 100
-				d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
+				if hasattr(self, "supplier_quantity") and hasattr(self, "supplier_concentration") and hasattr(self, "supplier_qty"):
+					d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
 			else:
 				d.quantity = d.qty
-				d.supplier_quantity = flt(d.supplier_qty)
+				if hasattr(self, "supplier_quantity") and hasattr(self, "supplier_qty"):
+					d.supplier_quantity = flt(d.supplier_qty)
 			
 		else:
 			if maintain_as_is_stock:
 				if d.quantity:
 					d.qty = d.received_qty = flt((d.quantity * 100.0) / d.concentration)
-					d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
+					if hasattr(self, "supplier_quantity") and hasattr(self, "supplier_concentration") and hasattr(self, "supplier_qty"):
+						d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
 				
 			else:
 				if d.quantity:
 					d.qty = d.received_qty = d.quantity
-					d.supplier_quantity = flt(d.supplier_qty)
+					if hasattr(self, "supplier_quantity") and hasattr(self, "supplier_qty"):
+						d.supplier_quantity = flt(d.supplier_qty)
 				
 		if not d.qty:
 			frappe.throw(f"Row:{d.idx} Please input the Received Qty")
 
-		d.supplier_amount = flt(d.supplier_quantity * d.price)
-		d.rate = flt(d.supplier_amount / d.qty)
-		d.amount_difference = (d.supplier_amount) - (d.quantity * d.price)
+		if hasattr(self, "supplier_amount"):
+			if hasattr(self, "supplier_quantity"):
+				d.supplier_amount = flt(d.supplier_quantity * d.price)
+				d.amount_difference = (d.supplier_amount) - (d.quantity * d.price)
+			d.rate = flt(d.supplier_amount / d.qty)
 
 
 def se_cal_rate_qty(self):
