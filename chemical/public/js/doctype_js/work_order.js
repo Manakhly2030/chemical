@@ -41,6 +41,16 @@ if(this.frm.doc.skip_transfer && !this.frm.doc.__islocal){
 }
 frappe.ui.form.on("Work Order", {
 	onload: function(frm){
+		frm.set_query("bom_no", function (doc) { 
+                return {
+                    filters: {
+                        "item": doc.production_item,
+                        'is_active': 1,
+                        'docstatus': 1,
+                        "company": doc.company
+                    }
+                }
+        })
 		if (frm.doc.__islocal){
 			if (frm.doc.bom_no)
 			{

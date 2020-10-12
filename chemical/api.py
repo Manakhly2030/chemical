@@ -626,10 +626,16 @@ def purchase_cal_rate_qty(self):
 
 		if hasattr(doc_items, "supplier_amount"):
 			if hasattr(doc_items, "supplier_quantity"):
+				if not d.supplier_quantity:
+					d.supplier_quantity = d.quantity
 				d.supplier_amount = flt(d.supplier_quantity * d.price)
 				d.amount_difference = (d.supplier_amount) - (d.quantity * d.price)
+			else:
+				d.supplier_amount = flt(d.quantity * d.price)
 			d.rate = flt(d.supplier_amount / d.qty)
-
+		else:
+			concentration = d.concentration or 100.0
+			d.rate = (flt(d.price) * flt(concentration)) / 100
 
 def se_cal_rate_qty(self):
 	for d in self.items:
