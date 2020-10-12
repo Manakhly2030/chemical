@@ -99,6 +99,10 @@ frappe.ui.form.on("Purchase Receipt", {
                     frappe.model.set_value(d.doctype, d.name, 'rate', flt(d.supplier_amount / d.qty))
                     frappe.model.set_value(d.doctype, d.name, 'amount_difference', flt(d.supplier_amount) - (d.quantity * d.price))
                 }
+                else{
+                    let concentration = d.concentration || 100.0
+                    frappe.model.set_value(d.doctype, d.name, 'rate', flt((d.price * concentration)/100))
+                }
             });
         });
         
