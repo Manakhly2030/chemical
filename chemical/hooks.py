@@ -244,7 +244,7 @@ doc_events = {
 	},
 	"Purchase Receipt": {
 		"onload":"chemical.chemical.doc_events.purchase_receipt.onload",
-		#"before_validate": "chemical.chemical.doc_events.purchase_receipt.before_validate",
+		"before_validate": "chemical.chemical.doc_events.purchase_receipt.before_validate",
 		"validate": [
 			# "chemical.api.pr_validate",
 			"chemical.batch_valuation.pr_validate",
