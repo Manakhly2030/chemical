@@ -698,12 +698,10 @@ def cal_actual_valuations(self):
 		maintain_as_is_stock = frappe.db.get_value("Items",row.item_code,"maintain_as_is_stock")
 		if maintain_as_is_stock:
 			concentration = flt(row.concentration) or 100
-			if self.purpose != 'Material Receipt':
-				row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
+			row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
 		else:
 			concentration = flt(row.concentration) or 100
-			if self.purpose != 'Material Receipt':
-				row.actual_valuation_rate = flt(row.valuation_rate)
+			row.actual_valuation_rate = flt(row.valuation_rate)
 
 
 			
