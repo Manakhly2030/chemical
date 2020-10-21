@@ -33,20 +33,18 @@ def pi_on_cancel(self, method):
 
 @frappe.whitelist()
 def stock_entry_validate(self, method):
-	if batch_wise_cost():		
-		if self.from_ball_mill != 1 and self.purpose not in ["Manufacture", "Subcontract", "Material Receipt"]:
-			set_basic_rate_for_t_warehouse(self)
-
+	if batch_wise_cost():
 		if self.purpose not in ['Material Transfer', 'Material Transfer for Manufacture']:
 			make_batches(self, 't_warehouse')
 			
 	if self.purpose in ['Repack','Manufacture','Material Issue'] and cint(self.from_ball_mill) != 1:
 		self.get_stock_and_rate()
-	validate_additional_cost(self,method)
+	if self._action == "submit":
+		validate_additional_cost(self,method)
 
 def validate_additional_cost(self,method):
 	if self.purpose in ['Material Transfer','Material Transfer for Manufacture','Repack','Manufacture'] and self._action == "submit":
-		if round(self.value_difference/100,0) != round(self.total_additional_costs/100,0):
+		if abs(round(flt(self.value_difference,1))) != abs(round(flt(self.total_additional_costs,1))):
 			frappe.throw("ValuationError: Value difference between incoming and outgoing amount is higher than additional cost")
 
 @frappe.whitelist()
