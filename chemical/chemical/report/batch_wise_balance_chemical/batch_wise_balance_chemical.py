@@ -37,6 +37,7 @@ def execute(filters=None):
 							'concentration': concentration,
 							'packaging_material': packaging_material,
 							'packing_size': packing_size,
+							'company':qty_dict.company,
 							'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
 							'bal_qty': flt(qty_dict.bal_qty*concentration/100, float_precision),
 							'amount': flt((qty_dict.bal_qty*concentration/100) * flt(valuation_rate*100/concentration) , float_precision),
@@ -54,6 +55,7 @@ def execute(filters=None):
 							'concentration': concentration,
 							'packaging_material': packaging_material,
 							'packing_size': packing_size,
+							'company':qty_dict.company,
 							'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
 							'bal_qty': flt(qty_dict.bal_qty, float_precision),
 							'amount': flt(qty_dict.bal_qty*valuation_rate, float_precision),
@@ -62,13 +64,14 @@ def execute(filters=None):
 							'uom': item_map[item]["stock_uom"]
 						})
 	filter_company = filters.get("company")
-	from_date = frappe.db.get_value("Fiscal Year","2020-2021","year_start_date")
+	from_date = frappe.db.get_value("Fiscal Year","2019-2020","year_start_date")
 	to_date = filters.get('to_date')
 	for row in data:
 		item_code = row['item_code']
 		batch_no = row['batch_no']
+		company = row['company']
 		row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
-			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}' batch_no='{batch_no}'
+			target="_blank" item_code='{item_code}' company='{company}' from_date='{from_date}' to_date='{to_date}' batch_no='{batch_no}'
 			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>"""
 
 	return columns, data
@@ -168,6 +171,13 @@ def get_columns(filters):
 			"width": 80
 		},
 		{
+			"label": _("Company"),
+			"fieldname": "company",
+			"fieldtype": "Link",
+			"options": "Company",
+			"width": 120
+		},
+		{
 			"label": _("Stock Ledger"),
 			"fieldname": "stock_ledger",
 			"fieldtype": "button",
@@ -222,13 +232,15 @@ def get_item_warehouse_batch_map(filters, float_precision):
 		if d.posting_date < from_date:
 			qty_dict.opening_qty = flt(qty_dict.opening_qty, float_precision) \
 				+ flt(d.actual_qty, float_precision)
+			qty_dict.company = d.company
 		elif d.posting_date >= from_date and d.posting_date <= to_date:
 			if flt(d.actual_qty) > 0:
 				qty_dict.in_qty = flt(qty_dict.in_qty, float_precision) + flt(d.actual_qty, float_precision)
+				qty_dict.company = d.company
 			else:
 				qty_dict.out_qty = flt(qty_dict.out_qty, float_precision) \
 					+ abs(flt(d.actual_qty, float_precision))
-
+				qty_dict.company = d.company
 		qty_dict.bal_qty = flt(qty_dict.bal_qty, float_precision) + flt(d.actual_qty, float_precision)
 
 	return iwb_map
