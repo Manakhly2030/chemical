@@ -179,38 +179,59 @@ def purchase_cal_rate_qty(self):
 			doctype_items = "Purchase Order Item"
 		doc_items = frappe.get_doc({"doctype":doctype_items}) 
 		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
-		if not d.concentration and d.received_concentration and not d.accepted_concentration:
-			d.concentration = d.received_concentration
-		if d.accepted_concentration:
-			d.concentration = d.accepted_concentration
+		if hasattr(doc_items, "received_concentration") and hasattr(doc_items, "accepted_concentration"):
+			if not d.concentration and d.received_concentration and not d.accepted_concentration:
+				d.concentration = d.received_concentration
+			if d.accepted_concentration:
+				d.concentration = d.accepted_concentration
 		if maintain_as_is_stock:
 			if hasattr(doc_items, "supplier_concentration"):
 				if not d.supplier_concentration:
 					frappe.throw("{} Row: {} Please add supplier concentration".format(d.doctype,d.idx))
 			if not d.concentration:
-					frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
+					frappe.throw("{} Row: {} Please add received or accepted concentration".format(d.doctype,d.idx))
 
+		if hasattr(doc_items, 'accepted_packing_size') and hasattr(doc_items, 'accepted_no_of_packages'):
+			d.accepted_qty = flt(d.accepted_packing_size) * flt(d.accepted_no_of_packages)
 
 		if d.get('packing_size') and d.get('no_of_packages'):
 			if hasattr(doc_items, "tare_weight"):
-				d.qty = d.received_qty = ((d.packing_size - d.tare_weight) * d.no_of_packages)
+				if hasattr(doc_items, 'receive_qty'):
+					d.receive_qty = d.receive_quantity = ((d.packing_size - d.tare_weight) * d.no_of_packages)
+				else:
+					d.qty = d.received_qty = ((d.packing_size - d.tare_weight) * d.no_of_packages)
 			else:
-				d.qty = d.received_qty = (d.packing_size * d.no_of_packages)			
-		
+				if hasattr(doc_items, 'receive_qty'):	
+					d.receive_qty = d.receive_quantity = (d.packing_size * d.no_of_packages)
+				else:
+					d.qty = d.received_qty = (d.packing_size * d.no_of_packages)
+
+			if hasattr(doc_items, 'accepted_qty') and hasattr(doc_items, 'receive_qty'):
+				d.qty = d.received_qty = flt(d.receive_qty) if not d.accepted_qty else flt(d.accepted_qty)
+
 			if maintain_as_is_stock:
 				d.quantity = d.qty * d.concentration / 100
 			else:
 				d.quantity = d.qty
 
+		# else of this: if d.get('packing_size') and d.get('no_of_packages')
 		else:
 			if maintain_as_is_stock:
 				if d.quantity:
-					d.qty = d.received_qty = flt((d.quantity * 100.0) / d.concentration)
-				
+					if hasattr(doc_items, 'receive_qty'):
+						d.receive_qty = d.receive_quantity = flt((d.quantity * 100.0) / d.concentration)
+					else:
+						d.qty = d.received_qty = flt((d.quantity * 100.0) / d.concentration)
+
 			else:
 				if d.quantity:
-					d.qty = d.received_qty = d.quantity
-		
+					if hasattr(doc_items, 'receive_qty'):
+						d.receive_qty = d.receive_quantity = d.quantity
+					else:
+						d.qty = d.received_qty = d.quantity
+
+			if hasattr(doc_items, 'accepted_qty') and hasattr(doc_items, 'receive_qty'):
+				d.qty = d.received_qty = flt(d.receive_qty) if not d.accepted_qty else flt(d.accepted_qty)
 
 		if not d.qty:
 			frappe.throw(f"Row:{d.idx} Please input the Received Qty")
@@ -243,18 +264,18 @@ def purchase_cal_rate_qty(self):
 
 
 		if hasattr(doc_items, 'accepted_packing_size') and hasattr(doc_items, 'accepted_no_of_packages'):
-
-			d.accepted_qty = flt(d.accepted_packing_size) * flt(d.accepted_no_of_packages)
-
+			# d.accepted_qty = flt(d.accepted_packing_size) * flt(d.accepted_no_of_packages)
 			if maintain_as_is_stock:
 				d.accepted_quantity = (flt(d.accepted_qty) * flt(d.accepted_concentration)) / 100
 			else:
 				d.accepted_quantity = flt(d.accepted_qty)
+
 		elif hasattr(doc_items,'accepted_quantity'):    
 			if not d.accepted_quantity and hasattr(doc_items,'short_quantity'):
 				d.short_quantity = flt(d.quantity) - flt(d.supplier_quantity)
 			else:
 				d.short_quantity = flt(d.accepted_quantity) - flt(d.supplier_quantity)
+
 		elif hasattr(doc_items,'short_quantity'):
 			d.short_quantity = flt(d.quantity) - flt(d.supplier_quantity) 
 		   
