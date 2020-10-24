@@ -191,9 +191,9 @@ doc_events = {
 		"before_save": "chemical.chemical.doc_events.bom.bom_before_save",
 		"validate": "chemical.chemical.doc_events.bom.bom_validate"	
 	},
-	# "Item Price": {
-	# 	"before_save": "chemical.api.IP_before_save",
-	# },
+	"Item Price": {
+		"before_save": "chemical.chemical.doc_events.item_price.before_save",
+	},
 	"Customer":{
 		"before_rename": "chemical.chemical.doc_events.customer.customer_override_after_rename",
 		"autoname": "chemical.chemical.doc_events.customer.customer_auto_name",
