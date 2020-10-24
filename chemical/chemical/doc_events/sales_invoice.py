@@ -76,4 +76,5 @@ def update_item_price_history(self):
 		doc.customer = self.customer
 		doc.selling = 1
 		doc.update_from = self.doctype
+		doc.docname = self.name
 		doc.save()
