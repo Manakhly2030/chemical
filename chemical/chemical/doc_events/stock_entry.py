@@ -268,7 +268,7 @@ def update_po(self):
 							finish_items.db_set("purity",row.concentration)
 							finish_items.db_set("batch_yield",row.batch_yield)
 							finish_items.db_set("batch_no",row.batch_no)
-							actual_valuation = row.actual_valuation_rate
+							actual_valuation += (flt(row.qty) * row.actual_valuation_rate)
 					# finished_item['item_code'] = row.item_code
 					# finished_item['quantity']  = row.quantity
 					# finished_item['actual_valuation'] = row.actual_valuation_rate
@@ -285,7 +285,7 @@ def update_po(self):
 				child.db_update()
 			po.db_set("batch_yield", flt(batch_yield/count))
 			po.db_set("concentration", flt(concentration/count))
-			po.db_set("valuation_rate", flt(actual_valuation))
+			po.db_set("valuation_rate", actual_valuation / flt(total_qty))
 			po.db_set("produced_qty", total_qty)
 			po.db_set("produced_quantity",actual_total_qty)
 			if len(lot)!=0:

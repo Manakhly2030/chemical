@@ -588,10 +588,10 @@ def purchase_cal_rate_qty(self):
 		if maintain_as_is_stock:
 			if hasattr(doc_items, "supplier_concentration"):
 				if not d.supplier_concentration:
+					frappe.throw("{} Row: {} Please add supplier concentration".format(d.doctype,d.idx))
+			if not d.concentration:
 					frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-		if hasattr(doc_items, "supplier_qty"):
-			if not d.supplier_qty:
-				d.supplier_qty = d.qty
+
 
 		if d.get('packing_size') and d.get('no_of_packages'):
 			if hasattr(doc_items, "tare_weight"):
@@ -601,41 +601,64 @@ def purchase_cal_rate_qty(self):
 		
 			if maintain_as_is_stock:
 				d.quantity = d.qty * d.concentration / 100
-				if hasattr(doc_items, "supplier_quantity") and hasattr(doc_items, "supplier_concentration") and hasattr(doc_items, "supplier_qty"):
-					d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
 			else:
 				d.quantity = d.qty
-				if hasattr(doc_items, "supplier_quantity") and hasattr(doc_items, "supplier_qty"):
-					d.supplier_quantity = flt(d.supplier_qty)
-			
+
 		else:
 			if maintain_as_is_stock:
 				if d.quantity:
 					d.qty = d.received_qty = flt((d.quantity * 100.0) / d.concentration)
-					if hasattr(doc_items, "supplier_quantity") and hasattr(doc_items, "supplier_concentration") and hasattr(doc_items, "supplier_qty"):
-						d.supplier_quantity = (d.supplier_qty * d.supplier_concentration / 100)
 				
 			else:
 				if d.quantity:
 					d.qty = d.received_qty = d.quantity
-					if hasattr(doc_items, "supplier_quantity") and hasattr(doc_items, "supplier_qty"):
-						d.supplier_quantity = flt(d.supplier_qty)
-				
+
 		if not d.qty:
 			frappe.throw(f"Row:{d.idx} Please input the Received Qty")
+
+		if hasattr(doc_items, "supplier_packing_size") and hasattr(doc_items, "supplier_no_of_packages"):
+			if hasattr(doc_items, "supplier_qty"):
+				d.supplier_qty = flt(d.supplier_packing_size) * flt(d.supplier_no_of_packages)
+				if not d.supplier_qty:
+					d.supplier_qty = flt(d.qty)
+
+				if hasattr(doc_items, "supplier_quantity"):    
+					if maintain_as_is_stock:
+						d.supplier_quantity = (flt(d.supplier_qty) * flt(d.supplier_concentration) / 100)
+					else:
+						d.supplier_quantity = flt(d.supplier_qty)
 
 		if hasattr(doc_items, "supplier_amount"):
 			if hasattr(doc_items, "supplier_quantity"):
 				if not d.supplier_quantity:
-					d.supplier_quantity = d.quantity
-				d.supplier_amount = flt(d.supplier_quantity * d.price)
+					d.supplier_quantity = flt(d.quantity)
+				d.supplier_amount = flt(d.supplier_quantity) * flt(d.price)
 				d.amount_difference = (d.supplier_amount) - (d.quantity * d.price)
 			else:
-				d.supplier_amount = flt(d.quantity * d.price)
-			d.rate = flt(d.supplier_amount / d.qty)
+				d.supplier_amount = flt(d.quantity) * flt(d.price)
+			
+			d.rate = flt(d.supplier_amount) / flt(d.qty)
 		else:
 			concentration = d.concentration or 100.0
 			d.rate = (flt(d.price) * flt(concentration)) / 100
+
+
+		if hasattr(doc_items, 'accepted_packing_size') and hasattr(doc_items, 'accepted_no_of_packages'):
+
+			d.accepted_qty = flt(d.accepted_packing_size) * flt(d.accepted_no_of_packages)
+
+			if maintain_as_is_stock:
+				d.accepted_quantity = (flt(d.accepted_qty) * flt(d.accepted_concentration)) / 100
+			else:
+				d.accepted_quantity = flt(d.accepted_qty)
+		elif hasattr(doc_items,'accepted_quantity'):    
+			if not d.accepted_quantity and hasattr(doc_items,'short_quantity'):
+				d.short_quantity = flt(d.quantity) - flt(d.supplier_quantity)
+			else:
+				d.short_quantity = flt(d.accepted_quantity) - flt(d.supplier_quantity)
+		elif hasattr(doc_items,'short_quantity'):
+			d.short_quantity = flt(d.quantity) - flt(d.supplier_quantity) 
+		   
 
 def se_cal_rate_qty(self):
 	for d in self.items:
@@ -675,12 +698,10 @@ def cal_actual_valuations(self):
 		maintain_as_is_stock = frappe.db.get_value("Items",row.item_code,"maintain_as_is_stock")
 		if maintain_as_is_stock:
 			concentration = flt(row.concentration) or 100
-			if self.purpose != 'Material Receipt':
-				row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
+			row.actual_valuation_rate = flt((flt(row.valuation_rate)*100)/concentration)
 		else:
 			concentration = flt(row.concentration) or 100
-			if self.purpose != 'Material Receipt':
-				row.actual_valuation_rate = flt(row.valuation_rate)
+			row.actual_valuation_rate = flt(row.valuation_rate)
 
 			
 # @frappe.whitelist()
@@ -1324,9 +1345,9 @@ def get_open_count(doctype, name, links):
 			},
 		]
 	})
-    #frappe.msgprint(str(links))
-    #links = frappe._dict(links)
-    #return {'count':0}
+	#frappe.msgprint(str(links))
+	#links = frappe._dict(links)
+	#return {'count':0}
 
 
 	# compile all items in a list
@@ -1342,7 +1363,7 @@ def get_open_count(doctype, name, links):
 
 		filters = get_filters_for(d)
 		fieldname = links.get('non_standard_fieldnames', {}).get(d, links.fieldname)
-        #return fieldname
+		#return fieldname
 		data = {'name': d}
 		if filters:
 			# get the fieldname for the current document
@@ -1364,7 +1385,7 @@ def get_open_count(doctype, name, links):
 	module = frappe.get_meta_module(doctype)
 	if hasattr(module, 'get_timeline_data'):
 		out['timeline_data'] = module.get_timeline_data(doctype, name)
-    
+	
 	return out
 
 	
