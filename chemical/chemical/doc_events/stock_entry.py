@@ -16,12 +16,13 @@ def before_validate(self,method):
 	validate_fg_completed_quantity(self)
 
 def validate(self,method):
-	calculate_rate_and_amount(self)
-	cal_target_yield_cons(self)
 	cal_validate_additional_cost_qty(self)
-	get_based_on(self)
-	#update_additional_cost(self)
 	update_additional_cost_scrap(self)
+	calculate_rate_and_amount(self)
+	get_based_on(self)
+	cal_target_yield_cons(self)
+
+
 	
 
 def stock_entry_validate(self, method):
@@ -30,8 +31,6 @@ def stock_entry_validate(self, method):
 	#update_additional_cost(self)
 
 def stock_entry_before_save(self, method):
-	get_based_on(self)
-	cal_target_yield_cons(self)
 	if self.purpose == 'Repack' and cint(self.from_ball_mill) != 1:
 		self.get_stock_and_rate()
 
@@ -147,17 +146,24 @@ def sum_total_additional_costs(self):
 	self.total_additional_costs = sum(m.amount for m in self.additional_costs)
 
 def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, raise_error_if_no_rate=True):
-	if self.purpose == 'Manufacture' and self.bom_no:
+	if self.purpose in ['Manufacture','Repack']:
 		#se_cal_rate_qty(self)
 		is_multiple_finish  = 0
 		for d in self.items:
-			if d.t_warehouse:
+			if d.t_warehouse and d.qty != 0:
 				is_multiple_finish +=1
-		if is_multiple_finish  > 1:
+		if is_multiple_finish  > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			cal_rate_for_finished_item(self)
+			self.update_valuation_rate()
 			self.set_total_incoming_outgoing_value()
 			self.set_total_amount()
+		elif is_multiple_finish  > 1 and self.purpose == "Repack":
+			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
+			calculate_multiple_repack_valuation(self)
+			self.update_valuation_rate()
+			self.set_total_incoming_outgoing_value()
+			self.set_total_amount()			
 		else:
 			self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
 			self.distribute_additional_costs()
@@ -328,48 +334,59 @@ def set_po_status(self, pro_doc):
 	if status:
 		pro_doc.db_set('status', status)
 
+def calculate_multiple_repack_valuation(self):
+	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
+	if self.purpose == 'Repack' and self.items:
+		qty = 0.0
+		total_outgoing_value = 0.0
+		for row in self.items:
+			if row.s_warehouse:
+				total_outgoing_value += flt(row.basic_amount)
+			if row.t_warehouse:
+				qty += row.qty
+		for row in self.items:
+			if row.t_warehouse:
+				row.basic_amount = flt(total_outgoing_value) * flt(row.qty)/ qty
+				row.additional_cost = flt(self.total_additional_costs) * flt(row.qty)/ qty
+				row.basic_rate =  flt(row.basic_amount/ row.qty)
+
+
+
 def cal_rate_for_finished_item(self):
+
+	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
 	work_order = frappe.get_doc("Work Order",self.work_order)
-	is_multiple_finish = 0
-	for d in self.items:
-		if d.t_warehouse:
-			is_multiple_finish +=1
-	if is_multiple_finish > 1:
-		total_incoming_amount = 0.0
-		item_arr = list()
-		item_map = dict()
-		finished_list = []
-		result = {}
-		cal_yield = 0
-		if self.purpose == 'Manufacture' and self.bom_no:
-			for row in self.items:
-				if row.t_warehouse:
-					finished_list.append({row.item_code:row.quantity}) #create a list of dict of finished item
-			for d in finished_list:
-				for k in d.keys():
-					result[k] = result.get(k, 0) + d[k] # create a dict of unique item 
-						
-			for d in self.items:
-				if d.item_code not in item_arr:
-					item_map.setdefault(d.item_code, 0)
-				
-				item_map[d.item_code] += flt(d.quantity)
-				
-				if d.t_warehouse:
-					for finish_items in work_order.finish_item:
-						if d.item_code == finish_items.item_code:
-							d.db_set('basic_amount',flt(flt(self.total_outgoing_value*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
-							d.db_set('additional_cost',flt(flt(self.total_additional_costs*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
-							d.db_set('amount',flt(d.basic_amount + d.additional_cost))
-							d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
-							d.db_set('valuation_rate',flt(d.amount/ d.qty))
-
-							if self.based_on:
-								d.batch_yield = flt(d.qty / flt(item_map[self.based_on]*finish_items.bom_qty_ratio/100))
+	item_arr = list()
+	item_map = dict()
+	finished_list = []
+	result = {}
+	cal_yield = 0
+	if self.purpose == 'Manufacture' and self.bom_no:
+		for row in self.items:
+			if row.t_warehouse:
+				finished_list.append({row.item_code:row.quantity}) #create a list of dict of finished item
+		for d in finished_list:
+			for k in d.keys():
+				result[k] = result.get(k, 0) + d[k] # create a dict of unique item 
 					
-						total_incoming_amount += flt(d.amount)
+		for d in self.items:
+			if d.item_code not in item_arr:
+				item_map.setdefault(d.item_code, 0)
+			
+			item_map[d.item_code] += flt(d.quantity)
+			
+			if d.t_warehouse:
+				for finish_items in work_order.finish_item:
+					if d.item_code == finish_items.item_code:
+						d.db_set('basic_amount',flt(flt(self.total_outgoing_value*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
+						d.db_set('additional_cost',flt(flt(self.total_additional_costs*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
+						d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
 
-				d.db_update()
+						if self.based_on:
+							d.batch_yield = flt(d.qty / flt(item_map[self.based_on]*finish_items.bom_qty_ratio/100))
+				
+
+			d.db_update()
 
 					# first_item_ratio = abs(100-self.cost_ratio_of_second_item)
 					# first_item_qty_ratio = abs(100-self.qty_ratio_of_second_item)

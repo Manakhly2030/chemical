@@ -35,8 +35,30 @@ cur_frm.fields_dict.items.grid.get_field("t_warehouse").get_query = function (do
 		}
 	}
 };
+cur_frm.fields_dict.items.grid.get_field("bom_no").get_query = function (doc) {
+	return {
+		filters: {
+			"docstatus": 1,
+		}
+	}
+};
 
 erpnext.stock.StockController = erpnext.stock.StockController.extend({
+
+        onload: function () {
+            // warehouse query if company
+            // Finbyz changes: Override default warehouse filter
+            if (this.frm.fields_dict.company) {
+                // var me = this;
+                // erpnext.queries.setup_queries(this.frm, "Warehouse", function (doc) {
+                //     return {
+                //         filters: [
+                //             ["Warehouse", "is_group", "=", 0]
+                //         ]
+                //     }
+                // });
+            }
+        },
     show_stock_ledger: function () {
         var me = this;
         if (this.frm.doc.docstatus === 1) {

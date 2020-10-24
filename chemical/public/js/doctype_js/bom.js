@@ -180,10 +180,10 @@ frappe.ui.form.on("BOM", {
 	}, */
     update_cost: function (frm) {
         return frappe.call({
-            doc: frm.doc,
-            method: "update_cost",
+            method: "chemical.chemical.doc_events.bom.update_bom_cost",
             freeze: true,
             args: {
+                doc:frm.doc.name,
                 update_parent: true,
                 from_child_bom: false,
                 save: true
