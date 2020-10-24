@@ -9,12 +9,13 @@
   "date",
   "price",
   "customer",
+  "update_from",
   "supplier",
   "column_break_4",
   "item_code",
-  "update_from",
   "buying",
-  "selling"
+  "selling",
+  "docname"
  ],
  "fields": [
   {
@@ -42,8 +43,10 @@
   },
   {
    "fieldname": "update_from",
-   "fieldtype": "Data",
-   "label": "Update From"
+   "fieldtype": "Link",
+   "label": "Update From",
+   "options": "DocType",
+   "read_only": 1
   },
   {
    "fieldname": "column_break_4",
@@ -74,9 +77,16 @@
    "hidden": 1,
    "label": "Series",
    "options": "IPH-.YYYY.-"
+  },
+  {
+   "fieldname": "docname",
+   "fieldtype": "Dynamic Link",
+   "label": "Update From Name",
+   "options": "update_from",
+   "read_only": 1
   }
  ],
- "modified": "2020-10-24 12:56:46.825786",
+ "modified": "2020-10-24 15:55:50.393382",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Item Price History",
