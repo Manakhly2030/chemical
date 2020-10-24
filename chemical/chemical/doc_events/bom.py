@@ -147,6 +147,8 @@ def update_cost():
 			row.db_set('per_unit_rate', flt(row.amount)/bom_obj.quantity)
 		for row in bom_obj.scrap_items:
 			row.db_set('per_unit_rate', flt(row.amount)/bom_obj.quantity)
+		
+		update_bom_cost(bom,update_parent=True, from_child_bom=False, save=True)
 			
 		bom_obj.db_set("volume_amount",flt(bom_obj.volume_quantity) * flt(bom_obj.volume_rate))
 		bom_obj.db_set("etp_amount",flt(bom_obj.etp_qty) * flt(bom_obj.etp_rate))
