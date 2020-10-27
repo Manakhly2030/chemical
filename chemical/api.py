@@ -243,7 +243,7 @@ def purchase_cal_rate_qty(self):
 			else:
 				d.quantity = flt(d.qty)*flt(d.concentration)/100
 			
-			d.rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
+			d.rate =  flt(d.supplier_quantity) * flt(d.price) / flt(d.qty)
 
 		else:
 			if hasattr(doc_items,'received_concentration'):
