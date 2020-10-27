@@ -4,12 +4,32 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe import _
+from frappe import db,_
 from frappe.model.document import Document
 from finbyzerp.api import before_naming as naming_series
 
 class InwardSample(Document):
 	def onclick_update_price(self):
+		if self.item_price:
+			if db.exists("Item Price" ,{ "item_code":self.item_code ,"price_list":self.price_list}):
+				item_price = frappe.get_doc("Item Price",{"item_code":self.item_code, "price_list":self.price_list})
+				item_price.price_list_rate = self.item_price
+				if self.link_to == "Supplier" and self.price_list == "Standard Buying":
+					item_price.supplier = self.party
+				elif self.link_to == "Customer" and self.price_list == "Standard Selling":
+					item_price.customer = self.party
+				item_price.save()
+			else:
+				item_price = frappe.new_doc("Item Price")
+				item_price.price_list = self.price_list
+				item_price.item_code = self.item_code
+				item_price.price_list_rate = self.item_price
+				if self.link_to == "Supplier" and self.price_list == "Standard Buying":
+					item_price.supplier = self.party
+				elif self.link_to == "Customer" and self.price_list == "Standard Selling":
+					item_price.customer = self.party
+				item_price.save()
+			frappe.msgprint("Item Price Updated")
 		# if self.link_to == "Supplier":
 		# if frappe.db.exists("Purchase Price" ,{ "product_name":self.item_code , "price_list":self.price_list}):
 			# purchase_price = frappe.get_doc("Purchase Price",{"product_name":self.item_code,"price_list":self.price_list})
@@ -20,24 +40,24 @@ class InwardSample(Document):
 			#purchase_price.run_method('on_update_after_submit')
 
 		# else:
-		if self.item_price != 0.00:
-			purchase_price = frappe.new_doc("Purchase Price")
-			purchase_price.ref_no = self.outward_reference
-			purchase_price.product_name = self.item_code
-			purchase_price.supplier_ref_no = self.ref_no
-			purchase_price.supplier_product_name = self.item_code
-			purchase_price.date = self.price_date or self.date
-			purchase_price.price = self.item_price
-			purchase_price.price_list = self.price_list
-			purchase_price.link_to = self.link_to
-			purchase_price.party = self.party
-			purchase_price.party_name = self.party_name
+		# if self.item_price != 0.00:
+		# 	purchase_price = frappe.new_doc("Purchase Price")
+		# 	purchase_price.ref_no = self.outward_reference
+		# 	purchase_price.product_name = self.item_code
+		# 	purchase_price.supplier_ref_no = self.ref_no
+		# 	purchase_price.supplier_product_name = self.item_code
+		# 	purchase_price.date = self.price_date or self.date
+		# 	purchase_price.price = self.item_price
+		# 	purchase_price.price_list = self.price_list
+		# 	purchase_price.link_to = self.link_to
+		# 	purchase_price.party = self.party
+		# 	purchase_price.party_name = self.party_name
 
-			purchase_price.save()
-			# self.db_set('purchase_price', purchase_price.name)
-			purchase_price.submit()
-		#frappe.db.commit()
-		frappe.msgprint(_("Purchase Price Updated"))
+		# 	purchase_price.save()
+		# 	# self.db_set('purchase_price', purchase_price.name)
+		# 	purchase_price.submit()
+		# #frappe.db.commit()
+		# frappe.msgprint(_("Purchase Price Updated"))
 
 	def before_save(self):
 		if self.link_to == "Customer" and self.party and self.item_code:

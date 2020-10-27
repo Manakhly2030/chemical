@@ -18,5 +18,6 @@ def update_item_price_history(self):
         doc.selling = 1
         doc.customer = self.customer
     doc.update_from = self.doctype
-    doc.docname = self.name
+    if frappe.db.exists("Item Price",self.name):
+        doc.docname = self.name
     doc.save()
