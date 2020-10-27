@@ -2,7 +2,7 @@ import frappe
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-from chemical.api import se_cal_rate_qty, cal_actual_valuations
+from chemical.api import purchase_cal_rate_qty, se_cal_rate_qty, cal_actual_valuations
 from six import iteritems
 from frappe import msgprint, _
 
@@ -10,7 +10,13 @@ def onload(self,method):
 	quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
-	se_cal_rate_qty(self)
+	if self.purpose in ['Material Receipt','Repack'] and hasattr(self,'reference_docname'):
+		if not self.reference_docname:
+			purchase_cal_rate_qty(self)
+		else:
+			se_cal_rate_qty(self)
+	else:
+		se_cal_rate_qty(self)
 	fg_completed_quantity_to_fg_completed_qty(self)
 	cal_actual_valuations(self)
 	validate_fg_completed_quantity(self)
@@ -147,18 +153,17 @@ def sum_total_additional_costs(self):
 
 def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, raise_error_if_no_rate=True):
 	if self.purpose in ['Manufacture','Repack']:
-		#se_cal_rate_qty(self)
 		is_multiple_finish  = 0
 		for d in self.items:
 			if d.t_warehouse and d.qty != 0:
 				is_multiple_finish +=1
-		if is_multiple_finish  > 1 and self.purpose == "Manufacture":
+		if is_multiple_finish > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			cal_rate_for_finished_item(self)
 			self.update_valuation_rate()
 			self.set_total_incoming_outgoing_value()
 			self.set_total_amount()
-		elif is_multiple_finish  > 1 and self.purpose == "Repack":
+		elif is_multiple_finish > 1 and self.purpose == "Repack":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			calculate_multiple_repack_valuation(self)
 			self.update_valuation_rate()
