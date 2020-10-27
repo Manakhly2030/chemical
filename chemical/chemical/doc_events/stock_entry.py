@@ -151,13 +151,13 @@ def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, r
 		for d in self.items:
 			if d.t_warehouse and d.qty != 0:
 				is_multiple_finish +=1
-		if is_multiple_finish  > 1 and self.purpose == "Manufacture":
+		if is_multiple_finish > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			cal_rate_for_finished_item(self)
 			self.update_valuation_rate()
 			self.set_total_incoming_outgoing_value()
 			self.set_total_amount()
-		elif is_multiple_finish  > 1 and self.purpose == "Repack":
+		elif is_multiple_finish > 1 and self.purpose == "Repack":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			calculate_multiple_repack_valuation(self)
 			self.update_valuation_rate()

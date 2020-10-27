@@ -9,6 +9,7 @@ from frappe.model.document import Document
 
 class PurchasePrice(Document):
 	def on_submit(self):
+		pass
 		data = frappe.get_list("Item Price",fields = 'item_code')
 		if db.exists("Item Price" ,{ "item_code":self.product_name ,"price_list":self.price_list}):
 			item_price = frappe.get_doc("Item Price",{"item_code":self.product_name, "price_list":self.price_list})

@@ -272,16 +272,10 @@ def purchase_cal_rate_qty(self):
 					
 
 		if hasattr(doc_items,'short_quantity'):
-			if not d.accepted_quantity:
-				d.short_quantity = flt(d.quantity) - flt(d.supplier_quantity) 
-			else:
-				d.short_quantity = flt(d.quantity) - flt(d.accepted_quantity) 
+			d.short_quantity = flt(d.quantity) - flt(d.supplier_quantity)
 
 		if hasattr(doc_items,'amount_difference'):
 			d.amount_difference = flt(d.price) * flt(d.short_quantity) 
-
-		
-
 		
 def se_cal_rate_qty(self):
 	doc_items = frappe.get_doc({"doctype":"Stock Entry Detail"})
@@ -296,10 +290,7 @@ def se_cal_rate_qty(self):
 			else:
 				concentration = d.concentration
 		if d.get('packing_size') and d.get('no_of_packages'):
-			if hasattr(doc_items, "tare_weight"):
-				d.qty  = ((d.packing_size - d.tare_weight) * d.no_of_packages)
-			else:
-				d.qty = (d.packing_size * d.no_of_packages)
+			d.qty = (d.packing_size * d.no_of_packages)
 			if maintain_as_is_stock:
 				d.quantity = d.qty * concentration / 100
 				if d.price:
