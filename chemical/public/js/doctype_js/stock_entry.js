@@ -273,7 +273,24 @@ frappe.ui.form.on("Stock Entry", {
             }
 			
         })
-	},
+    },
+    stock_entry_type: function(frm){
+        if(frm.doc.stock_entry_type=="Send to Jobwork" || frm.doc.stock_entry_type=="Send Jobwork Finish" ){
+            frm.set_value("send_to_party",1)
+            frm.set_value("receive_from_party",0)
+
+        }
+        else if(frm.doc.stock_entry_type=="Receive Jobwork Raw Material" || frm.doc.stock_entry_type=="Receive Jobwork Return" ){
+            frm.set_value("receive_from_party",1)
+            frm.set_value("send_to_party",0)
+
+        }
+        else{
+            frm.set_value("receive_from_party",0)
+            frm.set_value("send_to_party",0)
+        }
+       
+    },
     
     set_basic_rate: function (frm, cdt, cdn) {
         const item = locals[cdt][cdn];
@@ -460,6 +477,9 @@ frappe.ui.form.on("Stock Entry Detail", {
     },
     no_of_packages: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    batch_no:function(frm,cdt,cdn){
+        frm.events.cal_qty(frm)
     }
 });
 

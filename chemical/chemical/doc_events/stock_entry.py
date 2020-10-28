@@ -7,11 +7,12 @@ from six import iteritems
 from frappe import msgprint, _
 
 def onload(self,method):
-	quantity_price_to_qty_rate(self)
+	pass
+	#quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
-	if self.purpose in ['Material Receipt','Repack'] and hasattr(self,'reference_docname'):
-		if not self.reference_docname:
+	if self.purpose in ['Material Receipt','Repack'] and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
+		if not self.reference_docname and not self.jw_ref:
 			purchase_cal_rate_qty(self)
 		else:
 			se_cal_rate_qty(self)
@@ -28,8 +29,6 @@ def validate(self,method):
 	get_based_on(self)
 	cal_target_yield_cons(self)
 
-
-	
 def stock_entry_validate(self, method):
 	if self.purpose == "Material Receipt":
 		validate_batch_wise_item_for_concentration(self)
@@ -159,28 +158,34 @@ def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, r
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			cal_rate_for_finished_item(self)
-			self.update_valuation_rate()
-			self.set_total_incoming_outgoing_value()
-			self.set_total_amount()
+
 		elif is_multiple_finish > 1 and self.purpose == "Repack":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			calculate_multiple_repack_valuation(self)
-			self.update_valuation_rate()
-			self.set_total_incoming_outgoing_value()
-			self.set_total_amount()			
+		
 		else:
 			self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
 			self.distribute_additional_costs()
-			self.update_valuation_rate()
-			self.set_total_incoming_outgoing_value()
-			self.set_total_amount()
+
 	else:
 		self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
 		self.distribute_additional_costs()
-		self.update_valuation_rate()
-		self.set_total_incoming_outgoing_value()
-		self.set_total_amount()
-					
+
+	self.update_valuation_rate()
+	self.set_total_incoming_outgoing_value()
+	self.set_total_amount()
+	price_to_rate(self)
+
+def price_to_rate(self):
+	for item in self.items:
+		has_batch_no,maintain_as_is_stock = frappe.db.get_value('Item', item.item_code, ['has_batch_no','maintain_as_is_stock'])
+		concentration = item.concentration or 100	
+		if item.basic_rate:
+			if maintain_as_is_stock:
+				item.price = flt(item.basic_rate)*100/concentration
+			else:
+				item.price = flt(item.basic_rate)	
+
 def cal_target_yield_cons(self):
 	cal_yield = 0
 	cons = 0
@@ -342,19 +347,19 @@ def calculate_multiple_repack_valuation(self):
 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
 	if self.purpose == 'Repack' and self.items:
 		qty = 0.0
+		quantity = 0.0
 		total_outgoing_value = 0.0
 		for row in self.items:
 			if row.s_warehouse:
 				total_outgoing_value += flt(row.basic_amount)
 			if row.t_warehouse:
 				qty += row.qty
+				quantity += row.quantity
 		for row in self.items:
 			if row.t_warehouse:
-				row.basic_amount = flt(total_outgoing_value) * flt(row.qty)/ qty
-				row.additional_cost = flt(self.total_additional_costs) * flt(row.qty)/ qty
+				row.basic_amount = flt(total_outgoing_value) * flt(row.quantity)/ quantity
+				row.additional_cost = flt(self.total_additional_costs) * flt(row.quantity)/ quantity
 				row.basic_rate =  flt(row.basic_amount/ row.qty)
-
-
 
 def cal_rate_for_finished_item(self):
 

@@ -92,6 +92,7 @@ def execute(filters=None):
 
 	add_additional_uom_columns(columns, data, include_uom, conversion_factors)
 	filter_company = filters.get("company")
+	from_date_fiscal = frappe.db.get_value("Fiscal Year","2019-2020","year_start_date")
 	for row in data:
 		has_batch_no = frappe.db.get_value("Item",row['item_code'],"has_batch_no")
 		item_code = row['item_code']
@@ -101,7 +102,7 @@ def execute(filters=None):
 			onClick=view_batch_wise_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('to_date'))>View Batch Detail</button>"""
 		
 		row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
-			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}'
+			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date_fiscal}' to_date='{to_date}'
 			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'))>View Stock Ledger</button>"""
 		
 	return columns, data
