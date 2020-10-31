@@ -33,20 +33,18 @@ def pi_on_cancel(self, method):
 
 @frappe.whitelist()
 def stock_entry_validate(self, method):
-	if batch_wise_cost():		
-		if self.from_ball_mill != 1 and self.purpose not in ["Manufacture", "Subcontract", "Material Receipt"]:
-			set_basic_rate_for_t_warehouse(self)
-
+	if batch_wise_cost():
 		if self.purpose not in ['Material Transfer', 'Material Transfer for Manufacture']:
 			make_batches(self, 't_warehouse')
 			
 	if self.purpose in ['Repack','Manufacture','Material Issue'] and cint(self.from_ball_mill) != 1:
 		self.get_stock_and_rate()
-	validate_additional_cost(self,method)
+	if self._action == "submit":
+		validate_additional_cost(self,method)
 
 def validate_additional_cost(self,method):
 	if self.purpose in ['Material Transfer','Material Transfer for Manufacture','Repack','Manufacture'] and self._action == "submit":
-		if round(self.value_difference,0) != round(self.total_additional_costs,0):
+		if abs(round(flt(self.value_difference,1))) != abs(round(flt(self.total_additional_costs,1))):
 			frappe.throw("ValuationError: Value difference between incoming and outgoing amount is higher than additional cost")
 
 @frappe.whitelist()
@@ -66,8 +64,11 @@ def make_transfer_batches(self):
 		has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
 		if has_batch_no:
 			if row.batch_no:
-				if frappe.db.get_value("Batch", row.batch_no, 'valuation_rate') == row.valuation_rate:
+				if not frappe.db.exists("Stock Ledger Entry", {'company':self.company,'warehouse':row.get('t_warehouse'),'batch_no':row.batch_no,'voucher_no':('!=',self.name)}):
+				#if frappe.db.get_value("Batch", row.batch_no, 'valuation_rate') == row.valuation_rate:
 					continue
+				else:
+					row.db_set('old_batch_no', row.batch_no)
 
 			batch = frappe.new_doc("Batch")
 			batch.item = row.item_code
@@ -85,9 +86,8 @@ def make_transfer_batches(self):
 			batch.reference_doctype = self.doctype
 			batch.reference_name = self.name
 			batch.insert()
-
-			row.db_set('old_batch_no', row.batch_no)
 			row.db_set('batch_no', batch.name)
+
 
 @frappe.whitelist()
 def stock_entry_on_cancel(self, method):
@@ -146,6 +146,12 @@ def make_batches(self, warehouse_field):
 
 			has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
 			if has_batch_no:
+				if row.batch_no and not frappe.db.exists("Stock Ledger Entry", {'company':self.company,'warehouse':row.get(warehouse_field),'batch_no':row.batch_no}):
+					continue
+
+				if row.batch_no and self.doctype == "Stock Entry":
+					row.db_set('old_batch_no', row.batch_no)
+
 				batch = frappe.new_doc("Batch")
 				batch.item = row.item_code
 				batch.supplier = getattr(self, 'supplier', None)
@@ -163,10 +169,6 @@ def make_batches(self, warehouse_field):
 				batch.reference_doctype = self.doctype
 				batch.reference_name = self.name
 				batch.insert()
-
-				if row.batch_no and self.doctype == "Stock Entry":
-					row.db_set('old_batch_no', row.batch_no)
-				
 				row.batch_no = batch.name
 
 def delete_batches(self, warehouse):

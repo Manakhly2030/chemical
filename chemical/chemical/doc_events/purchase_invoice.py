@@ -13,6 +13,7 @@ def before_validate(self,method):
 	purchase_cal_rate_qty(self)
 
 def before_submit(self, method):
+	update_item_price_history(self)
 	override_pi_status_updater_args()
 
 def before_cancel(self, method):
@@ -55,3 +56,15 @@ def pi_update_status_updater_args(self):
 				'extra_cond': """ and exists (select name from `tabPurchase Invoice`
 					where name=`tabPurchase Invoice Item`.parent and update_stock=1 and is_return=1)"""
 			})
+
+def update_item_price_history(self):
+	for item in self.items:
+		doc = frappe.new_doc("Item Price History")
+		doc.date = self.posting_date
+		doc.item_code = item.item_code
+		doc.price = item.price
+		doc.supplier = self.supplier
+		doc.buying = 1
+		doc.update_from = self.doctype
+		doc.docname = self.name
+		doc.save()

@@ -108,3 +108,44 @@ function view_batch_wise_report(item_code, company, to_date) {
 function view_stock_leder_report(item_code, company, from_date, to_date) {
 	window.open(window.location.href.split("#")[0] + "#query-report/Stock Ledger Chemical" + "/?" + "item_code=" + item_code + "&" +  "company="+company + "&" + "from_date=" + from_date + "&" + "to_date=" + to_date,"_blank")	
 }
+$(window).on("load resize scroll",function(){
+    setTimeout(function(){
+		
+        var wh = $(window).height();
+		var topPosition = wh - $('.page-form').height()
+		// console.log('Nav: '+$('.navbar').height())
+		// console.log('page head: '+$('.page-head').height())
+		// console.log('page form: '+$('.page-form').height())
+		// console.log('Dt Header: '+$('.dt-header').height())
+
+		// console.log('window: '+wh)
+        console.log('window: '+wh)
+        console.log(wh)
+        console.log(topPosition)
+        final = topPosition - 200
+		console.log(final)
+		$('.dt-scrollable').height(final)
+		//$('.dt-scrollable').css('height','500px');
+	 },10);
+});
+$('.dt-scrollable').ready(function(){
+	
+	setTimeout(function(){
+        var wh = $(window).height();
+		var topPosition = wh - $('.page-form').height()
+		// console.log('Nav: '+$('.navbar').height())
+		// console.log('page head: '+$('.page-head').height())
+		// console.log('page form: '+$('.page-form').height())
+		// console.log('Dt Header: '+$('.dt-header').height())
+
+        // console.log('window: '+wh)
+		// console.log(topPosition)
+		final = topPosition - 200
+		console.log(final)
+		console.log($('.dt-scrollable'))
+		console.log($('.page-form').height())
+		//$('.dt-scrollable').height(final)
+		$('.dt-scrollable').attr('style', 'height: 100px !important');
+		//$('.dt-scrollable').css('height','500');
+    },10);
+});

@@ -53,9 +53,9 @@ app_license = "GPL 3.0"
 
 # fixtures = ["Custom Field"]
 
-app_include_css = [
-	"assets/css/summernote.min.css"
-]
+# app_include_css = [
+# 	"assets/css/summernote.min.css"
+# ]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/chemical/css/chemical.css"
@@ -191,9 +191,9 @@ doc_events = {
 		"before_save": "chemical.chemical.doc_events.bom.bom_before_save",
 		"validate": "chemical.chemical.doc_events.bom.bom_validate"	
 	},
-	# "Item Price": {
-	# 	"before_save": "chemical.api.IP_before_save",
-	# },
+	"Item Price": {
+		"before_save": "chemical.chemical.doc_events.item_price.before_save",
+	},
 	"Customer":{
 		"before_rename": "chemical.chemical.doc_events.customer.customer_override_after_rename",
 		"autoname": "chemical.chemical.doc_events.customer.customer_auto_name",
@@ -209,17 +209,17 @@ doc_events = {
 		"before_submit": "chemical.chemical.doc_events.work_order.before_submit",
 	},
 	"Stock Entry": {
+		"onload": "chemical.chemical.doc_events.stock_entry.onload",
+		"before_validate": "chemical.chemical.doc_events.stock_entry.before_validate",
 		"validate": [
 			"chemical.chemical.doc_events.stock_entry.stock_entry_validate",
 			"chemical.batch_valuation.stock_entry_validate",
 			"chemical.chemical.doc_events.stock_entry.validate",
 		],
-		"before_validate": "chemical.chemical.doc_events.stock_entry.before_validate",
-		"onload": "chemical.chemical.doc_events.stock_entry.onload",
+		"before_insert": "finbyzerp.api.before_insert",
 		"before_save": [
 			 "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",
 		],
-		"before_insert": "finbyzerp.api.before_insert",
 		"before_submit": [
 			"chemical.chemical.doc_events.stock_entry.se_before_submit",
 			"chemical.chemical.doc_events.stock_entry.before_submit",
@@ -325,4 +325,5 @@ scheduler_events = {
 override_doctype_dashboards = {
 	"Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
 	"Customer": "chemical.chemical.dashboard.customer.get_data",
+	"Purchase Receipt":"chemical.chemical.dashboard.purchase_receipt.get_data"
 }

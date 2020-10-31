@@ -101,7 +101,7 @@
    "reqd": 1
   },
   {
-   "default": "now",
+   "default": "Now",
    "fieldname": "posting_time",
    "fieldtype": "Time",
    "label": "Posting Time"
@@ -285,7 +285,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2020-09-21 09:45:04.653936",
+ "modified": "2020-10-26 13:12:11.569167",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
