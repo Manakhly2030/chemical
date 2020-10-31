@@ -35,6 +35,13 @@ cur_frm.fields_dict.items.grid.get_field("t_warehouse").get_query = function (do
 		}
 	}
 };
+cur_frm.fields_dict.items.grid.get_field("bom_no").get_query = function (doc) {
+	return {
+		filters: {
+			"docstatus": 1,
+		}
+	}
+};
 
 erpnext.stock.StockController = erpnext.stock.StockController.extend({
     show_stock_ledger: function () {

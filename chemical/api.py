@@ -1455,4 +1455,6 @@ def quantity_price_to_qty_rate(self):
 			item.db_set("quantity",flt(item.qty))
 		if item.rate and item.price ==0:
 			item.db_set("price",flt(item.rate))
+
+
 				
