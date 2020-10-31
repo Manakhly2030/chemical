@@ -2,7 +2,7 @@ import frappe
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-from chemical.api import purchase_cal_rate_qty, se_cal_rate_qty, cal_actual_valuations
+from chemical.api import se_cal_rate_qty, se_repack_cal_rate_qty, cal_actual_valuations
 from six import iteritems
 from frappe import msgprint, _
 
@@ -11,9 +11,9 @@ def onload(self,method):
 	#quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
-	if self.purpose in ['Material Receipt','Repack'] and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
+	if self.purpose in ['Material Receipt','Repack'] and self.party_type == "Supplier" and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
 		if not self.reference_docname and not self.jw_ref:
-			purchase_cal_rate_qty(self)
+			se_repack_cal_rate_qty(self)
 		else:
 			se_cal_rate_qty(self)
 	else:
@@ -480,7 +480,7 @@ def update_po_volume(self, po, ignore_permissions = True):
 		
 def update_po_transfer_qty(self, po):
 	for d in po.required_items:
-		se_items_date = frappe.db.sql('''select sum(qty), valuation_rate
+		se_items_date = frappe.db.sql('''select sum(quantity), valuation_rate
 			from `tabStock Entry` entry, `tabStock Entry Detail` detail
 			where
 				entry.work_order = %s
