@@ -324,6 +324,5 @@ scheduler_events = {
 
 override_doctype_dashboards = {
 	"Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
-	"Customer": "chemical.chemical.dashboard.customer.get_data",
-	"Purchase Receipt":"chemical.chemical.dashboard.purchase_receipt.get_data"
+	"Customer": "chemical.chemical.dashboard.customer.get_data"
 }
