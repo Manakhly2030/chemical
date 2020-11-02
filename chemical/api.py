@@ -582,7 +582,7 @@ def get_fiscal(date):
 def quantity_price_to_qty_rate(self):
 	for item in self.items:
 		has_batch_no,maintain_as_is_stock = frappe.db.get_value('Item', item.item_code, ['has_batch_no','maintain_as_is_stock'])
-		concentration = item.concentration or 100
+		concentration = item.get('concentration') or 100
 		if item.qty and item.quantity == 0:
 			if maintain_as_is_stock:
 				item.db_set("quantity",flt(item.qty)*flt(concentration)/100)

@@ -10,8 +10,8 @@ def get_data(data):
 			'Asset': 'purchase_receipt',
 			'Landed Cost Voucher': 'receipt_document',
 			'Auto Repeat': 'reference_document',
-			'Purchase Receipt': 'return_against',
-            'Stock Entry':'purchase_receipt_number',
+			'Purchase Receipt': 'return_against'
+            'Stock Entry':'reference_purchase_receipt',
 		},
 		'internal_links': {
 			'Purchase Order': ['items', 'purchase_order'],
