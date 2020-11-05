@@ -82,7 +82,7 @@ def execute(filters=None):
 					fifo_queue = sorted(filter(_func, fifo_queue), key=_func)
 					if not fifo_queue: continue
 
-					stock_ageing_data['average_age'] = get_average_age(fifo_queue, to_date)
+					stock_ageing_data['average_age'] = round(get_average_age(fifo_queue, to_date),2)
 					stock_ageing_data['earliest_age'] = date_diff(to_date, fifo_queue[0][1])
 					stock_ageing_data['latest_age'] = date_diff(to_date, fifo_queue[-1][1])
 
@@ -110,32 +110,46 @@ def execute(filters=None):
 def get_columns(filters):
 	"""return columns"""
 	columns = [
-		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 100},
-		{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
+		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 170},
+		#{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
-		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
 		{"label": _("As Is Qty"), "fieldname": "as_is_qty", "fieldtype": "Float", "width": 100},
-		{"label": _("Balance Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
-		{"label": _("Balance Value"), "fieldname": "bal_val", "fieldtype": "Currency", "width": 100, "options": "currency"},
-		{"label": _("Opening Qty"), "fieldname": "opening_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
-		{"label": _("Opening Value"), "fieldname": "opening_val", "fieldtype": "Currency", "width": 110, "options": "currency"},
-		{"label": _("In Qty"), "fieldname": "in_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("In Value"), "fieldname": "in_val", "fieldtype": "Float", "width": 80},
-		{"label": _("Out Qty"), "fieldname": "out_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Out Value"), "fieldname": "out_val", "fieldtype": "Float", "width": 80},
-		{"label": _("Valuation Rate"), "fieldname": "val_rate", "fieldtype": "Currency", "width": 90, "convertible": "rate", "options": "currency"},
-		{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100},
-		{"label": _("Batch Wise"), "fieldname": "batch_wise", "fieldtype": "button", "width": 120},
-		{"label": _("Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 120},
+		{"label": _("Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
+		{"label": _("Price"), "fieldname": "val_rate", "fieldtype": "Currency", "width": 90, "convertible": "rate", "options": "currency"},
+		{"label": _("Amount"), "fieldname": "bal_val", "fieldtype": "Currency", "width": 100, "options": "currency"},
 	]
-
 	if filters.get('show_stock_ageing_data'):
 		columns += [{'label': _('Average Age'), 'fieldname': 'average_age', 'width': 100},
 		{'label': _('Earliest Age'), 'fieldname': 'earliest_age', 'width': 100},
 		{'label': _('Latest Age'), 'fieldname': 'latest_age', 'width': 100}]
+	if filters.get('show_in_out_qty'):
+		columns +=[	
+			{"label": _("Opening Qty"), "fieldname": "opening_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
+			{"label": _("Opening Value"), "fieldname": "opening_val", "fieldtype": "Currency", "width": 110, "options": "currency"},
+			{"label": _("In Qty"), "fieldname": "in_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+			{"label": _("In Value"), "fieldname": "in_val", "fieldtype": "Float", "width": 80},
+			{"label": _("Out Qty"), "fieldname": "out_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+			{"label": _("Out Value"), "fieldname": "out_val", "fieldtype": "Float", "width": 80},
+		]
+	columns +=[
+		#{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+		#{"label": _("Reorder Qty"), "fieldname": "reorder_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+		{"label": _("UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 40},
+	]
+	company_list = frappe.db.get_all("Company")
+
+	if len(company_list) >1:
+		if not filters.get("company"):
+			columns += [
+			{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 100},
+			]
+
+	columns +=[
+		{"label": _("Batch Wise"), "fieldname": "batch_wise", "fieldtype": "button", "width": 120},
+		{"label": _("Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 120},
+	]
+
 
 	if filters.get('show_variant_attributes'):
 		columns += [{'label': att_name, 'fieldname': att_name, 'width': 100} for att_name in get_variants_attributes()]
