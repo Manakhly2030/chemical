@@ -18,7 +18,7 @@ frappe.query_reports["Stock Balance Chemical"] = {
 			"fieldtype": "Date",
 			"width": "80",
 			"reqd": 1,
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
+			"default": frappe.datetime.add_months(frappe.datetime.get_today()),
 		},
 		{
 			"fieldname": "to_date",
@@ -71,22 +71,28 @@ frappe.query_reports["Stock Balance Chemical"] = {
 			"width": "80",
 			"options": "Warehouse Type"
 		},
-		{
-			"fieldname": "include_uom",
-			"label": __("Include UOM"),
-			"fieldtype": "Link",
-			"options": "UOM"
-		},
-		{
-			"fieldname": "show_variant_attributes",
-			"label": __("Show Variant Attributes"),
-			"fieldtype": "Check"
-		},
+		// {
+		// 	"fieldname": "include_uom",
+		// 	"label": __("Include UOM"),
+		// 	"fieldtype": "Link",
+		// 	"options": "UOM"
+		// },
+		// {
+		// 	"fieldname": "show_variant_attributes",
+		// 	"label": __("Show Variant Attributes"),
+		// 	"fieldtype": "Check"
+		// },
 		{
 			"fieldname": 'show_stock_ageing_data',
 			"label": __('Show Stock Ageing Data'),
 			"fieldtype": 'Check'
 		},
+		{
+			"fieldname": 'show_in_out_qty',
+			"label": __('Show In/Out Qty'),
+			"fieldtype": 'Check'
+		},
+
 	],
 
 	"formatter": function (value, row, column, data, default_formatter) {
