@@ -48,7 +48,9 @@ def execute(filters=None):
 								'amount': flt((qty_dict.bal_qty*concentration/100) * flt(valuation_rate*100/concentration) , float_precision),
 								'as_is_qty': flt(qty_dict.bal_qty, float_precision),
 								'valuation_rate':flt(valuation_rate*100/concentration,float_precision),
-								'uom': item_map[item]["stock_uom"]
+								'uom': item_map[item]["stock_uom"],
+								'party_type':qty_dict_without_group.party_type,
+								'party':qty_dict_without_group.party,
 							})
 						else:
 							data.append({
@@ -68,7 +70,9 @@ def execute(filters=None):
 								'amount': flt(qty_dict.bal_qty*valuation_rate, float_precision),
 								'as_is_qty': flt(qty_dict.bal_qty, float_precision),
 								'valuation_rate':valuation_rate,
-								'uom': item_map[item]["stock_uom"]
+								'uom': item_map[item]["stock_uom"],
+								'party_type':qty_dict_without_group.party_type,
+								'party':qty_dict_without_group.party,
 							})
 	filter_company = filters.get("company")
 	from_date = frappe.db.get_value("Fiscal Year","2019-2020","year_start_date")
@@ -127,6 +131,13 @@ def get_columns(filters):
 			"options": "voucher_type",
 			"width": 140
 		},
+	]
+	if filters.get('show_party'):
+		columns +=[
+			{"label": _("Party Type"), "fieldname": "party_type", "fieldtype": "Data", "width": 80,"align":"center"},
+			{"label": _("Party"), "fieldname": "party", "fieldtype": "Data", "width": 140,"align":"left"},
+		]
+	columns +=[
 		{
 			"label": _("Concentration"),
 			"fieldname": "concentration",
@@ -210,30 +221,35 @@ def get_columns(filters):
 def get_conditions(filters):
 	conditions = ""
 	if filters.get("to_date"):
-		conditions += " and posting_date <= '%s'" % filters["to_date"]
+		conditions += " and sle.posting_date <= '%s'" % filters["to_date"]
 	else:
 		frappe.throw(_("'To Date' is required"))
 
 	if filters.get("company"):
-		conditions += " and company = '%s'" % filters["company"]
+		conditions += " and sle.company = '%s'" % filters["company"]
 
 	if filters.get("warehouse"):
-		conditions += " and warehouse = '%s'" % filters["warehouse"]
+		conditions += " and sle.warehouse = '%s'" % filters["warehouse"]
 
 	if filters.get("item_code"):
-		conditions += " and item_code = '%s'" % filters["item_code"]
+		conditions += " and sle.item_code = '%s'" % filters["item_code"]
 
 	return conditions
 
 #get all details
 def get_stock_ledger_entries(filters):
+	# show_party_select = show_party_join = ''
+	# if filters.get('show_party'):
+	# 	show_party_join += " Left JOIN `tabStock Entry` as se on se.name = sle.voucher_no"
+	# 	show_party_select += ", se.party_type, se.party"
+
 	conditions = get_conditions(filters)
 	return frappe.db.sql("""
-		select item_code, batch_no, warehouse, posting_date,company, sum(actual_qty) as actual_qty
-		from `tabStock Ledger Entry`
-		where docstatus < 2 and ifnull(batch_no, '') != '' %s
-		group by voucher_no, batch_no, item_code, warehouse
-		order by item_code, warehouse, batch_no""" %
+		select sle.item_code, sle.batch_no, sle.warehouse, sle.posting_date,sle.company, sum(sle.actual_qty) as actual_qty
+		from `tabStock Ledger Entry` as sle
+		where sle.docstatus < 2 and ifnull(sle.batch_no, '') != '' %s
+		group by sle.voucher_no, sle.batch_no, sle.item_code, sle.warehouse
+		order by sle.item_code, sle.warehouse, sle.batch_no""" %
 		conditions, as_dict=1)
 
 def get_item_warehouse_batch_map(filters, float_precision):
@@ -252,27 +268,32 @@ def get_item_warehouse_batch_map(filters, float_precision):
 		if d.posting_date < from_date:
 			qty_dict.opening_qty = flt(qty_dict.opening_qty, float_precision) \
 				+ flt(d.actual_qty, float_precision)
-			qty_dict.company = d.company
 		elif d.posting_date >= from_date and d.posting_date <= to_date:
 			if flt(d.actual_qty) > 0:
 				qty_dict.in_qty = flt(qty_dict.in_qty, float_precision) + flt(d.actual_qty, float_precision)
-				qty_dict.company = d.company
 			else:
 				qty_dict.out_qty = flt(qty_dict.out_qty, float_precision) \
 					+ abs(flt(d.actual_qty, float_precision))
-				qty_dict.company = d.company
+		# qty_dict.party_type = d.party_type
+		# qty_dict.party = d.party
+		qty_dict.company = d.company
 		qty_dict.bal_qty = flt(qty_dict.bal_qty, float_precision) + flt(d.actual_qty, float_precision)
 
 	return iwb_map
 
 def get_stock_ledger_entries_without_group(filters):
+	show_party_select = show_party_join = ''
+	if filters.get('show_party'):
+		show_party_join += " Left JOIN `tabStock Entry` as se on se.name = sle.voucher_no"
+		show_party_select += ", se.party_type, se.party"
+
 	conditions = get_conditions(filters)
 	return frappe.db.sql("""
-		select item_code, batch_no, warehouse, posting_date,company, actual_qty, voucher_type,voucher_no
-		from `tabStock Ledger Entry`
-		where docstatus < 2 and ifnull(batch_no, '') != '' and actual_qty > 0 %s
-		order by item_code, warehouse,batch_no""" %
-		conditions, as_dict=1)
+		select sle.item_code, sle.batch_no, sle.warehouse, sle.posting_date,sle.company, sle.actual_qty, sle.voucher_type,sle.voucher_no %s
+		from `tabStock Ledger Entry` as sle %s
+		where sle.docstatus < 2 and ifnull(sle.batch_no, '') != '' and sle.actual_qty > 0 %s
+		order by sle.item_code, sle.warehouse,sle.batch_no""" %
+		(show_party_select, show_party_join,conditions), as_dict=1)
 
 def get_item_warehouse_batch_map_without_group(filters, float_precision):
 	sle = get_stock_ledger_entries_without_group(filters)
@@ -286,6 +307,8 @@ def get_item_warehouse_batch_map_without_group(filters, float_precision):
 		qty_dict_without_group = iwb_map_without_group[d.company][d.item_code][d.warehouse][d.batch_no]
 		qty_dict_without_group.voucher_type = d.voucher_type
 		qty_dict_without_group.voucher_no = d.voucher_no
+		qty_dict_without_group.party_type = d.party_type
+		qty_dict_without_group.party = d.party
 
 	return iwb_map_without_group
 

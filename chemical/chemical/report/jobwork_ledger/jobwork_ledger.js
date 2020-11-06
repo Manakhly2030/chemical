@@ -1,11 +1,11 @@
-// Copyright (c) 2016, FinByz Tech Pvt. Ltd. and contributors
+// Copyright (c) 2016, FinByz Tech Pvt Ltd and contributors
 // For license information, please see license.txt
 /* eslint-disable */
 
-frappe.query_reports["Stock Ledger Chemical"] = {
+frappe.query_reports["Jobwork Ledger"] = {
 	"filters": [
 		{
-			"fieldname": "company",
+			"fieldname":"company",
 			"label": __("Company"),
 			"fieldtype": "Link",
 			"options": "Company",
@@ -13,70 +13,76 @@ frappe.query_reports["Stock Ledger Chemical"] = {
 			"reqd": 1
 		},
 		{
-			"fieldname": "from_date",
+			"fieldname":"from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
 			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
 			"reqd": 1
 		},
 		{
-			"fieldname": "to_date",
+			"fieldname":"to_date",
 			"label": __("To Date"),
 			"fieldtype": "Date",
 			"default": frappe.datetime.get_today(),
 			"reqd": 1
 		},
 		{
-			"fieldname": "warehouse",
+			"fieldname":"warehouse",
 			"label": __("Warehouse"),
 			"fieldtype": "Link",
 			"options": "Warehouse",
-			"get_query": function () {
-				const company = frappe.query_report.get_filter_value('company');
+			"get_query" : function(){
+				var company = frappe.query_report.get_filter_value('company');
 				return {
-					filters: { 'company': company }
+					"doctye": "Warehouse",
+					"filters": {
+						"warehouse_type": "Jobwork",
+						"company": company
+					},
 				}
 			}
 		},
 		{
-			"fieldname": "item_code",
+			"fieldname":"item_code",
 			"label": __("Item"),
 			"fieldtype": "Link",
 			"options": "Item",
-			"get_query": function () {
+			"get_query": function() {
 				return {
 					query: "erpnext.controllers.queries.item_query"
 				}
 			}
 		},
 		{
-			"fieldname": "item_group",
+			"fieldname":"item_group",
 			"label": __("Item Group"),
 			"fieldtype": "Link",
 			"options": "Item Group"
 		},
 		{
-			"fieldname": "batch_no",
-			"label": __("Batch No"),
-			"fieldtype": "Link",
-			"options": "Batch"
-		},
-		{
-			"fieldname": "voucher_no",
+			"fieldname":"voucher_no",
 			"label": __("Voucher #"),
 			"fieldtype": "Data"
 		},
-		
 		{
-			"fieldname": "include_uom",
-			"label": __("Include UOM"),
+			"fieldname":"party_type",
+			"label": __("Party Type"),
 			"fieldtype": "Link",
-			"options": "UOM"
+			"options": "Party Type",
+			"get_query" : function(){
+				return {
+					"doctye": "Party Type",
+					"filters": {
+						"name": ["in", ["Customer", "Supplier"]],
+					},
+				}
+			}
 		},
 		{
-			"fieldname": "show_party",
-			"label": __("Show party"),
-			"fieldtype": "Check",
+			"fieldname":"party",
+			"label": __("Party"),
+			"fieldtype": "Dynamic Link",
+			"options": "party_type",
 		}
 	]
 };
