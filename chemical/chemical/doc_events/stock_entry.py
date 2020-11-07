@@ -147,29 +147,41 @@ def sum_total_additional_costs(self):
 	self.total_additional_costs = sum(m.amount for m in self.additional_costs)
 
 def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, raise_error_if_no_rate=True):
-	if self.purpose == 'Manufacture' and self.bom_no:
-		#se_cal_rate_qty(self)
+	if self.purpose in ['Manufacture','Repack']:
 		is_multiple_finish  = 0
 		for d in self.items:
-			if d.t_warehouse:
+			if d.t_warehouse and d.qty != 0:
 				is_multiple_finish +=1
-		if is_multiple_finish  > 1:
+		if is_multiple_finish > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			cal_rate_for_finished_item(self)
-			self.set_total_incoming_outgoing_value()
-			self.set_total_amount()
+
+		elif is_multiple_finish > 1 and self.purpose == "Repack":
+			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
+			calculate_multiple_repack_valuation(self)
+		
 		else:
 			self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
 			self.distribute_additional_costs()
-			self.update_valuation_rate()
-			self.set_total_incoming_outgoing_value()
-			self.set_total_amount()
+
 	else:
 		self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
 		self.distribute_additional_costs()
-		self.update_valuation_rate()
-		self.set_total_incoming_outgoing_value()
-		self.set_total_amount()
+
+	self.update_valuation_rate()
+	self.set_total_incoming_outgoing_value()
+	self.set_total_amount()
+	price_to_rate(self)
+
+def price_to_rate(self):
+	for item in self.items:
+		has_batch_no,maintain_as_is_stock = frappe.db.get_value('Item', item.item_code, ['has_batch_no','maintain_as_is_stock'])
+		concentration = item.concentration or 100	
+		if item.basic_rate:
+			if maintain_as_is_stock:
+				item.price = flt(item.basic_rate)*100/concentration
+			else:
+				item.price = flt(item.basic_rate)	
 					
 def cal_target_yield_cons(self):
 	cal_yield = 0
@@ -185,8 +197,7 @@ def cal_target_yield_cons(self):
 			if d.item_code not in item_arr:
 				item_map.setdefault(d.item_code, 0)
 			
-			item_map[d.item_code] += flt(d.qty)
-			
+			item_map[d.item_code] += flt(d.quantity)
 		if flag == 1:
 			# Last row object
 			last_row = self.items[-1]
@@ -199,17 +210,16 @@ def cal_target_yield_cons(self):
 
 			# Check if items list has frm.doc.based_on value
 			if self.based_on in items_list:
-				cal_yield = flt(last_row.qty / item_map[self.based_on]) # Last row qty / sum of items of based_on item from map variable
-
+				cal_yield = flt(last_row.quantity / item_map[self.based_on]) # Last row qty / sum of items of based_on item from map variable
 			last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)		
 
 def cal_validate_additional_cost_qty(self):
 	if self.additional_costs:
 		for addi_cost in self.additional_costs:
+			addi_cost.amount = flt(addi_cost.qty) * flt(addi_cost.rate)
 			if addi_cost.uom == "FG QTY":
 				addi_cost.qty = self.fg_completed_quantity
 				addi_cost.amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
-
 
 def fg_completed_quantity_to_fg_completed_qty(self):
 	if self.fg_completed_qty == 0:
@@ -365,8 +375,8 @@ def cal_rate_for_finished_item(self):
 							d.db_set('valuation_rate',flt(d.amount/ d.qty))
 
 							if self.based_on:
-								d.batch_yield = flt(d.qty / flt(item_map[self.based_on]*finish_items.bom_qty_ratio/100))
-					
+								d.batch_yield = flt(d.quantity / flt(item_map[self.based_on]*finish_items.bom_qty_ratio/100))
+			
 						total_incoming_amount += flt(d.amount)
 
 				d.db_update()
@@ -454,7 +464,7 @@ def update_po_volume(self, po, ignore_permissions = True):
 		
 def update_po_transfer_qty(self, po):
 	for d in po.required_items:
-		se_items_date = frappe.db.sql('''select sum(qty), valuation_rate
+		se_items_date = frappe.db.sql('''select sum(quantity), valuation_rate
 			from `tabStock Entry` entry, `tabStock Entry Detail` detail
 			where
 				entry.work_order = %s

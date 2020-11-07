@@ -178,7 +178,7 @@ def sales_order_query(doctype, txt, searchfield, start, page_len, filters):
 		# update_item_price(row.item, row.buying_price_list, row.per_unit_price)
 		
 	# return "Latest price updated in Price List."
-
+@frappe.whitelist()
 def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	cond = ""
 

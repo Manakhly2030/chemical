@@ -219,6 +219,7 @@ def batch_autoname(self):
 	self.batch_id = name
 	self.name = name
 
+@frappe.whitelist()
 def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	cond = ""
 
@@ -313,6 +314,7 @@ def validate_batch_actual_qty(self):
 				if batch_qty < row.stock_qty:
 					frappe.throw(_("The batch <b>{0}</b> does not have sufficient quantity for item <b>{1}</b> in row {2}.".format(row.batch_no, row.item_code, d.idx)))
 
+@frappe.whitelist()
 def get_batch(doctype, txt, searchfield, start, page_len, filters):
 	cond = ""
 
