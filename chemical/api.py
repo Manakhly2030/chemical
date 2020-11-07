@@ -290,7 +290,7 @@ def se_repack_cal_rate_qty(self):
 		doc_items = frappe.get_doc({"doctype":"Stock Entry Detail"}) 
 		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
 		packing_size = 0
-		if d.t_warehouse:
+		if not d.s_warehouse:
 			if hasattr(doc_items,'receive_qty'):
 				if hasattr(doc_items,'tare_weight'):
 					if hasattr(doc_items, 'receive_packing_size') and hasattr(doc_items, 'receive_no_of_packages'):
@@ -391,7 +391,7 @@ def se_repack_cal_rate_qty(self):
 			if hasattr(doc_items,'amount_difference'):
 				d.amount_difference = flt(d.price) * flt(d.short_quantity)
 
-		elif d.s_warehouse:
+		else:
 			if maintain_as_is_stock:
 				if not d.concentration and d.t_warehouse:
 					frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))

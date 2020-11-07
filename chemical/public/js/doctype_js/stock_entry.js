@@ -121,15 +121,18 @@ frappe.ui.form.on("Stock Entry", {
                 }
             }
         })
-        frm.doc.items.forEach(function (d){
-            if (d.qty && d.quantity == 0) {
-                frappe.model.set_value(d.doctype, d.name, "quantity", d.qty);
-            }
-            if(d.basic_rate && d.price == 0){
-                frappe.model.set_value(d.doctype, d.name, "price", d.basic_rate);
-            }
-        });
-        frm.refresh_field('items');
+        if(frm.doc.__islocal){
+
+            frm.doc.items.forEach(function (d){
+                if (d.qty && d.quantity == 0) {
+                    frappe.model.set_value(d.doctype, d.name, "quantity", d.qty);
+                }
+                if(d.basic_rate && d.price == 0){
+                    frappe.model.set_value(d.doctype, d.name, "price", d.basic_rate);
+                }
+            });
+            frm.refresh_field('items');
+        }
 		/* if(frm.doc.from_bom){
 			frappe.db.get_value("BOM",frm.doc.bom_no,['etp_rate','volume_rate'],function(r){
 				if(!frm.doc.etp_rate){
@@ -179,7 +182,7 @@ frappe.ui.form.on("Stock Entry", {
         frm.trigger('cal_qty');
         if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry Detail", "reference_docname") && frappe.meta.get_docfield("Stock Entry Detail", "jw_ref"))
         {
-            if (!frm.doc.reference_docname && !frm.doc.jw_ref && d.t_warehouse){
+            if (!frm.doc.reference_docname && !frm.doc.jw_ref && !d.s_warehouse){
                 frm.doc.items.forEach(function (d) {     
                     var packing_size = 0;
                     frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
@@ -443,7 +446,7 @@ frappe.ui.form.on("Stock Entry", {
         let d = locals[cdt][cdn];
         if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry Detail", "reference_docname") && frappe.meta.get_docfield("Stock Entry Detail", "jw_ref"))
         {
-            if (!frm.doc.reference_docname && !frm.doc.jw_ref && d.t_warehouse){
+            if (!frm.doc.reference_docname && !frm.doc.jw_ref && !d.s_warehouse){
                     var packing_size = 0;
                     frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
                         if (frappe.meta.get_docfield("Stock Entry Detail", "receive_qty")){

@@ -41,6 +41,46 @@ def new_item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=
 				"page_len": page_len
 			}, as_dict=as_dict)
 
+@frappe.whitelist()
+def new_item_query1(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
+	conditions = []
+
+	return db.sql("""
+		select tabItem.name, tabItem.item_customer_code, tabItem.item_group, tabItem.item_other_name,
+			if(length(tabItem.item_name) > 40, concat(substr(tabItem.item_name, 1, 40), "..."), item_name) as item_name, if(round(sum(bin.actual_qty),2) > 0,CONCAT_WS(':',w.company,round(sum(bin.actual_qty),2)),0)
+		from tabItem 
+		LEFT JOIN `tabBin` as bin ON bin.item_code = tabItem.item_code
+		LEFT JOIN `tabWarehouse` as w ON w.name = bin.warehouse 
+		where 
+			tabItem.docstatus < 2
+			and tabItem.has_variants=0
+			and tabItem.disabled=0
+			and (tabItem.end_of_life > %(today)s or ifnull(tabItem.end_of_life, '0000-00-00')='0000-00-00')
+			and (tabItem.`{key}` LIKE %(txt)s
+				or tabItem.item_name LIKE %(txt)s
+				or tabItem.item_group LIKE %(txt)s
+				or tabItem.item_customer_code LIKE %(txt)s
+				or tabItem.item_other_name LIKE %(txt)s)
+			{fcond} {mcond}
+		group by
+			w.company,bin.item_code
+		order by
+			if(locate(%(_txt)s, tabItem.name), locate(%(_txt)s, tabItem.name), 99999),
+			if(locate(%(_txt)s, item_name), locate(%(_txt)s, item_name), 99999),
+			sum(bin.actual_qty) desc
+		
+		limit %(start)s, %(page_len)s """.format(
+			key=searchfield,
+			fcond=get_filters_cond(doctype, filters, conditions).replace('%', '%%'),
+			mcond=get_match_cond(doctype).replace('%', '%%')),
+			{
+				"today": nowdate(),
+				"txt": "%s%%" % txt,
+				"_txt": txt.replace("%", ""),
+				"start": start,
+				"page_len": page_len
+			}, as_dict=as_dict)
+
  # searches for customer
 @frappe.whitelist(allow_guest = 1)
 def new_customer_query(doctype, txt, searchfield, start, page_len, filters):
