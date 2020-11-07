@@ -177,7 +177,7 @@ frappe.ui.form.on("Stock Entry", {
     },
     validate: function(frm) {
         frm.trigger('cal_qty');
-        if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry Detail", "reference_docname") && frappe.meta.get_docfield("Stock Entry Detail", "jw_ref"))
+        if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry", "reference_docname") && frappe.meta.get_docfield("Stock Entry", "jw_ref"))
         {
             if (!frm.doc.reference_docname && !frm.doc.jw_ref && d.t_warehouse){
                 frm.doc.items.forEach(function (d) {     
@@ -441,7 +441,7 @@ frappe.ui.form.on("Stock Entry", {
 	},
 	cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
-        if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry Detail", "reference_docname") && frappe.meta.get_docfield("Stock Entry Detail", "jw_ref"))
+        if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry", "reference_docname") && frappe.meta.get_docfield("Stock Entry", "jw_ref"))
         {
             if (!frm.doc.reference_docname && !frm.doc.jw_ref && d.t_warehouse){
                     var packing_size = 0;
@@ -902,7 +902,35 @@ frappe.ui.form.on("Stock Entry Detail", {
     },
     batch_no:function(frm,cdt,cdn){
         frm.events.cal_qty(frm)
+    },
+    supplier_no_of_packages:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    supplier_packing_size:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    receive_no_of_packages:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    receive_packing_size:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    accepted_no_of_packages:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    accepted_packing_size:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    accepted_concentration:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    supplier_concentration:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    received_concentration:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
     }
+
 });
 
 erpnext.stock.select_batch_and_serial_no = (frm, item) => {
