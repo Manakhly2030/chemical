@@ -603,97 +603,57 @@ frappe.ui.form.on("Stock Entry", {
         
                     });        
             }
-            else{
-                frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                    if (d.packing_size && d.no_of_packages) {
-                        frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
-                        if (r.maintain_as_is_stock) {
-                            if (!d.concentration) {
-                                //frappe.throw("Please add concentration for Item " + d.item_code)
-                            }
-                            frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
-                        }
-                        else {
-                            frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty);
-                        }
-                    }
-                    else {
-                        if (r.maintain_as_is_stock) {
-                            if (!d.concentration && d.t_warehouse) {
-                                //frappe.throw("Please add concentration for Item " + d.item_code);
-                            }
-                            let concentration = 0
-                            if (d.batch_no) {
-                                concentration = frappe.get_value("Batch", d.batch_no, "concentration")
-                            }
-                            else {
-                                concentration = d.concentration
-                            }
-                            if (d.quantity) {
-                                frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
-                            }
-                            if (d.price) {
-                                frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.quantity * d.price) / flt(d.qty));
-                            }
-                        }
-                        else {
-                            if (d.quantity) {
-                                frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
-                            }
-                            if (d.price) {
-                                frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.price));
-                            }
-                        }
-                    }
-                    
-                })            
-            }
+            else {frm.events.se_cal_rate_qty(frm,cdt,cdn) }
         }
-        else{
-            frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                if (d.packing_size && d.no_of_packages) {
-                    frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
-                    if (r.maintain_as_is_stock) {
-                        if (!d.concentration) {
-                            //frappe.throw("Please add concentration for Item " + d.item_code)
-                        }
-                        frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
+        else {frm.events.se_cal_rate_qty(frm,cdt,cdn) }
+    },
+    se_cal_rate_qty: function(frm,cdt,cdn){
+        var d = locals[cdt][cdn];
+        frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
+            if (d.packing_size && d.no_of_packages) {
+                frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
+                if (r.maintain_as_is_stock) {
+                    if (!d.concentration) {
+                        //frappe.throw("Please add concentration for Item " + d.item_code)
+                    }
+                    frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
+                }
+                else {
+                    frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty);
+                }
+            }
+            else {
+                if (r.maintain_as_is_stock) {
+                    if (!d.concentration && d.t_warehouse) {
+                        //frappe.throw("Please add concentration for Item " + d.item_code);
+                    }
+                   
+                    let concentration = 0
+                    if (d.batch_no) {
+                        concentration = frappe.get_value("Batch", d.batch_no, "concentration")
                     }
                     else {
-                        frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty);
+                        concentration = d.concentration
+                    }
+                    if (d.quantity) {
+                        frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
+                    }
+                    if (d.price) {
+                        frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.quantity * d.price) / flt(d.qty));
                     }
                 }
                 else {
-                    if (r.maintain_as_is_stock) {
-                        if (!d.concentration && d.t_warehouse) {
-                            //frappe.throw("Please add concentration for Item " + d.item_code);
-                        }
-                        let concentration = 0
-                        if (d.batch_no) {
-                            concentration = frappe.get_value("Batch", d.batch_no, "concentration")
-                        }
-                        else {
-                            concentration = d.concentration
-                        }
-                        if (d.quantity) {
-                            frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
-                        }
-                        if (d.price) {
-                            frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.quantity * d.price) / flt(d.qty));
-                        }
+                    if (d.quantity) {
+                        frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
                     }
-                    else {
-                        if (d.quantity) {
-                            frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
-                        }
-                        if (d.price) {
-                            frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.price));
-                        }
+                    if (d.price) {
+                        frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.price));
                     }
                 }
-                
-            })
-        }
+            }
+            
+        })
+
     },
     stock_entry_type: function(frm){
         if(frm.doc.stock_entry_type=="Send to Jobwork" || frm.doc.stock_entry_type=="Send Jobwork Finish" ){
@@ -887,6 +847,7 @@ frappe.ui.form.on("Stock Entry Detail", {
         if (!d.s_warehouse && d.t_warehouse && d.bom_no == frm.doc.bom_no) {
             frm.set_value('fg_completed_qty', d.qty);
         }
+        frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     quantity: function(frm,cdt,cdn){
         frm.events.cal_rate_qty(frm, cdt, cdn)
