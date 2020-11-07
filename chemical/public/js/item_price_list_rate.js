@@ -1,8 +1,10 @@
 if (frappe.get_route()[3] == "Item-wise Price List Rate") {
-    console.log("called first")
-    frappe.cur_page.add_custom_button("button", function() {
-        console.log("called in button")
-    })  
+    var r= $('<input type="button" value="new button"/>');
+        $("button.add-groupby").after(r);
+        $('active-tag-filters .button.add-filter').after($('<input type="button" value="test">'));
+    console.log($(".tag-groupby-area"))
+    console.log(" first")
+   
 }
 
 // frappe.query_reports["Item-wise Price List Rate"] = {
