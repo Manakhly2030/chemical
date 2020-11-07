@@ -481,7 +481,7 @@ frappe.ui.form.on("Stock Entry", {
                                 frappe.model.set_value(d.doctype, d.name, 'supplier_qty', flt(d.supplier_packing_size) * flt(d.supplier_no_of_packages));
                          }
                          if(!d.supplier_qty){
-                             frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
+                            // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
                          }
                         }
         
@@ -503,7 +503,7 @@ frappe.ui.form.on("Stock Entry", {
         
                             if (frappe.meta.get_docfield("Stock Entry Detail", "supplier_concentration")){
                                 if(!d.supplier_concentration){
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier concentration")
+                                   // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier concentration")
                                 }
                                 frappe.model.set_value(d.doctype, d.name, 'supplier_quantity',flt(d.supplier_qty) * d.supplier_concentration / 100);
                             }
@@ -521,19 +521,19 @@ frappe.ui.form.on("Stock Entry", {
                             }
                             if (!d.qty){
                                 if (frappe.meta.get_docfield("Stock Entry Detail", "receive_qty")){
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
+                                    //frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
                                 }
                                 else{
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
+                                   // frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
                                 }
                             }
         
                             if (!d.concentration){
                                 if (frappe.meta.get_docfield("Stock Entry Detail", "received_concentration")){
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +" Please add received or accepted concentration")
+                                   // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add received or accepted concentration")
                                 }
                                 else{
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add concentration")
+                                    //frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add concentration")
                                 }
                             }
         
@@ -574,10 +574,10 @@ frappe.ui.form.on("Stock Entry", {
         
                             if (!d.qty){
                                 if (frappe.meta.get_docfield("Stock Entry Detail", "receive_qty")){
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
+                                   // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
                                 }
                                 else{
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
+                                    //frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
                                 }
                             }
         
