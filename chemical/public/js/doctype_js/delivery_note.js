@@ -29,7 +29,7 @@ $.extend(cur_frm.cscript, new erpnext.stock.DeliveryNoteController({ frm: cur_fr
 this.frm.cscript.onload = function (frm) {
     this.frm.set_query("item_code", "items", function () {
         return {
-            query: "chemical.query.new_item_query",
+            query: "chemical.query.new_item_query1",
             filters: {
                 'is_sales_item': 1
             }

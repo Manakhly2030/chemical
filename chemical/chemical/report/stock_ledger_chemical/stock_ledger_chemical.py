@@ -9,7 +9,7 @@ from erpnext.stock.utils import update_included_uom_in_report
 
 def execute(filters=None):
 	include_uom = filters.get("include_uom")
-	columns = get_columns()
+	columns = get_columns(filters)
 	items = get_items(filters)
 	sl_entries = get_stock_ledger_entries(filters, items)
 	item_details = get_item_details(items, sl_entries, include_uom)
@@ -68,7 +68,7 @@ def execute(filters=None):
 	update_included_uom_in_report(columns, data, include_uom, conversion_factors)
 	return columns, data
 
-def get_columns():
+def get_columns(filters):
 	columns = [
 		{"label": _("Date"), "fieldname": "date", "fieldtype": "Datetime", "width": 95},
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 130},	
@@ -88,6 +88,13 @@ def get_columns():
 		{"label": _("As Is Balance Qty"), "fieldname": "as_is_balance_qty", "fieldtype": "Float","width": 100},
 		{"label": _("Voucher Type"), "fieldname": "voucher_type", "width": 110},
 		{"label": _("Voucher #"), "fieldname": "voucher_no", "fieldtype": "Dynamic Link", "options": "voucher_type", "width": 100},
+	]
+	if filters.get('show_party'):
+		columns +=[
+			{"label": _("Party Type"), "fieldname": "party_type", "fieldtype": "Data", "width": 80,"align":"center"},
+			{"label": _("Party"), "fieldname": "party", "fieldtype": "Data", "width": 140,"align":"left"},
+		]
+	columns +=[
 		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 110},
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
 		{"label": _("Stock UOM"), "fieldname": "stock_uom", "fieldtype": "Link", "options": "UOM", "width": 100}
@@ -100,18 +107,25 @@ def get_stock_ledger_entries(filters, items):
 	if items:
 		item_conditions_sql = 'and sle.item_code in ({})'\
 			.format(', '.join([frappe.db.escape(i) for i in items]))
+	
+	show_party_select = show_party_join = ''
+	if filters.get('show_party'):
+		show_party_join += " Left JOIN `tabStock Entry` as se on se.name = sle.voucher_no"
+		show_party_select += ", se.party_type, se.party"
 
 	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date,
 			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
 			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, sle.stock_value_difference,
-			b.lot_no, b.concentration
-		from `tabStock Ledger Entry` sle left join `tabBatch` as b on sle.batch_no = b.name
+			b.lot_no, b.concentration{show_party_select}
+		from `tabStock Ledger Entry` sle left join `tabBatch` as b on sle.batch_no = b.name{show_party_join}
 		where sle.company = %(company)s and
 			sle.posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
 			order by sle.posting_date asc, sle.posting_time asc, sle.creation asc"""\
 		.format(
+			show_party_select = show_party_select,
+			show_party_join = show_party_join,
 			sle_conditions=get_sle_conditions(filters),
 			item_conditions_sql = item_conditions_sql
 		), filters, as_dict=1)

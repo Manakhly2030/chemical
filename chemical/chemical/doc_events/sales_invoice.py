@@ -11,6 +11,7 @@ def si_before_submit(self,method):
 	validate_customer_batch(self)
 #added	
 def before_submit(self, method):
+	update_item_price_history(self)
 	override_si_status_updater_args()
 
 def before_cancel(self, method):
@@ -65,3 +66,15 @@ def si_update_status_updater_args(self):
 				'second_join_field': 'so_detail',
 				'extra_cond': """ and exists (select name from `tabSales Invoice` where name=`tabSales Invoice Item`.parent and update_stock=1 and is_return=1)"""
 			})
+
+def update_item_price_history(self):
+	for item in self.items:
+		doc = frappe.new_doc("Item Price History")
+		doc.date = self.posting_date
+		doc.item_code = item.item_code
+		doc.price = item.price
+		doc.customer = self.customer
+		doc.selling = 1
+		doc.update_from = self.doctype
+		doc.docname = self.name
+		doc.save()

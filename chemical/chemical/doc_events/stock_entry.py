@@ -2,36 +2,39 @@ import frappe
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-from chemical.api import se_cal_rate_qty, cal_actual_valuations
+from chemical.api import se_cal_rate_qty, se_repack_cal_rate_qty, cal_actual_valuations
 from six import iteritems
 from frappe import msgprint, _
 
 def onload(self,method):
-	quantity_price_to_qty_rate(self)
+	pass
+	#quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
-	se_cal_rate_qty(self)
+	if self.purpose in ['Material Receipt','Repack'] and self.party_type == "Supplier" and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
+		if not self.reference_docname and not self.jw_ref:
+			se_repack_cal_rate_qty(self)
+		else:
+			se_cal_rate_qty(self)
+	else:
+		se_cal_rate_qty(self)
 	fg_completed_quantity_to_fg_completed_qty(self)
 	cal_actual_valuations(self)
 	validate_fg_completed_quantity(self)
 
 def validate(self,method):
-	calculate_rate_and_amount(self)
-	cal_target_yield_cons(self)
 	cal_validate_additional_cost_qty(self)
-	get_based_on(self)
-	#update_additional_cost(self)
 	update_additional_cost_scrap(self)
+	calculate_rate_and_amount(self)
+	get_based_on(self)
+	cal_target_yield_cons(self)
 
-	
 def stock_entry_validate(self, method):
 	if self.purpose == "Material Receipt":
 		validate_batch_wise_item_for_concentration(self)
 	#update_additional_cost(self)
 
 def stock_entry_before_save(self, method):
-	get_based_on(self)
-	cal_target_yield_cons(self)
 	if self.purpose == 'Repack' and cint(self.from_ball_mill) != 1:
 		self.get_stock_and_rate()
 
@@ -182,7 +185,6 @@ def price_to_rate(self):
 				item.price = flt(item.basic_rate)*100/concentration
 			else:
 				item.price = flt(item.basic_rate)	
-					
 def cal_target_yield_cons(self):
 	cal_yield = 0
 	cons = 0
@@ -278,7 +280,7 @@ def update_po(self):
 							finish_items.db_set("purity",row.concentration)
 							finish_items.db_set("batch_yield",row.batch_yield)
 							finish_items.db_set("batch_no",row.batch_no)
-							actual_valuation = row.actual_valuation_rate
+							actual_valuation += (flt(row.qty) * row.actual_valuation_rate)
 					# finished_item['item_code'] = row.item_code
 					# finished_item['quantity']  = row.quantity
 					# finished_item['actual_valuation'] = row.actual_valuation_rate
@@ -295,7 +297,7 @@ def update_po(self):
 				child.db_update()
 			po.db_set("batch_yield", flt(batch_yield/count))
 			po.db_set("concentration", flt(concentration/count))
-			po.db_set("valuation_rate", flt(actual_valuation))
+			po.db_set("valuation_rate", actual_valuation / flt(total_qty))
 			po.db_set("produced_qty", total_qty)
 			po.db_set("produced_quantity",actual_total_qty)
 			if len(lot)!=0:
@@ -338,7 +340,27 @@ def set_po_status(self, pro_doc):
 	if status:
 		pro_doc.db_set('status', status)
 
+def calculate_multiple_repack_valuation(self):
+	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
+	if self.purpose == 'Repack' and self.items:
+		qty = 0.0
+		quantity = 0.0
+		total_outgoing_value = 0.0
+		for row in self.items:
+			if row.s_warehouse:
+				total_outgoing_value += flt(row.basic_amount)
+			if row.t_warehouse:
+				qty += row.qty
+				quantity += row.quantity
+		for row in self.items:
+			if row.t_warehouse:
+				row.basic_amount = flt(total_outgoing_value) * flt(row.quantity)/ quantity
+				row.additional_cost = flt(self.total_additional_costs) * flt(row.quantity)/ quantity
+				row.basic_rate =  flt(row.basic_amount/ row.qty)
+
 def cal_rate_for_finished_item(self):
+
+	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
 	work_order = frappe.get_doc("Work Order",self.work_order)
 	is_multiple_finish = 0
 	for d in self.items:
@@ -379,7 +401,7 @@ def cal_rate_for_finished_item(self):
 			
 						total_incoming_amount += flt(d.amount)
 
-				d.db_update()
+			d.db_update()
 
 					# first_item_ratio = abs(100-self.cost_ratio_of_second_item)
 					# first_item_qty_ratio = abs(100-self.qty_ratio_of_second_item)
