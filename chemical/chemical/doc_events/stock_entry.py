@@ -185,7 +185,6 @@ def price_to_rate(self):
 				item.price = flt(item.basic_rate)*100/concentration
 			else:
 				item.price = flt(item.basic_rate)	
-
 def cal_target_yield_cons(self):
 	cal_yield = 0
 	cons = 0
@@ -200,8 +199,7 @@ def cal_target_yield_cons(self):
 			if d.item_code not in item_arr:
 				item_map.setdefault(d.item_code, 0)
 			
-			item_map[d.item_code] += flt(d.qty)
-			
+			item_map[d.item_code] += flt(d.quantity)
 		if flag == 1:
 			# Last row object
 			last_row = self.items[-1]
@@ -214,17 +212,16 @@ def cal_target_yield_cons(self):
 
 			# Check if items list has frm.doc.based_on value
 			if self.based_on in items_list:
-				cal_yield = flt(last_row.qty / item_map[self.based_on]) # Last row qty / sum of items of based_on item from map variable
-
+				cal_yield = flt(last_row.quantity / item_map[self.based_on]) # Last row qty / sum of items of based_on item from map variable
 			last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)		
 
 def cal_validate_additional_cost_qty(self):
 	if self.additional_costs:
 		for addi_cost in self.additional_costs:
+			addi_cost.amount = flt(addi_cost.qty) * flt(addi_cost.rate)
 			if addi_cost.uom == "FG QTY":
 				addi_cost.qty = self.fg_completed_quantity
 				addi_cost.amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
-
 
 def fg_completed_quantity_to_fg_completed_qty(self):
 	if self.fg_completed_qty == 0:
@@ -365,35 +362,44 @@ def cal_rate_for_finished_item(self):
 
 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
 	work_order = frappe.get_doc("Work Order",self.work_order)
-	item_arr = list()
-	item_map = dict()
-	finished_list = []
-	result = {}
-	cal_yield = 0
-	if self.purpose == 'Manufacture' and self.bom_no:
-		for row in self.items:
-			if row.t_warehouse:
-				finished_list.append({row.item_code:row.quantity}) #create a list of dict of finished item
-		for d in finished_list:
-			for k in d.keys():
-				result[k] = result.get(k, 0) + d[k] # create a dict of unique item 
-					
-		for d in self.items:
-			if d.item_code not in item_arr:
-				item_map.setdefault(d.item_code, 0)
-			
-			item_map[d.item_code] += flt(d.quantity)
-			
-			if d.t_warehouse:
-				for finish_items in work_order.finish_item:
-					if d.item_code == finish_items.item_code:
-						d.db_set('basic_amount',flt(flt(self.total_outgoing_value*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
-						d.db_set('additional_cost',flt(flt(self.total_additional_costs*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
-						d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
-
-						if self.based_on:
-							d.batch_yield = flt(d.qty / flt(item_map[self.based_on]*finish_items.bom_qty_ratio/100))
+	is_multiple_finish = 0
+	for d in self.items:
+		if d.t_warehouse:
+			is_multiple_finish +=1
+	if is_multiple_finish > 1:
+		total_incoming_amount = 0.0
+		item_arr = list()
+		item_map = dict()
+		finished_list = []
+		result = {}
+		cal_yield = 0
+		if self.purpose == 'Manufacture' and self.bom_no:
+			for row in self.items:
+				if row.t_warehouse:
+					finished_list.append({row.item_code:row.quantity}) #create a list of dict of finished item
+			for d in finished_list:
+				for k in d.keys():
+					result[k] = result.get(k, 0) + d[k] # create a dict of unique item 
+						
+			for d in self.items:
+				if d.item_code not in item_arr:
+					item_map.setdefault(d.item_code, 0)
 				
+				item_map[d.item_code] += flt(d.quantity)
+				
+				if d.t_warehouse:
+					for finish_items in work_order.finish_item:
+						if d.item_code == finish_items.item_code:
+							d.db_set('basic_amount',flt(flt(self.total_outgoing_value*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
+							d.db_set('additional_cost',flt(flt(self.total_additional_costs*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
+							d.db_set('amount',flt(d.basic_amount + d.additional_cost))
+							d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
+							d.db_set('valuation_rate',flt(d.amount/ d.qty))
+
+							if self.based_on:
+								d.batch_yield = flt(d.quantity / flt(item_map[self.based_on]*finish_items.bom_qty_ratio/100))
+			
+						total_incoming_amount += flt(d.amount)
 
 			d.db_update()
 
