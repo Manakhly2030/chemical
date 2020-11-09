@@ -228,6 +228,10 @@ def purchase_cal_rate_qty(self):
 			if hasattr(doc_items,'accepted_concentration') and hasattr(doc_items,'received_concentration'): 
 				d.concentration = flt(d.accepted_concentration) or flt(d.received_concentration)
 			
+			if not hasattr(doc_items,'receive_qty') and not d.packing_size and not d.no_of_packages:
+				if d.quantity:
+					d.qty = flt((d.quantity * 100.0) / d.concentration)
+
 			if not d.qty:
 				if hasattr(doc_items,'receive_qty'):
 					frappe.throw("{} Row: {} Please add Receive Qty or Accepted Qty".format(d.doctype,d.idx))
@@ -262,6 +266,10 @@ def purchase_cal_rate_qty(self):
 			if hasattr(doc_items,'accepted_concentration') and hasattr(doc_items,'received_concentration'): 
 				d.concentration = flt(d.accepted_concentration) or flt(d.received_concentration)
 			
+			if not hasattr(doc_items,'receive_qty') and not d.packing_size and not d.no_of_packages:
+				if d.quantity:
+					d.qty = flt(d.quantity)
+
 			if not d.qty:
 				if hasattr(doc_items,'receive_qty'):
 					frappe.throw("{} Row: {} Please add Receive Qty or Accepted Qty".format(d.doctype,d.idx))
