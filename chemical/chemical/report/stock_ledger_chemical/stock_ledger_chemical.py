@@ -47,7 +47,7 @@ def execute(filters=None):
 			})
 
 		#frappe.msgprint(str(sle))
-		if filters.get("batch_no"):
+		if filters.get("batch_no") or (filters.get("item_code") and filters.get("warehouse")):
 			actual_qty += sle.actual_qty
 			stock_value += sle.stock_value_difference
 
@@ -197,6 +197,23 @@ def get_opening_balance(filters, columns):
 		"posting_date": filters.from_date,
 		"posting_time": "00:00:00"
 	})
+	# opening_actual_qty = frappe.db.sql("""
+	# 	Select 
+	# 		sum(sle.actual_qty)*bt.concentration
+	# 	from 
+	# 		`tabStock Ledger Entry` sle left join `tabBatch` as b on sle.batch_no = b.name
+	# 	where sle.company = %(company)s and
+	# 		sle.posting_date between %(from_date)s and %(to_date)s
+	# 		{sle_conditions}
+	# 		{item_conditions_sql}
+	# 		order by sle.posting_date asc, sle.posting_time asc, sle.creation asc"""\
+	# 	.format(
+	# 		show_party_select = show_party_select,
+	# 		show_party_join = show_party_join,
+	# 		sle_conditions=get_sle_conditions(filters),
+	# 		item_conditions_sql = item_conditions_sql
+	# 	), filters, as_dict=1)		
+	# """)
 	row = {}
 	row["item_code"] = _("'Opening'")
 	for dummy, v in ((4, 'qty_after_transaction'), (6, 'valuation_rate'), (7, 'stock_value')):

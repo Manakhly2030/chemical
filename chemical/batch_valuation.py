@@ -65,8 +65,13 @@ def make_transfer_batches(self):
 		if has_batch_no:
 			if row.batch_no:
 				if not frappe.db.exists("Stock Ledger Entry", {'company':self.company,'warehouse':row.get('t_warehouse'),'batch_no':row.batch_no,'voucher_no':('!=',self.name)}):
-				#if frappe.db.get_value("Batch", row.batch_no, 'valuation_rate') == row.valuation_rate:
-					continue
+					if hasattr(self, 'send_to_party') and hasattr(row, 'party_concentration'):
+						if not self.send_to_party:
+							continue
+						if row.party_concentration == row.concentration:
+							continue
+					else:
+						continue	
 				else:
 					row.db_set('old_batch_no', row.batch_no)
 
@@ -76,7 +81,13 @@ def make_transfer_batches(self):
 			batch.packaging_material = cstr(row.packaging_material)
 			batch.packing_size = cstr(row.packing_size)
 			batch.batch_yield = flt(row.batch_yield, 3)
-			batch.concentration = flt(row.concentration, 3)
+			if hasattr(self, 'send_to_party') and hasattr(row, 'party_concentration'):
+				if self.send_to_party and row.party_concentration != row.concentration:
+					batch.concentration = flt(row.party_concentration, 3)
+				else:
+					batch.concentration = flt(row.concentration, 3)	
+			else:
+				batch.concentration = flt(row.concentration, 3)
 			batch.valuation_rate = flt(row.valuation_rate, 4)
 			try:
 				batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
@@ -221,6 +232,7 @@ def batch_autoname(self):
 	self.batch_id = name
 	self.name = name
 
+@frappe.whitelist()
 def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	cond = ""
 
@@ -315,6 +327,7 @@ def validate_batch_actual_qty(self):
 				if batch_qty < row.stock_qty:
 					frappe.throw(_("The batch <b>{0}</b> does not have sufficient quantity for item <b>{1}</b> in row {2}.".format(row.batch_no, row.item_code, d.idx)))
 
+@frappe.whitelist()
 def get_batch(doctype, txt, searchfield, start, page_len, filters):
 	cond = ""
 

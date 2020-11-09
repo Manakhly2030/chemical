@@ -121,15 +121,18 @@ frappe.ui.form.on("Stock Entry", {
                 }
             }
         })
-        frm.doc.items.forEach(function (d){
-            if (d.qty && d.quantity == 0) {
-                frappe.model.set_value(d.doctype, d.name, "quantity", d.qty);
-            }
-            if(d.basic_rate && d.price == 0){
-                frappe.model.set_value(d.doctype, d.name, "price", d.basic_rate);
-            }
-        });
-        frm.refresh_field('items');
+        if(frm.doc.__islocal){
+
+            frm.doc.items.forEach(function (d){
+                if (d.qty && d.quantity == 0) {
+                    frappe.model.set_value(d.doctype, d.name, "quantity", d.qty);
+                }
+                if(d.basic_rate && d.price == 0){
+                    frappe.model.set_value(d.doctype, d.name, "price", d.basic_rate);
+                }
+            });
+            frm.refresh_field('items');
+        }
 		/* if(frm.doc.from_bom){
 			frappe.db.get_value("BOM",frm.doc.bom_no,['etp_rate','volume_rate'],function(r){
 				if(!frm.doc.etp_rate){
@@ -177,9 +180,9 @@ frappe.ui.form.on("Stock Entry", {
     },
     validate: function(frm) {
         frm.trigger('cal_qty');
-        if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry Detail", "reference_docname") && frappe.meta.get_docfield("Stock Entry Detail", "jw_ref"))
+        if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry", "reference_docname") && frappe.meta.get_docfield("Stock Entry", "jw_ref"))
         {
-            if (!frm.doc.reference_docname && !frm.doc.jw_ref && d.t_warehouse){
+            if (!frm.doc.reference_docname && !frm.doc.jw_ref && !d.s_warehouse){
                 frm.doc.items.forEach(function (d) {     
                     var packing_size = 0;
                     frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
@@ -441,9 +444,9 @@ frappe.ui.form.on("Stock Entry", {
 	},
 	cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
-        if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry Detail", "reference_docname") && frappe.meta.get_docfield("Stock Entry Detail", "jw_ref"))
+        if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry", "reference_docname") && frappe.meta.get_docfield("Stock Entry", "jw_ref"))
         {
-            if (!frm.doc.reference_docname && !frm.doc.jw_ref && d.t_warehouse){
+            if (!frm.doc.reference_docname && !frm.doc.jw_ref && !d.s_warehouse){
                     var packing_size = 0;
                     frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
                         if (frappe.meta.get_docfield("Stock Entry Detail", "receive_qty")){
@@ -478,7 +481,7 @@ frappe.ui.form.on("Stock Entry", {
                                 frappe.model.set_value(d.doctype, d.name, 'supplier_qty', flt(d.supplier_packing_size) * flt(d.supplier_no_of_packages));
                          }
                          if(!d.supplier_qty){
-                             frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
+                            // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
                          }
                         }
         
@@ -500,7 +503,7 @@ frappe.ui.form.on("Stock Entry", {
         
                             if (frappe.meta.get_docfield("Stock Entry Detail", "supplier_concentration")){
                                 if(!d.supplier_concentration){
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier concentration")
+                                   // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier concentration")
                                 }
                                 frappe.model.set_value(d.doctype, d.name, 'supplier_quantity',flt(d.supplier_qty) * d.supplier_concentration / 100);
                             }
@@ -518,19 +521,19 @@ frappe.ui.form.on("Stock Entry", {
                             }
                             if (!d.qty){
                                 if (frappe.meta.get_docfield("Stock Entry Detail", "receive_qty")){
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
+                                    //frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
                                 }
                                 else{
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
+                                   // frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
                                 }
                             }
         
                             if (!d.concentration){
                                 if (frappe.meta.get_docfield("Stock Entry Detail", "received_concentration")){
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +" Please add received or accepted concentration")
+                                   // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add received or accepted concentration")
                                 }
                                 else{
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add concentration")
+                                    //frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add concentration")
                                 }
                             }
         
@@ -571,10 +574,10 @@ frappe.ui.form.on("Stock Entry", {
         
                             if (!d.qty){
                                 if (frappe.meta.get_docfield("Stock Entry Detail", "receive_qty")){
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
+                                   // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
                                 }
                                 else{
-                                    frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
+                                    //frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
                                 }
                             }
         
@@ -600,97 +603,57 @@ frappe.ui.form.on("Stock Entry", {
         
                     });        
             }
-            else{
-                frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                    if (d.packing_size && d.no_of_packages) {
-                        frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
-                        if (r.maintain_as_is_stock) {
-                            if (!d.concentration) {
-                                //frappe.throw("Please add concentration for Item " + d.item_code)
-                            }
-                            frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
-                        }
-                        else {
-                            frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty);
-                        }
-                    }
-                    else {
-                        if (r.maintain_as_is_stock) {
-                            if (!d.concentration && d.t_warehouse) {
-                                //frappe.throw("Please add concentration for Item " + d.item_code);
-                            }
-                            let concentration = 0
-                            if (d.batch_no) {
-                                concentration = frappe.get_value("Batch", d.batch_no, "concentration")
-                            }
-                            else {
-                                concentration = d.concentration
-                            }
-                            if (d.quantity) {
-                                frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
-                            }
-                            if (d.price) {
-                                frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.quantity * d.price) / flt(d.qty));
-                            }
-                        }
-                        else {
-                            if (d.quantity) {
-                                frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
-                            }
-                            if (d.price) {
-                                frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.price));
-                            }
-                        }
-                    }
-                    
-                })            
-            }
+            else {frm.events.se_cal_rate_qty(frm,cdt,cdn) }
         }
-        else{
-            frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                if (d.packing_size && d.no_of_packages) {
-                    frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
-                    if (r.maintain_as_is_stock) {
-                        if (!d.concentration) {
-                            //frappe.throw("Please add concentration for Item " + d.item_code)
-                        }
-                        frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
+        else {frm.events.se_cal_rate_qty(frm,cdt,cdn) }
+    },
+    se_cal_rate_qty: function(frm,cdt,cdn){
+        var d = locals[cdt][cdn];
+        frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
+            if (d.packing_size && d.no_of_packages) {
+                frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
+                if (r.maintain_as_is_stock) {
+                    if (!d.concentration) {
+                        //frappe.throw("Please add concentration for Item " + d.item_code)
+                    }
+                    frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
+                }
+                else {
+                    frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty);
+                }
+            }
+            else {
+                if (r.maintain_as_is_stock) {
+                    if (!d.concentration && d.t_warehouse) {
+                        //frappe.throw("Please add concentration for Item " + d.item_code);
+                    }
+                   
+                    let concentration = 0
+                    if (d.batch_no) {
+                        concentration = frappe.get_value("Batch", d.batch_no, "concentration")
                     }
                     else {
-                        frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty);
+                        concentration = d.concentration
+                    }
+                    if (d.quantity) {
+                        frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
+                    }
+                    if (d.price) {
+                        frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.quantity * d.price) / flt(d.qty));
                     }
                 }
                 else {
-                    if (r.maintain_as_is_stock) {
-                        if (!d.concentration && d.t_warehouse) {
-                            //frappe.throw("Please add concentration for Item " + d.item_code);
-                        }
-                        let concentration = 0
-                        if (d.batch_no) {
-                            concentration = frappe.get_value("Batch", d.batch_no, "concentration")
-                        }
-                        else {
-                            concentration = d.concentration
-                        }
-                        if (d.quantity) {
-                            frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
-                        }
-                        if (d.price) {
-                            frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.quantity * d.price) / flt(d.qty));
-                        }
+                    if (d.quantity) {
+                        frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
                     }
-                    else {
-                        if (d.quantity) {
-                            frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
-                        }
-                        if (d.price) {
-                            frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.price));
-                        }
+                    if (d.price) {
+                        frappe.model.set_value(d.doctype, d.name, 'basic_rate', flt(d.price));
                     }
                 }
-                
-            })
-        }
+            }
+            
+        })
+
     },
     stock_entry_type: function(frm){
         if(frm.doc.stock_entry_type=="Send to Jobwork" || frm.doc.stock_entry_type=="Send Jobwork Finish" ){
@@ -884,6 +847,7 @@ frappe.ui.form.on("Stock Entry Detail", {
         if (!d.s_warehouse && d.t_warehouse && d.bom_no == frm.doc.bom_no) {
             frm.set_value('fg_completed_qty', d.qty);
         }
+        frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     quantity: function(frm,cdt,cdn){
         frm.events.cal_rate_qty(frm, cdt, cdn)
@@ -902,7 +866,35 @@ frappe.ui.form.on("Stock Entry Detail", {
     },
     batch_no:function(frm,cdt,cdn){
         frm.events.cal_qty(frm)
+    },
+    supplier_no_of_packages:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    supplier_packing_size:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    receive_no_of_packages:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    receive_packing_size:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    accepted_no_of_packages:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    accepted_packing_size:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    accepted_concentration:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    supplier_concentration:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
+    received_concentration:function(frm,cdt,cdn){
+        frm.events.cal_rate_qty(frm, cdt, cdn)
     }
+
 });
 
 erpnext.stock.select_batch_and_serial_no = (frm, item) => {

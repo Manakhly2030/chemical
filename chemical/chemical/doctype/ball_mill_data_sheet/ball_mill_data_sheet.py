@@ -50,7 +50,7 @@ class BallMillDataSheet(Document):
 		})
 	
 	def on_submit(self):
-		se = frappe.new_doc("Stock Entry");
+		se = frappe.new_doc("Stock Entry")
 		se.purpose = "Repack"
 		se.company = self.company
 		se.stock_entry_type = "Repack"
