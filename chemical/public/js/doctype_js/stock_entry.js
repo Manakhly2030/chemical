@@ -182,8 +182,8 @@ frappe.ui.form.on("Stock Entry", {
         frm.trigger('cal_qty');
         if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry", "reference_docname") && frappe.meta.get_docfield("Stock Entry", "jw_ref"))
         {
+            frm.doc.items.forEach(function (d) {     
             if (!frm.doc.reference_docname && !frm.doc.jw_ref && !d.s_warehouse){
-                frm.doc.items.forEach(function (d) {     
                     var packing_size = 0;
                     frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
                         if (frappe.meta.get_docfield("Stock Entry Detail", "receive_qty")){
@@ -339,7 +339,6 @@ frappe.ui.form.on("Stock Entry", {
                         }
         
                     });
-                });
         
             }
             else{
@@ -387,7 +386,8 @@ frappe.ui.form.on("Stock Entry", {
                     
                 })
             }
-        }
+        })
+    }
         else{
 
             frm.doc.items.forEach(function (d) {

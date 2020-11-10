@@ -83,7 +83,7 @@ def make_transfer_batches(self):
 			batch.batch_yield = flt(row.batch_yield, 3)
 			if hasattr(self, 'send_to_party') and hasattr(row, 'party_concentration'):
 				if self.send_to_party and row.party_concentration != row.concentration:
-					batch.concentration = flt(row.party_concentration, 3)
+					batch.concentration = flt(row.party_concentration, 3) or flt(row.concentration, 3)
 				else:
 					batch.concentration = flt(row.concentration, 3)	
 			else:
