@@ -43,6 +43,7 @@
   "strength",
   "batch_size",
   "packing_size",
+  "application",
   "section_break_38",
   "master_sample",
   "last_sample",
@@ -151,8 +152,7 @@
    "fieldname": "link_to",
    "fieldtype": "Select",
    "label": "Link To",
-   "options": "\nLead\nCustomer\nSupplier",
-   "reqd": 1
+   "options": "\nLead\nCustomer\nSupplier"
   },
   {
    "fieldname": "party",
@@ -160,8 +160,7 @@
    "ignore_user_permissions": 1,
    "in_list_view": 1,
    "label": "Party",
-   "options": "link_to",
-   "reqd": 1
+   "options": "link_to"
   },
   {
    "allow_on_submit": 1,
@@ -252,7 +251,7 @@
    "fieldname": "sample_type",
    "fieldtype": "Select",
    "label": "Sample Type",
-   "options": "PSS\nDevelopment\nPost Shipment Sample",
+   "options": "PSS\nDevelopment\nStandard\nPost Shipment Sample",
    "reqd": 1
   },
   {
@@ -503,10 +502,15 @@
    "fieldtype": "Small Text",
    "hidden": 1,
    "label": "Fiscal"
+  },
+  {
+   "fieldname": "application",
+   "fieldtype": "Data",
+   "label": "Application"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-06-23 17:50:33.299349",
+ "modified": "2020-11-10 10:24:51.082800",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",

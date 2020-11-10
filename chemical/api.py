@@ -244,10 +244,15 @@ def purchase_cal_rate_qty(self):
 				d.quantity = flt(d.accepted_quantity) or flt(d.receive_quantity)	
 			else:
 				d.quantity = flt(d.qty)*flt(d.concentration)/100
-			if self.doctype == "Stock Entry":
+				
+			# Calculate Rate	
+			if self.doctype == "Stock Entry" and hasattr(doc_items,'supplier_quantity'):
 				d.basic_rate= flt(d.supplier_quantity) * flt(d.price) / flt(d.qty)
 			else:
-				d.rate = flt(d.supplier_quantity) * flt(d.price) / flt(d.qty)
+				if hasattr(doc_items,'supplier_quantity'):
+					d.rate = flt(d.supplier_quantity) * flt(d.price) / flt(d.qty)
+				else:
+					d.rate = flt(d.quantity) * flt(d.price) / flt(d.qty)
 
 		else:
 			if hasattr(doc_items,'received_concentration'):
