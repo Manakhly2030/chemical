@@ -31,6 +31,11 @@ frappe.query_reports["Batch Wise Balance Chemical"] = {
 			"fieldtype": "Link",
 			"options": "Warehouse",
 			"width": "80",
+		},
+		{
+			"fieldname": "show_party",
+			"label": __("Show party"),
+			"fieldtype": "Check",
 		}
 		
 	]

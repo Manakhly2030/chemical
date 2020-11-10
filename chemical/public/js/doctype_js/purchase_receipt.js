@@ -113,6 +113,13 @@ frappe.ui.form.on("Purchase Receipt", {
                     if (frappe.meta.get_docfield("Purchase Receipt Item", "accepted_concentration") && frappe.meta.get_docfield("Purchase Receipt Item", "received_concentration")){
                         frappe.model.set_value(d.doctype, d.name, 'concentration',d.accepted_concentration || d.received_concentration);
                     }
+
+                    if (!frappe.meta.get_docfield("Purchase Receipt Item", "receive_qty") && (!d.packing_size || !d.no_of_packages)){
+                        if (d.quantity){
+                            frappe.model.set_value(d.doctype,d.name,'qty',(flt(d.quantity) * 100.0)/flt(d.concentration))
+                        }
+                    }
+
                     if (!d.qty){
                         if (frappe.meta.get_docfield("Purchase Receipt Item", "receive_qty")){
                             frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
@@ -138,8 +145,12 @@ frappe.ui.form.on("Purchase Receipt", {
                     else{
                         frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty)*flt(d.concentration)/100);
                     }
-
-                    frappe.model.set_value(d.doctype, d.name, 'rate',flt(d.quantity) * flt(d.price) / flt(d.qty));
+                    if (frappe.meta.get_docfield("Purchase Receipt Item", "supplier_quantity")){
+                        frappe.model.set_value(d.doctype, d.name, 'rate',flt(d.supplier_quantity) * flt(d.price) / flt(d.qty));
+                    }
+                    else{
+                        frappe.model.set_value(d.doctype, d.name, 'rate',flt(d.quantity) * flt(d.price) / flt(d.qty));
+                    }
                 }
                 else{
                     if (frappe.meta.get_docfield("Purchase Receipt Item", "received_concentration")){
@@ -162,6 +173,13 @@ frappe.ui.form.on("Purchase Receipt", {
                         frappe.model.set_value(d.doctype, d.name, 'concentration',flt(d.accepted_concentration) || flt(d.received_concentration));
                     }
 
+
+                    if (!frappe.meta.get_docfield("Purchase Receipt Item", "receive_qty") && (!d.packing_size || !d.no_of_packages)){
+                        if (d.quantity){
+                            frappe.model.set_value(d.doctype,d.name,'qty',flt(d.quantity))
+                        }
+                    }
+
                     if (!d.qty){
                         if (frappe.meta.get_docfield("Purchase Receipt Item", "receive_qty")){
                             frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
@@ -177,21 +195,18 @@ frappe.ui.form.on("Purchase Receipt", {
                     else{
                         frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty));
                     }
-                    frappe.model.set_value(d.doctype, d.rate, 'quantity',d.price);
+                    frappe.model.set_value(d.doctype, d.name, 'rate',d.price);
                 }
 
                 if (frappe.meta.get_docfield("Purchase Receipt Item", "short_quantity")){
-                    if (!d.accepted_quantity){
-                        frappe.model.set_value(d.doctype, d.rate, 'short_quantity',flt(d.quantity) - flt(d.supplier_quantity));
+                    frappe.model.set_value(d.doctype, d.name, 'short_quantity',flt(d.quantity) - flt(d.supplier_quantity));
+                    if(d.short_quantity){
+                        frappe.model.set_value(d.doctype, d.name, 'rate',flt(d.supplier_quantity) * flt(d.price) / flt(d.qty));
                     }
-                    else{
-                        frappe.model.set_value(d.doctype, d.rate, 'short_quantity',flt(d.quantity) - flt(d.accepted_quantity));
-                    }
-
                 }
 
                 if (frappe.meta.get_docfield("Purchase Receipt Item", "amount_difference")){
-                    frappe.model.set_value(d.doctype, d.rate, 'amount_difference',flt(d.price) * flt(d.short_quantity));
+                    frappe.model.set_value(d.doctype, d.name, 'amount_difference',flt(d.price) * flt(d.short_quantity));
                 }
 
             });
@@ -264,7 +279,7 @@ frappe.ui.form.on("Purchase Receipt", {
                  }
 
                  if(!d.supplier_qty){
-                     frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
+                     //frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
                  }
                 }
 
@@ -287,7 +302,7 @@ frappe.ui.form.on("Purchase Receipt", {
 
                     if (frappe.meta.get_docfield("Purchase Receipt Item", "supplier_concentration")){
                         if(!d.supplier_concentration){
-                            frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier concentration")
+                           // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier concentration")
                         }
                         frappe.model.set_value(d.doctype, d.name, 'supplier_quantity',flt(d.supplier_qty) * d.supplier_concentration / 100);
                     }
@@ -305,19 +320,19 @@ frappe.ui.form.on("Purchase Receipt", {
                     }
                     if (!d.qty){
                         if (frappe.meta.get_docfield("Purchase Receipt Item", "receive_qty")){
-                            frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
+                           // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
                         }
                         else{
-                            frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
+                           // frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
                         }
                     }
 
                     if (!d.concentration){
                         if (frappe.meta.get_docfield("Purchase Receipt Item", "received_concentration")){
-                            frappe.throw(d.doctype + " Row: "+ d.idx +" Please add received or accepted concentration")
+                           // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add received or accepted concentration")
                         }
                         else{
-                            frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add concentration")
+                           // frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add concentration")
                         }
                     }
 
@@ -328,8 +343,12 @@ frappe.ui.form.on("Purchase Receipt", {
                     else{
                         frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty)*flt(d.concentration)/100);
                     }
-
-                    frappe.model.set_value(d.doctype, d.name, 'rate',flt(d.quantity) * flt(d.price) / flt(d.qty));
+                    if (frappe.meta.get_docfield("Purchase Receipt Item", "supplier_quantity")){
+                        frappe.model.set_value(d.doctype, d.name, 'rate',flt(d.supplier_quantity) * flt(d.price) / flt(d.qty));
+                    }
+                    else{
+                        frappe.model.set_value(d.doctype, d.name, 'rate',flt(d.quantity) * flt(d.price) / flt(d.qty));
+                    }
                 }
                 else{
                     if (frappe.meta.get_docfield("Purchase Receipt Item", "received_concentration")){
@@ -354,10 +373,10 @@ frappe.ui.form.on("Purchase Receipt", {
 
                     if (!d.qty){
                         if (frappe.meta.get_docfield("Purchase Receipt Item", "receive_qty")){
-                            frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
+                           // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
                         }
                         else{
-                            frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
+                          //  frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
                         }
                     }
 
@@ -367,21 +386,19 @@ frappe.ui.form.on("Purchase Receipt", {
                     else{
                         frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty));
                     }
-                    frappe.model.set_value(d.doctype, d.rate, 'quantity',d.price);
+                    frappe.model.set_value(d.doctype, d.name, 'rate',d.price);
                 }
 
-                if (frappe.meta.get_docfield("Purchase Receipt Item", "short_quantity")){
-                    if (!d.accepted_quantity){
-                        frappe.model.set_value(d.doctype, d.rate, 'short_quantity',flt(d.quantity) - flt(d.supplier_quantity));
-                    }
-                    else{
-                        frappe.model.set_value(d.doctype, d.rate, 'short_quantity',flt(d.quantity) - flt(d.accepted_quantity));
-                    }
 
+                if (frappe.meta.get_docfield("Purchase Receipt Item", "short_quantity")){
+                    frappe.model.set_value(d.doctype, d.name, 'short_quantity',flt(d.quantity) - flt(d.supplier_quantity));
+                    if(d.short_quantity){
+                        frappe.model.set_value(d.doctype, d.name, 'rate',flt(d.supplier_quantity) * flt(d.price) / flt(d.qty));
+                    }
                 }
                 
                 if (frappe.meta.get_docfield("Purchase Receipt Item", "amount_difference")){
-                    frappe.model.set_value(d.doctype, d.rate, 'amount_difference',flt(d.price) * flt(d.short_quantity));
+                    frappe.model.set_value(d.doctype, d.name, 'amount_difference',flt(d.price) * flt(d.short_quantity));
                 }
 
             });

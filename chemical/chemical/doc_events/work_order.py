@@ -441,7 +441,7 @@ def update_transaferred_qty_for_required_items(self):
 
 	for d in self.required_items:
 		# Finbyz Changes: changed qty to quantity
-		transferred_qty = frappe.db.sql('''select sum(qty)
+		transferred_qty = frappe.db.sql('''select sum(quantity)
 			from `tabStock Entry` entry, `tabStock Entry Detail` detail
 			where
 				entry.work_order = %(name)s
@@ -463,7 +463,7 @@ def update_consumed_qty_for_required_items(self):
 			the work order'''
 	for d in self.required_items:
 		#Finbyz Changes: changed qty to quantity
-		consumed_qty = frappe.db.sql('''select sum(qty)
+		consumed_qty = frappe.db.sql('''select sum(quantity)
 			from `tabStock Entry` entry, `tabStock Entry Detail` detail
 			where
 				entry.work_order = %(name)s

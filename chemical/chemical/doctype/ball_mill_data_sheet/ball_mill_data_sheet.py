@@ -50,7 +50,7 @@ class BallMillDataSheet(Document):
 		})
 	
 	def on_submit(self):
-		se = frappe.new_doc("Stock Entry");
+		se = frappe.new_doc("Stock Entry")
 		se.purpose = "Repack"
 		se.company = self.company
 		se.stock_entry_type = "Repack"
@@ -203,7 +203,7 @@ def make_outward_sample(source_name, target_doc=None):
 
 	return doc
 
-
+@frappe.whitelist()
 def get_sales_order(doctype, txt, searchfield, start, page_len, filters):
 	meta = frappe.get_meta("Sales Order")
 	searchfield = meta.get_search_fields()
@@ -212,9 +212,9 @@ def get_sales_order(doctype, txt, searchfield, start, page_len, filters):
 			SELECT so.name from `tabSales Order` as so 
 			LEFT JOIN `tabSales Order Item` as soi 
 			ON so.name = soi.parent
-			WHERE so.docstatus = '1' and so.customer  = '{0}' and soi.item_code = '{1}' """ 
+			WHERE so.docstatus = '1' and so.customer  = '{0}' and soi.item_code = '{1}' and status NOT IN ('Closed','Completed')""" 
 			.format(filters.get("customer_name"),filters.get("product_name")))
-	
+
 	return sales_order_list
 
 @frappe.whitelist()

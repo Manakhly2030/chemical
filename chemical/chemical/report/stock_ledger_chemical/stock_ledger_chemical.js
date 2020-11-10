@@ -72,6 +72,11 @@ frappe.query_reports["Stock Ledger Chemical"] = {
 			"label": __("Include UOM"),
 			"fieldtype": "Link",
 			"options": "UOM"
+		},
+		{
+			"fieldname": "show_party",
+			"label": __("Show party"),
+			"fieldtype": "Check",
 		}
 	]
 };
