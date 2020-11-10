@@ -181,7 +181,7 @@ frappe.ui.form.on("Stock Entry", {
     validate: function(frm) {
         frm.trigger('cal_qty');
         if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry", "reference_docname") && frappe.meta.get_docfield("Stock Entry", "jw_ref"))
-        {
+        { 
             frm.doc.items.forEach(function (d) {     
             if (!frm.doc.reference_docname && !frm.doc.jw_ref && !d.s_warehouse){
                     var packing_size = 0;
