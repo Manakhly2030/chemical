@@ -241,9 +241,14 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	}
 
 	if args.get('warehouse'):
-		batch_nos = frappe.db.sql("""select sle.batch_no, batch.lot_no, batch.concentration,round(sum(sle.actual_qty),2), sle.stock_uom
+		batch_nos = frappe.db.sql("""select sle.batch_no, batch.lot_no, batch.concentration,
+		CASE
+			WHEN i.maintain_as_is_stock=1 THEN round(sum(sle.actual_qty*batch.concentration)/100,2) ELSE round(sum(sle.actual_qty),2)
+		END, 
+		sle.stock_uom
 				from `tabStock Ledger Entry` sle
 					INNER JOIN `tabBatch` batch on sle.batch_no = batch.name
+					JOIN `tabItem` as i on sle.item_code = i.name
 				where
 					sle.item_code = %(item_code)s
 					and sle.warehouse = %(warehouse)s
