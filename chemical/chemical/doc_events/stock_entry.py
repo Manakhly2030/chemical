@@ -29,12 +29,6 @@ def validate(self,method):
 	get_based_on(self)
 	cal_target_yield_cons(self)
 
-<<<<<<< HEAD
-
-	
-
-=======
->>>>>>> 8adc10227379f920374e5a7204a36711181d628f
 def stock_entry_validate(self, method):
 	if self.purpose == "Material Receipt":
 		validate_batch_wise_item_for_concentration(self)
