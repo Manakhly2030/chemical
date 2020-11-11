@@ -245,8 +245,12 @@ def update_po(self):
 	if self.work_order:
 		po = frappe.get_doc("Work Order", self.work_order)
 		if self.purpose == "Material Transfer for Manufacture":
-				if po.material_transferred_for_manufacturing > po.qty:
-					po.material_transferred_for_manufacturing = po.qty
+			if po.material_transferred_for_manufacturing > po.qty:
+				po.material_transferred_for_manufacturing = po.qty
+			
+			# if not frappe.db.exists({"doctype":"Stock Entry","name":("!=",self.name),"stock_entry_type":"Material Transfer for Manufacture","work_order":self.work_order}):
+			if not frappe.db.sql("""select name from `tabStock Entry` where name != '{}' and stock_entry_type = 'Material Transfer for Manufacture' and work_order = '{}'""".format(self.name,self.work_order)):
+				po.db_set('actual_start_date',self.posting_date + ' ' +  self.posting_time)
 
 		if self.purpose == "Manufacture" and self.work_order:
 			update_po_transfer_qty(self, po)

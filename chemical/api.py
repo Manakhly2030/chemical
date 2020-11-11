@@ -230,8 +230,8 @@ def purchase_cal_rate_qty(self):
 			
 			if not hasattr(doc_items,'receive_qty') and (not d.packing_size or not d.no_of_packages):
 				if d.quantity:
-					d.qty = flt((d.quantity * 100.0) / d.concentration)
-
+					d.qty = flt((d.quantity * 100.0) / d.concentration)			
+			
 			if not d.qty:
 				if hasattr(doc_items,'receive_qty'):
 					frappe.throw("{} Row: {} Please add Receive Qty or Accepted Qty".format(d.doctype,d.idx))
@@ -265,7 +265,6 @@ def purchase_cal_rate_qty(self):
 				d.qty = flt(d.accepted_qty) or flt(d.receive_qty)
 			if hasattr(doc_items,'accepted_concentration') and hasattr(doc_items,'received_concentration'): 
 				d.concentration = flt(d.accepted_concentration) or flt(d.received_concentration)
-			
 			if not hasattr(doc_items,'receive_qty') and (not d.packing_size or not d.no_of_packages):
 				if d.quantity:
 					d.qty = flt(d.quantity)
@@ -422,11 +421,19 @@ def se_repack_cal_rate_qty(self):
 				if maintain_as_is_stock:
 					if d.quantity:
 						d.qty = flt((d.quantity * 100.0) / concentration)
+
+					if d.qty and not d.quantity:
+						d.quantity = d.qty * concentration / 100.0
+
 					if d.price:
 						d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 				else:
 					if d.quantity:
 						d.qty = d.quantity
+
+					if d.qty and not d.quantity:
+						d.quantity = d.qty
+
 					if d.price:
 						d.basic_rate = d.price
 			
@@ -457,11 +464,19 @@ def se_cal_rate_qty(self):
 			if maintain_as_is_stock:
 				if d.quantity:
 					d.qty = flt((d.quantity * 100.0) / concentration)
+
+				if d.qty and not d.quantity:
+					d.quantity = d.qty * concentration / 100.0
+
 				if d.price:
 					d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 			else:
 				if d.quantity:
 					d.qty = d.quantity
+
+				if d.qty and not d.quantity:
+					d.quantity = d.qty
+
 				if d.price:
 					d.basic_rate = d.price
 

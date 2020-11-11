@@ -163,6 +163,8 @@ def make_batches(self, warehouse_field):
 				if row.batch_no and self.doctype == "Stock Entry":
 					row.db_set('old_batch_no', row.batch_no)
 
+						
+
 				batch = frappe.new_doc("Batch")
 				batch.item = row.item_code
 				batch.supplier = getattr(self, 'supplier', None)
@@ -172,6 +174,11 @@ def make_batches(self, warehouse_field):
 				batch.batch_yield = flt(row.batch_yield, 3)
 				batch.concentration = flt(row.concentration, 3)
 				batch.valuation_rate = flt(row.valuation_rate, 4)
+				batch.price = flt(row.price,2)
+
+				if self.doctype == "Stock Entry":
+					if self.stock_entry_type == "Manufacture":
+						batch.manufacturing_date = self.posting_date
 				try:
 					batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
 				except:

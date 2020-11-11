@@ -73,7 +73,7 @@ this.frm.cscript.onload = function(frm) {
 						query:"chemical.chemical.doctype.ball_mill_data_sheet.ball_mill_data_sheet.get_sales_order",
 						filters:{
 							'customer_name':doc.customer_name,	
-							'product_name':doc.product_name
+							'product_name':doc.product_name,
 						}
 			}
 	});
