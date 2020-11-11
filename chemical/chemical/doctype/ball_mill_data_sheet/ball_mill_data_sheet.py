@@ -96,7 +96,7 @@ class BallMillDataSheet(Document):
 			self.db_set('stock_entry',se.name)
 
 		for row in self.packaging:
-			batch = frappe.db.sql("""
+			batch_name = frappe.db.sql("""
 				SELECT sed.batch_no from `tabStock Entry` se LEFT JOIN `tabStock Entry Detail` sed on (se.name = sed.parent)
 				WHERE 
 					se.name = '{name}'
@@ -110,7 +110,9 @@ class BallMillDataSheet(Document):
 						packaging_material=row.packaging_material,
 						packing_size=row.packing_size,
 						no_of_packages=row.no_of_packages,
-					))[0][0] or ''
+					))
+			if batch_name:
+				batch = batch_name[0][0] or ''
 
 			if batch:
 				row.db_set('batch_no', batch)
