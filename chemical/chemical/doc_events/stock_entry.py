@@ -11,8 +11,8 @@ def onload(self,method):
 	#quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
-	if self.purpose in ['Material Receipt','Repack'] and self.party_type == "Supplier" and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
-		if not self.reference_docname and not self.jw_ref:
+	if self.purpose in ['Material Receipt','Repack'] and hasattr(self,'party_type') and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
+		if not self.reference_docname and not self.jw_ref and self.party_type == "Supplier":
 			se_repack_cal_rate_qty(self)
 		else:
 			se_cal_rate_qty(self)
@@ -238,8 +238,12 @@ def update_po(self):
 	if self.work_order:
 		po = frappe.get_doc("Work Order", self.work_order)
 		if self.purpose == "Material Transfer for Manufacture":
-				if po.material_transferred_for_manufacturing > po.qty:
-					po.material_transferred_for_manufacturing = po.qty
+			if po.material_transferred_for_manufacturing > po.qty:
+				po.material_transferred_for_manufacturing = po.qty
+			
+			# if not frappe.db.exists({"doctype":"Stock Entry","name":("!=",self.name),"stock_entry_type":"Material Transfer for Manufacture","work_order":self.work_order}):
+			if not frappe.db.sql("""select name from `tabStock Entry` where name != '{}' and stock_entry_type = 'Material Transfer for Manufacture' and work_order = '{}'""".format(self.name,self.work_order)):
+				po.db_set('actual_start_date',self.posting_date + ' ' +  self.posting_time)
 
 		if self.purpose == "Manufacture" and self.work_order:
 			update_po_transfer_qty(self, po)
