@@ -604,17 +604,19 @@ def get_fiscal(date):
 	return fiscal if fiscal else fy.split("-")[0][2:] + fy.split("-")[1][2:]
 
 def quantity_price_to_qty_rate(self):
-	for item in self.items:
-		has_batch_no,maintain_as_is_stock = frappe.db.get_value('Item', item.item_code, ['has_batch_no','maintain_as_is_stock'])
-		concentration = item.get('concentration') or 100
-		if item.qty and item.quantity == 0:
-			if maintain_as_is_stock:
-				item.db_set("quantity",flt(item.qty)*flt(concentration)/100)
-			else:
-				item.db_set("quantity",flt(item.qty))
-		if item.rate and item.price ==0:
-			if maintain_as_is_stock:
-				item.db_set("price",flt(item.rate)*100/concentration)
-			else:
-				item.db_set("price",flt(item.rate))
+	if self.items:
+		for item in self.items:
+			if item.item_code:
+				has_batch_no,maintain_as_is_stock = frappe.db.get_value('Item', item.item_code, ['has_batch_no','maintain_as_is_stock'])
+				concentration = item.get('concentration') or 100
+				if item.qty and item.quantity == 0:
+					if maintain_as_is_stock:
+						item.db_set("quantity",flt(item.qty)*flt(concentration)/100)
+					else:
+						item.db_set("quantity",flt(item.qty))
+				if item.rate and item.price ==0:
+					if maintain_as_is_stock:
+						item.db_set("price",flt(item.rate)*100/concentration)
+					else:
+						item.db_set("price",flt(item.rate))
 								

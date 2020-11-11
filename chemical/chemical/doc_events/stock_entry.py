@@ -11,8 +11,8 @@ def onload(self,method):
 	#quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
-	if self.purpose in ['Material Receipt','Repack'] and self.party_type == "Supplier" and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
-		if not self.reference_docname and not self.jw_ref:
+	if self.purpose in ['Material Receipt','Repack'] and hasattr(self,'party_type') and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
+		if not self.reference_docname and not self.jw_ref and self.party_type == "Supplier":
 			se_repack_cal_rate_qty(self)
 		else:
 			se_cal_rate_qty(self)
