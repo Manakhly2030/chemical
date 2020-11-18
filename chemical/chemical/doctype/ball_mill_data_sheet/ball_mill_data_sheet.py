@@ -65,6 +65,7 @@ class BallMillDataSheet(Document):
 				'item_code': row.item_name,
 				's_warehouse': row.source_warehouse,
 				'batch_no': row.batch_no,
+				'concentration':row.concentration,
 				'basic_rate': row.basic_rate,
 				'basic_amount': row.basic_amount,
 				'qty': row.quantity,
@@ -86,14 +87,10 @@ class BallMillDataSheet(Document):
 				'basic_amount': flt(d.qty * self.per_unit_amount),
 				'cost_center': cost_center
 			})
-
-		try:
-			se.save()
-			se.submit()
-		except Exception as e:
-			frappe.throw(str(e))
-		else:
-			self.db_set('stock_entry',se.name)
+		se.set_actual_qty()
+		se.save()
+		se.submit()
+		self.db_set('stock_entry',se.name)
 
 		for row in self.packaging:
 			batch_name = frappe.db.sql("""
@@ -120,8 +117,6 @@ class BallMillDataSheet(Document):
 					frappe.db.set_value("Batch",batch,'customer',self.customer_name)
 				if self.lot_no:
 					frappe.db.set_value("Batch",batch,'sample_ref_no',self.lot_no)
-
-		#frappe.db.commit()
 	
 	def before_cancel(self):
 		for item in self.packaging:
@@ -133,7 +128,6 @@ class BallMillDataSheet(Document):
 			se = frappe.get_doc("Stock Entry",self.stock_entry)
 			se.cancel()
 			self.db_set('stock_entry','')
-			#frappe.db.commit()
 
 			for row in self.packaging:
 				row.db_set('batch_no', '')
