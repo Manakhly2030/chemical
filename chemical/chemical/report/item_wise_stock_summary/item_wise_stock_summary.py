@@ -1,0 +1,167 @@
+# Copyright (c) 2013, FinByz Tech Pvt. Ltd. and contributors
+# For license information, please see license.txt
+
+from __future__ import unicode_literals
+import frappe
+from frappe import _
+from frappe.utils import flt
+
+def execute(filters=None):
+	columns, data = [], []
+	columns = get_columns(filters)
+	data = get_data(filters)
+	return columns, data
+
+def get_data(filters):
+	opening_data, closing_data = get_opening_closing_data(filters)
+	sle_data = get_sle_data(filters)
+	data = get_item_details(sle_data, opening_data, closing_data)
+	return data
+
+def get_opening_closing_data(filters):
+	conditions = get_sle_conditions(filters)
+	opening_data = frappe.db.sql("""
+		select sle.item_code, CASE WHEN (i.maintain_as_is_stock = 1) THEN sum((sle.actual_qty * bt.concentration)/100) ELSE sum(sle.actual_qty) END AS opening_stock
+		from `tabStock Ledger Entry` as sle
+		LEFT JOIN `tabItem` as i ON sle.item_code = i.name
+		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no
+		where sle.posting_date < '{}' and sle.docstatus = 1 and sle.warehouse NOT LIKE '%Jobwork Out%' {}
+		group by sle.item_code
+	""".format(filters.from_date,conditions),as_dict=1)
+
+	closing_data = frappe.db.sql("""
+		select sle.item_code, CASE WHEN (i.maintain_as_is_stock = 1 AND bt.concentration !=0) THEN sum((sle.actual_qty * bt.concentration)/100) ELSE sum(sle.actual_qty) END AS closing_stock
+		from `tabStock Ledger Entry` as sle
+		LEFT JOIN `tabItem` as i ON sle.item_code = i.name
+		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no
+		where sle.posting_date <= '{}' and sle.docstatus = 1 and sle.warehouse NOT LIKE '%Jobwork Out%' {}
+		group by sle.item_code
+	""".format(filters.to_date, conditions),as_dict=1)
+
+	return opening_data,closing_data
+
+def get_sle_data(filters):
+	conditions = get_sle_conditions(filters)
+	sle_data = frappe.db.sql("""
+		select sle.item_code, sle.actual_qty, sle.voucher_type, sle.voucher_no, i.item_group,
+			i.maintain_as_is_stock, bt.concentration, se.stock_entry_type, se.name
+		from `tabStock Ledger Entry` as sle
+		LEFT JOIN `tabItem` as i ON sle.item_code = i.name
+		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no
+		LEFT JOIN `tabStock Entry` as se ON se.name = sle.voucher_no
+		where sle.posting_date BETWEEN '{}' and '{}' {}
+	""".format(filters.from_date,filters.to_date, conditions),as_dict=1)
+	
+	sle_details = []
+	sle_map = {}
+	for sle in sle_data:
+		if sle.maintain_as_is_stock and sle.concentration:
+			sle.actual_qty = flt(sle.actual_qty * sle.concentration / 100)
+		if sle.voucher_type in ["Purchase Receipt", "Purchase Invoice"] and sle.actual_qty >0:
+			sle.received = sle.actual_qty
+		if sle.voucher_type in ["Delivery Note", "Sales Invoice"] and sle.actual_qty < 0:
+			sle.sales = sle.actual_qty
+		if sle.voucher_type == "Stock Entry" and sle.actual_qty > 0 and sle.stock_entry_type in ["Manufacture","Repack"]:
+			sle.production = sle.actual_qty
+		if sle.voucher_type == "Stock Entry" and sle.actual_qty < 0 and sle.stock_entry_type in ["Manufacture","Repack"]:
+			sle.captive_consumption = abs(sle.actual_qty)
+		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Receive Jobwork Return" and sle.actual_qty > 0 and not sle.name.find('HJF') > 0:
+			sle.unprocessed_return = abs(sle.actual_qty)
+		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Receive Jobwork Return" and sle.actual_qty > 0 and sle.name.find('HJF') > 0:
+			sle.processed_return = abs(sle.actual_qty)
+		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Send to Jobwork" and sle.actual_qty < 0:
+			sle.sent_to_job_work = abs(sle.actual_qty)
+		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Material Receipt" and sle.actual_qty > 0:
+			sle.receipt = sle.actual_qty
+
+	return sle_data
+
+def get_item_details(sle_data,opening_data,closing_data):
+	item_map = {}
+	opening_map = {}
+	closing_map = {}
+	data = []
+	qty_dict = {}
+	for sle in sle_data:
+		item_map.setdefault(sle.item_code,frappe._dict({
+			"received":0.0 , "receipt":0.0, "sales":0.0,"production":0.0, "captive_consumption":0.0,"unprocessed_return":0.0, "processed_return":0.0,"sent_to_job_work":0.0
+		}))
+		item_map[sle.item_code].received += flt(sle.received)
+		item_map[sle.item_code].receipt += flt(sle.receipt)
+		item_map[sle.item_code].sales += flt(sle.sales)
+		item_map[sle.item_code].production += flt(sle.production)
+		item_map[sle.item_code].captive_consumption += flt(sle.captive_consumption)
+		item_map[sle.item_code].unprocessed_return += flt(sle.unprocessed_return)
+		item_map[sle.item_code].processed_return += flt(sle.processed_return)
+		item_map[sle.item_code].sent_to_job_work += flt(sle.sent_to_job_work)
+
+	for opening in opening_data:
+		opening_map.setdefault(opening.item_code,frappe._dict({
+			"opening_stock":0.0
+		}))
+		opening_dict = opening_map[opening.item_code]
+		opening_dict.opening_stock += flt(opening.opening_stock)
+	
+	for closing in closing_data:
+		closing_map.setdefault(closing.item_code,frappe._dict({
+			"closing_stock":0.0
+		}))
+		closing_dict = closing_map[closing.item_code]
+		closing_dict.closing_stock += flt(closing.closing_stock)
+
+	for item,value in item_map.items():
+		try:
+			opening_dict = opening_map[item]
+			opening_stock = opening_dict.opening_stock
+		except KeyError:
+			opening_stock = 0.0
+		try:
+			closing_dict = closing_map[item]
+			closing_stock = closing_dict.closing_stock
+		except KeyError:
+			closing_stock = 0.0
+
+		data.append({
+			"item_code":item,
+			"received":flt(value.received,2),
+			"receipt":flt(value.receipt,2),
+			"sales":flt(value.sales,2),
+			"production":flt(value.production,2),
+			"captive_consumption":flt(value.captive_consumption,2),
+			"unprocessed_return":flt(value.unprocessed_return,2),
+			"processed_return":flt(value.processed_return,2),
+			"sent_to_job_work":flt(value.sent_to_job_work,2),
+			"opening_stock":flt(opening_stock,2),
+			"closing_stock":flt(closing_stock,2),
+		})
+	
+	
+	return data
+
+def get_sle_conditions(filters):
+	conditions = ''
+	if filters.get('company'):
+		conditions += " AND sle.company = '{}'".format(filters.company)
+	if filters.get('item_code'):
+		conditions += " AND sle.item_code = '{}'".format(filters.item_code)
+	if filters.get('item_group'):
+		conditions += " AND i.item_group = '{}'".format(filters.item_group)
+	return conditions
+	
+
+def get_columns(filters):
+	columns = [
+			{"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 230},
+			{"label": _("Opening Stock"), "fieldname": "opening_stock", "fieldtype": "Float", "width": 120},
+			{"label": _("Purchase"), "fieldname": "received", "fieldtype": "Float", "width": 100},
+			{"label": _("Receipt"), "fieldname": "receipt", "fieldtype": "Float", "width": 100},
+			{"label": _("Production"), "fieldname": "production", "fieldtype": "Float", "width": 100},
+			{"label": _("Unprocessed Return"), "fieldname": "unprocessed_return", "fieldtype": "Float", "width": 100},
+			{"label": _("Processed Return"), "fieldname": "processed_return", "fieldtype": "Float", "width": 100},
+			{"label": _("Sent to Job Work"), "fieldname": "sent_to_job_work", "fieldtype": "Float", "width": 100},
+			{"label": _("Sales"), "fieldname": "sales", "fieldtype": "Float", "width": 100},
+			{"label": _("Captive Consumption"), "fieldname": "captive_consumption", "fieldtype": "Float", "width": 100},
+			{"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},
+			{"label": _("Closing Stock"), "fieldname": "closing_stock", "fieldtype": "Float", "width": 120},
+	]
+	return columns
