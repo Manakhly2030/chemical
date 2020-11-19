@@ -91,7 +91,7 @@ class BallMillDataSheet(Document):
 		se.save()
 		se.submit()
 		self.db_set('stock_entry',se.name)
-
+		batch = None
 		for row in self.packaging:
 			batch_name = frappe.db.sql("""
 				SELECT sed.batch_no from `tabStock Entry` se LEFT JOIN `tabStock Entry Detail` sed on (se.name = sed.parent)
