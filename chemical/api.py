@@ -289,7 +289,7 @@ def purchase_cal_rate_qty(self):
 			if d.short_quantity:
 				d.rate = flt(d.supplier_quantity) * flt(d.price) / flt(d.qty)
 
-		if hasattr(doc_items,'amount_difference'):
+		if hasattr(doc_items,'amount_difference') and hasattr(doc_items,'short_quantity'):
 			d.amount_difference = flt(d.price) * flt(d.short_quantity) 
 
 def se_repack_cal_rate_qty(self):
