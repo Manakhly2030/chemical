@@ -5,14 +5,24 @@ cur_frm.add_fetch("batch_no", "concentration", "concentration");
 cur_frm.fields_dict.default_source_warehouse.get_query = function(doc) {
 	return {
 		filters: {
-			"is_group": 0
+			"is_group": 0,
+			'company': doc.company
+		}
+	}
+};
+cur_frm.fields_dict.warehouse.get_query = function(doc) {
+	return {
+		filters: {
+			"is_group": 0,
+			'company': doc.company
 		}
 	}
 };
 cur_frm.fields_dict.items.grid.get_field("source_warehouse").get_query = function(doc) {
 	return {
 		filters: {
-		  	"is_group": 0
+			  "is_group": 0,
+			  'company': doc.company
 		}
 	};
 };
