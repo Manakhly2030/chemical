@@ -238,3 +238,11 @@ def get_item_group_condition(item_group):
 			item_group_details.rgt)
 
 	return ''
+
+@frappe.whitelist()
+def show_party_hidden():
+	doc = frappe.get_doc({"doctype":"Stock Entry"})
+	if hasattr(doc,'party'):
+		return 1
+	else:
+		return 0

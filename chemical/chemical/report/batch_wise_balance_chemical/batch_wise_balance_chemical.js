@@ -3,6 +3,16 @@
 /* eslint-disable */
 
 frappe.query_reports["Batch Wise Balance Chemical"] = {
+	onload: function(report){
+		frappe.call({
+			method:"chemical.chemical.report.stock_ledger_chemical.stock_ledger_chemical.show_party_hidden",
+			callback: function(r){
+				if (r.message==0){
+					frappe.query_report.get_filter('show_party').toggle(false)
+				}
+			}
+		})
+	},
 	"filters": [
 		{
 			"fieldname": "to_date",
