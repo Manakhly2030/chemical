@@ -87,7 +87,6 @@ class BallMillDataSheet(Document):
 				'basic_amount': flt(d.qty * self.per_unit_amount),
 				'cost_center': cost_center
 			})
-		se.set_actual_qty()
 		se.save()
 		se.submit()
 		self.db_set('stock_entry',se.name)
