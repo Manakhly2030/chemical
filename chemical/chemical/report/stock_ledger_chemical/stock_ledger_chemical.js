@@ -2,6 +2,22 @@
 // For license information, please see license.txt
 /* eslint-disable */
 
+if (frappe.meta.get_docfield("Stock Entry", "party")){
+	showparty = {
+		"fieldname": "show_party",
+		"label": __("Show party"),
+		"fieldtype": "Check",
+	}
+}
+else{
+	showparty = 
+	{
+		"fieldname": "hide",
+		"label": __("hide"),
+		"fieldtype": "Data",
+		"hidden":true
+	}
+}
 frappe.query_reports["Stock Ledger Chemical"] = {
 	"filters": [
 		{
@@ -73,10 +89,6 @@ frappe.query_reports["Stock Ledger Chemical"] = {
 			"fieldtype": "Link",
 			"options": "UOM"
 		},
-		{
-			"fieldname": "show_party",
-			"label": __("Show party"),
-			"fieldtype": "Check",
-		}
+		showparty,
 	]
 };

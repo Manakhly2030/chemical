@@ -1,7 +1,22 @@
 // Copyright (c) 2016, FinByz Tech Pvt. Ltd. and contributors
 // For license information, please see license.txt
 /* eslint-disable */
-
+if (frappe.meta.get_docfield("Stock Entry", "party")){
+	showparty = {
+		"fieldname": "show_party",
+		"label": __("Show party"),
+		"fieldtype": "Check",
+	}
+}
+else{
+	showparty = 
+	{
+		"fieldname": "hide",
+		"label": __("hide"),
+		"fieldtype": "Data",
+		"hidden":true
+	}
+}
 frappe.query_reports["Batch Wise Balance Chemical"] = {
 	"filters": [
 		{
@@ -32,11 +47,7 @@ frappe.query_reports["Batch Wise Balance Chemical"] = {
 			"options": "Warehouse",
 			"width": "80",
 		},
-		{
-			"fieldname": "show_party",
-			"label": __("Show party"),
-			"fieldtype": "Check",
-		}
+		showparty
 		
 	]
 }
