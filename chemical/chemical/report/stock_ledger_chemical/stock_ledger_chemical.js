@@ -1,24 +1,17 @@
 // Copyright (c) 2016, FinByz Tech Pvt. Ltd. and contributors
 // For license information, please see license.txt
 /* eslint-disable */
-
-if (frappe.meta.get_docfield("Stock Entry", "party")){
-	showparty = {
-		"fieldname": "show_party",
-		"label": __("Show party"),
-		"fieldtype": "Check",
-	}
-}
-else{
-	showparty = 
-	{
-		"fieldname": "hide",
-		"label": __("hide"),
-		"fieldtype": "Data",
-		"hidden":true
-	}
-}
 frappe.query_reports["Stock Ledger Chemical"] = {
+	onload: function(report){
+		frappe.call({
+			method:"chemical.chemical.report.stock_ledger_chemical.stock_ledger_chemical.show_party_hidden",
+			callback: function(r){
+				if (r.message==0){
+					frappe.query_report.get_filter('show_party').toggle(false)
+				}
+			}
+		})
+	},
 	"filters": [
 		{
 			"fieldname": "company",
@@ -89,6 +82,10 @@ frappe.query_reports["Stock Ledger Chemical"] = {
 			"fieldtype": "Link",
 			"options": "UOM"
 		},
-		showparty,
+		{
+			"fieldname": "show_party",
+			"label": __("Show party"),
+			"fieldtype": "Check",
+		}
 	]
 };
