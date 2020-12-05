@@ -173,7 +173,6 @@
    "read_only": 1
   },
   {
-   "allow_on_submit": 1,
    "fieldname": "actual_qty",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -238,6 +237,7 @@
    "options": "Ball Mill Packaging"
   },
   {
+   "collapsible": 1,
    "fieldname": "2",
    "fieldtype": "Section Break"
   },
@@ -287,7 +287,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2020-11-21 10:51:12.925660",
+ "modified": "2020-12-05 15:26:00.075084",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
