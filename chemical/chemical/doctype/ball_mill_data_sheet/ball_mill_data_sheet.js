@@ -117,6 +117,33 @@ function get_qty(frm) {
 }
 
 frappe.ui.form.on('Ball Mill Data Sheet', {
+	onload: (frm) => {
+		if (frm.doc.__islocal){
+		frm.trigger('naming_series');
+		}
+	},
+	naming_series: function (frm) {
+		if (frappe.meta.get_docfield("Ball Mill Data Sheet", "series_value", frm.doc.name)){
+			if (frm.doc.__islocal && frm.doc.company && !frm.doc.amended_from) {
+				frappe.call({
+					method: "finbyzerp.api.check_counter_series",
+					args: {
+						'name': frm.doc.naming_series,
+						'date': frm.doc.transaction_date,
+						'company_series': frm.doc.company_series || null,
+					},
+					callback: function (e) {
+						// frm.doc.series_value = e.message;
+						frm.set_value('series_value', e.message);
+					}
+				});
+				// frm.refresh_field('series_value')
+			}
+		}
+	},
+	company: function (frm) {
+		frm.trigger('naming_series');
+	},
 	refresh: function(frm){
 		if(frm.doc.docstatus == 1){
 			frm.add_custom_button(__("Outward Sample"), function() {

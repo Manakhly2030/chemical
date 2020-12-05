@@ -6,12 +6,33 @@ from __future__ import unicode_literals
 import frappe, erpnext
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import nowtime, flt
+from frappe.utils import nowtime, flt, cint, getdate, get_fullname, get_url_to_form
 from erpnext.stock.utils import get_incoming_rate
 from erpnext.stock.stock_ledger import get_valuation_rate
 from frappe.model.mapper import get_mapped_doc
+from finbyzerp.api import get_fiscal, naming_series_name
+import datetime
 
 class BallMillDataSheet(Document):
+
+	def before_naming(self):
+		if not self.get('amended_from') and not self.get('name'):
+			date = self.get("date") or getdate()
+			fiscal = get_fiscal(date)
+			self.fiscal = fiscal
+			if not self.get('company_series'):
+				self.company_series = None
+			if self.get('series_value'):
+				if self.series_value > 0:
+					name = naming_series_name(self.naming_series, fiscal, self.company_series)
+					check = frappe.db.get_value('Series', name, 'current', order_by="name")
+					if check == 0:
+						pass
+					elif not check:
+						frappe.db.sql("insert into tabSeries (name, current) values ('{}', 0)".format(name))
+
+					frappe.db.sql("update `tabSeries` set current = {} where name = '{}'".format(cint(self.series_value) - 1, name))
+
 
 	def validate(self):
 		self.set_incoming_rate()

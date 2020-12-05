@@ -45,15 +45,17 @@
   "cmc",
   "abs_at_lmax",
   "more_info_break",
-  "stock_entry"
+  "stock_entry",
+  "fiscal",
+  "company_series"
  ],
  "fields": [
   {
-   "default": "BMD-",
+   "default": "BMD-.company_series.-.fiscal.-.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "SR No",
-   "options": "BMD-"
+   "options": "BMD-.company_series.-.fiscal.-.#####\nBMD-"
   },
   {
    "fieldname": "customer_name",
@@ -284,10 +286,23 @@
    "no_copy": 1,
    "options": "Stock Entry",
    "read_only": 1
+  },
+  {
+   "fieldname": "fiscal",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Fiscal"
+  },
+  {
+   "fetch_from": "company.company_series",
+   "fieldname": "company_series",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Company Series"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-12-05 15:26:00.075084",
+ "modified": "2020-12-05 17:24:16.981569",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
