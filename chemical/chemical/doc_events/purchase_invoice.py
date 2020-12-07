@@ -17,6 +17,7 @@ def before_submit(self, method):
 	override_pi_status_updater_args()
 
 def before_cancel(self, method):
+	delete_item_price_history(self)
 	override_pi_status_updater_args()
 
 
@@ -68,3 +69,8 @@ def update_item_price_history(self):
 		doc.update_from = self.doctype
 		doc.docname = self.name
 		doc.save()
+
+def delete_item_price_history(self):
+	doc = frappe.get_doc("Item Price History",{"update_from":self.doctype,"docname":self.name})
+	doc.db_set('docname','')
+	doc.delete()
