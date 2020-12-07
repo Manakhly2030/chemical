@@ -18,6 +18,9 @@ def before_cancel(self, method):
 	delete_item_price_history(self)
 	override_si_status_updater_args()
 
+def on_trash(self, method):
+	delete_item_price_history(self)
+
 def override_si_status_updater_args():
 	SalesInvoice.update_status_updater_args = si_update_status_updater_args
 
@@ -81,6 +84,7 @@ def update_item_price_history(self):
 		doc.save()
 
 def delete_item_price_history(self):
-	doc = frappe.get_doc("Item Price History",{"update_from":self.doctype,"docname":self.name})
-	doc.db_set('docname','')
-	doc.delete()
+	while frappe.db.exists("Item Price History",{"update_from":self.doctype,"docname":self.name}):
+		doc = frappe.get_doc("Item Price History",{"update_from":self.doctype,"docname":self.name})
+		doc.db_set('docname','')
+		doc.delete()
