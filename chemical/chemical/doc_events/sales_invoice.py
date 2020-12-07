@@ -81,10 +81,10 @@ def update_item_price_history(self):
 		doc.selling = 1
 		doc.update_from = self.doctype
 		doc.docname = self.name
-		doc.save()
+		doc.save(ignore_permissions=True)
 
 def delete_item_price_history(self):
 	while frappe.db.exists("Item Price History",{"update_from":self.doctype,"docname":self.name}):
 		doc = frappe.get_doc("Item Price History",{"update_from":self.doctype,"docname":self.name})
 		doc.db_set('docname','')
-		doc.delete()
+		doc.delete(ignore_permissions=True)
