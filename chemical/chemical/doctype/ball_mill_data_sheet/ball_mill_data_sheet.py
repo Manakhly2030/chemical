@@ -214,6 +214,7 @@ class BallMillDataSheet(Document):
 	def cal_total(self):
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
 		self.per_unit_amount = self.amount/ self.actual_qty
+		self.price = (self.amount/ self.actual_qty * 100) / self.concentration
 		self.total_qty = sum([flt(item.qty) for item in self.items])		
 		self.total_quantity = sum([flt(item.quantity) for item in self.items])
 
