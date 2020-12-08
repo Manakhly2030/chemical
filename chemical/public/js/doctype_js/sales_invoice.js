@@ -137,6 +137,7 @@ frappe.ui.form.on("Sales Invoice", {
                 }
 			})
         });
+        frm.trigger("cal_total_quantity");
     },
     cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
@@ -183,6 +184,14 @@ frappe.ui.form.on("Sales Invoice", {
 		})
 	},
     
+    cal_total_quantity: function (frm) {
+		let total_quantity = 0.0;
+		
+		frm.doc.items.forEach(function (d) {
+			total_quantity += flt(d.quantity);
+		});
+		frm.set_value("total_quantity", total_quantity);
+	},
 
     company: function (frm) {
         if (frm.doc.company) {
@@ -234,4 +243,6 @@ frappe.ui.form.on("Sales Invoice Item", {
         });
         frm.events.cal_rate_qty(frm,cdt,cdn)
     }
+
+   
 });
