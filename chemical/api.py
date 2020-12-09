@@ -135,7 +135,7 @@ def cal_rate_qty(self):
 	for d in self.items:
 		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
 		if maintain_as_is_stock:
-			if not d.concentration and d.t_warehouse:
+			if not d.concentration:
 				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
 			concentration = 0.0
 			if d.get('batch_no'):
@@ -149,24 +149,34 @@ def cal_rate_qty(self):
 					concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
 				else:
 					concentration = d.concentration
-				d.quantity = d.qty * concentration / 100
+				d.quantity = flt(d.qty) * flt(d.concentration) / 100
+
 				if d.price:
 					d.rate =  flt(d.quantity * d.price) / flt(d.qty)
 			else:
-				d.quantity = d.qty
+				d.quantity = flt(d.qty)
+
 				if d.price:
-					d.rate= d.price
+					d.rate= flt(d.price)
 		else:
 			if maintain_as_is_stock:
 				if d.quantity:
-					d.qty = flt((d.quantity * 100.0) / d.concentration)
+					d.qty = flt(d.quantity) * 100 / flt(d.concentration)
+
+				if not d.quantity and d.qty:
+					d.quantity = flt(d.qty) * flt(d.concentration) / 100
+
 				if d.price:
 					d.rate =  flt(d.quantity * d.price) / flt(d.qty)
 			else:
 				if d.quantity:
-					d.qty = d.quantity
+					d.qty = flt(d.quantity)
+
+				if not d.quantity and d.qty:
+					d.quantity = flt(d.qty)		
+
 				if d.price:
-					d.rate= d.price
+					d.rate= flt(d.price)
 
 def purchase_cal_rate_qty(self):
 	for d in self.items:
