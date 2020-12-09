@@ -108,20 +108,29 @@ class BallMillDataSheet(Document):
 		
 		for d in self.packaging:
 			maintain_as_is_stock = frappe.db.get_value("Item",self.product_name,'maintain_as_is_stock')
-			if maintain_as_is_stock:
-				if d.qty:
-					d.quantity = flt(d.qty) * flt(self.concentration) / 100.0
+			if d.get('packing_size') and d.get('no_of_packages'):
+				d.qty = d.packing_size * d.no_of_packages
+				if maintain_as_is_stock:
+					if d.qty:
+						d.quantity = flt(d.qty) * flt(self.concentration) / 100.0
 
-				if d.quantity and not d.qty:
-					d.qty = flt((d.quantity * 100.0) / flt(self.concentration))
-
+				else:
+					if d.qty:
+						d.quantity = flt(d.qty)
 			else:
-				if d.qty:
-					d.quantity = flt(d.qty)
+				if maintain_as_is_stock:
+					if d.qty:
+						d.quantity = flt(d.qty) * flt(self.concentration) / 100.0
+					
+					if d.quantity and not d.qty:
+						d.qty = flt(d.quantity) * 100 / flt(self.concentration)
 
-				if d.quantity and not d.qty:
-					d.qty = flt(d.quantity)
+				else:
+					if d.qty:
+						d.quantity = flt(d.qty)				
 
+					if d.quantity and not d.qty:
+						d.qty = flt(d.quantity)
 	
 	def on_submit(self):
 		se = frappe.new_doc("Stock Entry")
