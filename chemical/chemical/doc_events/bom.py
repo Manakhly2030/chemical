@@ -6,6 +6,9 @@ from erpnext.stock.get_item_details import get_price_list_rate
 #from erpnext.manufacturing.doctype.bom import BOM
 
 def bom_validate(self, method):
+	item_list = [item.item_code for item in self.items]
+	if self.based_on not in item_list:
+		frappe.throw("Based on Item {} Required in Raw Materials".format(frappe.bold(self.based_on)))	
 	price_overrides(self)
 	cost_calculation(self)
 	set_fg_qty_in_additional_cost(self)

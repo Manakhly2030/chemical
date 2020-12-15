@@ -23,6 +23,10 @@ def before_validate(self,method):
 	validate_fg_completed_quantity(self)
 
 def validate(self,method):
+	if self.purpose in ['Manufacture']:
+		item_list = [item.item_code for item in self.items]
+		if self.based_on not in item_list:
+			frappe.throw("Based on Item {} Required in Raw Materials".format(frappe.bold(self.based_on)))	
 	cal_validate_additional_cost_qty(self)
 	update_additional_cost_scrap(self)
 	calculate_rate_and_amount(self)
