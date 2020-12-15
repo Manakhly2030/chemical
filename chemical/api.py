@@ -456,15 +456,15 @@ def se_cal_rate_qty(self):
 		if maintain_as_is_stock:
 			if not d.concentration and d.t_warehouse:
 				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-			concentration = 0.0
-			if d.batch_no:
-				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
-			else:
-				concentration = d.concentration
+		concentration = 0.0
+		if d.batch_no:
+			concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
+		else:
+			concentration = d.concentration
 		if d.get('packing_size') and d.get('no_of_packages'):
 			d.qty = (d.packing_size * d.no_of_packages)
 			if maintain_as_is_stock:
-				d.quantity = d.qty * concentration / 100
+				d.quantity = flt(d.qty) * flt(concentration) / 100
 				if d.price:
 					d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 			else:
