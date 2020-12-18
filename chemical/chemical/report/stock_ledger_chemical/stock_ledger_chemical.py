@@ -83,6 +83,12 @@ def get_columns(filters):
 			"options": "Company:company:default_currency"},
 		{"label": _("Batch"), "fieldname": "batch_no", "fieldtype": "Link", "options": "Batch", "width": 100},
 		{"label": _("Lot No"), "fieldname": "lot_no", "fieldtype": "Data","width": 100},
+	]
+	if filters.get('sales_lot_no'):
+		columns +=[
+			{"label": _("Sales Lot No"), "fieldname": "sales_lot_no", "fieldtype": "Data", "width": 80},
+		] 
+	columns += [
 		{"label": _("Concentration"), "fieldname": "concentration", "fieldtype": "Percent","width": 100},
 		{"label": _("As Is Qty"), "fieldname": "as_is_qty", "fieldtype": "Float","width": 100},
 		{"label": _("As Is Balance Qty"), "fieldname": "as_is_balance_qty", "fieldtype": "Float","width": 100},
@@ -95,10 +101,6 @@ def get_columns(filters):
 			{"label": _("Party"), "fieldname": "party", "fieldtype": "Data", "width": 140,"align":"left"},
 		]
 	
-	if filters.get('sales_lot_no'):
-		columns +=[
-			{"label": _("Sales Lot No"), "fieldname": "sales_lot_no", "fieldtype": "Data", "width": 80},
-		] 
 	columns +=[
 		{"label": _("Company"), "fieldname": "company", "fieldtype": "Link", "options": "Company", "width": 110},
 		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
