@@ -37,7 +37,7 @@ def stock_entry_validate(self, method):
 		if self.purpose not in ['Material Transfer', 'Material Transfer for Manufacture']:
 			make_batches(self, 't_warehouse')
 			
-	if self.purpose in ['Repack','Manufacture','Material Issue'] and cint(self.from_ball_mill) != 1:
+	if self.purpose in ['Repack','Manufacture','Material Issue']:
 		self.get_stock_and_rate()
 	if self._action == "submit":
 		validate_additional_cost(self,method)
