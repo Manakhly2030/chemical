@@ -83,6 +83,11 @@ frappe.query_reports["Stock Ledger Chemical"] = {
 			"options": "UOM"
 		},
 		{
+			"fieldname": "sales_lot_no",
+			"label": __("Sales Lot No"),
+			"fieldtype": "Check",
+		},		
+		{
 			"fieldname": "show_party",
 			"label": __("Show party"),
 			"fieldtype": "Check",

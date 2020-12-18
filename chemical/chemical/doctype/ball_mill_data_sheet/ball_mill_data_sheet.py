@@ -112,7 +112,7 @@ class BallMillDataSheet(Document):
 				d.qty = d.packing_size * d.no_of_packages
 				if maintain_as_is_stock:
 					if d.qty:
-						d.quantity = flt(d.qty) * flt(self.concentration) / 100.0
+						d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
 
 				else:
 					if d.qty:
@@ -120,10 +120,10 @@ class BallMillDataSheet(Document):
 			else:
 				if maintain_as_is_stock:
 					if d.qty:
-						d.quantity = flt(d.qty) * flt(self.concentration) / 100.0
+						d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
 					
 					if d.quantity and not d.qty:
-						d.qty = flt(d.quantity) * 100 / flt(self.concentration)
+						d.qty = flt(d.quantity) * 100 / flt(d.concentration)
 
 				else:
 					if d.qty:
@@ -170,7 +170,7 @@ class BallMillDataSheet(Document):
 				'packing_size': d.packing_size,
 				'no_of_packages': d.no_of_packages,
 				'lot_no': d.lot_no,
-				'concentration': self.concentration,
+				'concentration': d.concentration or self.concentration,
 				'basic_rate': self.per_unit_amount,
 				'valuation_rate': self.per_unit_amount,
 				'basic_amount': flt(d.qty * self.per_unit_amount),
@@ -223,9 +223,10 @@ class BallMillDataSheet(Document):
 	def cal_total(self):
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
 		self.per_unit_amount = self.amount/ self.actual_qty
-		self.price = (self.amount/ self.actual_qty * 100) / self.concentration
 		self.total_qty = sum([flt(item.qty) for item in self.items])		
 		self.total_quantity = sum([flt(item.quantity) for item in self.items])
+		self.actual_quantity = sum([flt(item.quantity) for item in self.packaging])
+		self.price = self.amount/ flt(self.actual_quantity)
 
 	def before_save(self):
 		self.handling_loss = flt(self.total_qty) - flt(self.actual_qty)
