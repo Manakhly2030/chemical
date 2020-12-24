@@ -171,8 +171,8 @@ def get_batch_values(self, sle):
 			# else it remains the same as that of previous entry
 			self.valuation_rate = new_stock_value / new_stock_qty
 
-	if not self.valuation_rate and sle.voucher_detail_no:
-		allow_zero_rate = update_entries_after.check_if_allow_zero_valuation_rate(sle.voucher_type, sle.voucher_detail_no)
+	if not self.valuation_rate and sle.voucher_no:
+		allow_zero_rate = update_entries_after.check_if_allow_zero_valuation_rate(sle.voucher_type, sle.voucher_no)
 		if not allow_zero_rate:
 			self.valuation_rate = get_valuation_rate(sle.item_code, sle.warehouse,
 				sle.voucher_type, sle.voucher_no, self.allow_zero_rate,

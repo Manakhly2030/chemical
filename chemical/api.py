@@ -137,7 +137,7 @@ def cal_rate_qty(self):
 		if maintain_as_is_stock:
 			if not d.concentration:
 				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-			concentration = 0.0
+			concentration = 100
 			if d.get('batch_no'):
 				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
 			else:
@@ -413,7 +413,7 @@ def se_repack_cal_rate_qty(self):
 			if maintain_as_is_stock:
 				if not d.concentration and d.t_warehouse:
 					frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-				concentration = 0.0
+				concentration = 100
 				if d.batch_no:
 					concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
 				else:
@@ -456,7 +456,7 @@ def se_cal_rate_qty(self):
 		if maintain_as_is_stock:
 			if not d.concentration and d.t_warehouse:
 				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-		concentration = 0.0
+		concentration = 100
 		if d.batch_no:
 			concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
 		else:
