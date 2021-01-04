@@ -130,7 +130,7 @@ def get_stock_ledger_entries(filters, items):
 			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, sle.stock_value_difference,
 			b.lot_no, b.concentration{show_party_select}{show_sales_lot_no}
 		from `tabStock Ledger Entry` sle left join `tabBatch` as b on sle.batch_no = b.name{show_party_join}{show_sales_lot_no_join}
-		where sle.company = %(company)s and
+		where
 			sle.posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
@@ -197,7 +197,8 @@ def get_sle_conditions(filters):
 		conditions.append("sle.voucher_no=%(voucher_no)s")
 	if filters.get("batch_no"):
 		conditions.append("sle.batch_no=%(batch_no)s")
-
+	if filters.get("company"):
+		conditions.append("sle.company=%(company)s")
 	return "and {}".format(" and ".join(conditions)) if conditions else ""
 
 def get_opening_balance(filters, columns):

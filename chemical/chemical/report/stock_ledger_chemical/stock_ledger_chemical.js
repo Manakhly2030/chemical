@@ -19,7 +19,6 @@ frappe.query_reports["Stock Ledger Chemical"] = {
 			"fieldtype": "Link",
 			"options": "Company",
 			"default": frappe.defaults.get_user_default("Company"),
-			"reqd": 1
 		},
 		{
 			"fieldname": "from_date",

@@ -200,10 +200,14 @@ def cal_target_yield_cons(self):
 		for d in self.items:
 			if d.t_warehouse:
 				flag+=1		
-			if d.item_code not in item_arr:
-				item_map.setdefault(d.item_code, 0)
 			
-			item_map[d.item_code] += flt(d.quantity)
+			if d.item_code not in item_arr:
+					item_map.setdefault(d.item_code, {'quantity':0, 'qty':0, 'yield_weights':0})
+				
+			item_map[d.item_code]['quantity'] += flt(d.quantity)
+			item_map[d.item_code]['qty'] += flt(d.qty)
+			item_map[d.item_code]['yield_weights'] += flt(d.batch_yield)*flt(d.quantity)
+
 		if flag == 1:
 			# Last row object
 			last_row = self.items[-1]
@@ -216,7 +220,14 @@ def cal_target_yield_cons(self):
 
 			# Check if items list has frm.doc.based_on value
 			if self.based_on in items_list:
-				cal_yield = flt(last_row.quantity / item_map[self.based_on]) # Last row qty / sum of items of based_on item from map variable
+				# item_yield = 0.0
+				# if item_map[self.based_on]['yield_weights'] > 0:
+				# 	item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
+
+				# 	if item_yield:
+				# 		cal_yield = flt(item_yield) * flt(last_row.qty / item_map[self.based_on]['quantity']) # Last row qty / sum of items of based_on item from map variable
+				# 	else:
+				cal_yield =  flt(last_row.qty / item_map[self.based_on]['quantity'])
 			last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)		
 
 def cal_validate_additional_cost_qty(self):
@@ -391,9 +402,12 @@ def cal_rate_for_finished_item(self):
 						
 			for d in self.items:
 				if d.item_code not in item_arr:
-					item_map.setdefault(d.item_code, 0)
+					item_map.setdefault(d.item_code, {'quantity':0, 'qty':0, 'yield_weights':0})
 				
-				item_map[d.item_code] += flt(d.quantity)
+				item_map[d.item_code]['quantity'] += flt(d.quantity)
+				item_map[d.item_code]['qty'] += flt(d.qty)
+				item_map[d.item_code]['yield_weights'] += flt(d.batch_yield)*flt(d.quantity)
+
 				
 				if d.t_warehouse:
 					for finish_items in work_order.finish_item:
@@ -403,10 +417,16 @@ def cal_rate_for_finished_item(self):
 							d.db_set('amount',flt(d.basic_amount + d.additional_cost))
 							d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
 							d.db_set('valuation_rate',flt(d.amount/ d.qty))
+							item_yield = 0.0
+							if item_map[self.based_on]['yield_weights'] > 0:
+								item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
 
 							if self.based_on:
-								d.batch_yield = flt(d.quantity / flt(item_map[self.based_on]*finish_items.bom_qty_ratio/100))
-			
+								# if item_yield:
+								# 	d.batch_yield = flt((d.qty * d.concentration * item_yield) / (100*flt(item_map[self.based_on]['quantity']*finish_items.bom_qty_ratio/100)))
+								# else:
+								d.batch_yield = flt((d.qty * d.concentration) / (100*flt(item_map[self.based_on]['quantity']*finish_items.bom_qty_ratio/100)))
+
 						total_incoming_amount += flt(d.amount)
 
 			d.db_update()

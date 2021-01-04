@@ -75,15 +75,15 @@ def execute(filters=None):
 								'party':qty_dict_without_group.party,
 							})
 	filter_company = filters.get("company")
-	from_date = frappe.db.get_value("Fiscal Year","2019-2020","year_start_date")
+	current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
+	from_date = frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date")
 	to_date = filters.get('to_date')
 	for row in data:
 		item_code = row['item_code']
 		batch_no = row['batch_no']
-		company = row['company']
 		row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
-			target="_blank" item_code='{item_code}' company='{company}' from_date='{from_date}' to_date='{to_date}' batch_no='{batch_no}'
-			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>"""
+			target="_blank" item_code='{item_code}' from_date='{from_date}' to_date='{to_date}' batch_no='{batch_no}'
+			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>"""
 
 	return columns, data
 
