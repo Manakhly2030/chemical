@@ -657,18 +657,23 @@ frappe.ui.form.on("Stock Entry", {
     },
     stock_entry_type: function(frm){
         if(frm.doc.stock_entry_type=="Send to Jobwork" || frm.doc.stock_entry_type=="Send Jobwork Finish" ){
-            frm.set_value("send_to_party",1)
-            frm.set_value("receive_from_party",0)
+            if (frappe.meta.get_docfield("Stock Entry Detail", "send_to_party")){
+                frm.set_value("send_to_party",1)
+                frm.set_value("receive_from_party",0)
+            }
 
         }
         else if(frm.doc.stock_entry_type=="Receive Jobwork Raw Material" || frm.doc.stock_entry_type=="Receive Jobwork Return" ){
-            frm.set_value("receive_from_party",1)
-            frm.set_value("send_to_party",0)
-
+            if (frappe.meta.get_docfield("Stock Entry Detail", "send_to_party")){
+                frm.set_value("receive_from_party",1)
+                frm.set_value("send_to_party",0)
+            }
         }
         else{
-            frm.set_value("receive_from_party",0)
-            frm.set_value("send_to_party",0)
+            if (frappe.meta.get_docfield("Stock Entry Detail", "send_to_party")){
+                frm.set_value("receive_from_party",0)
+                frm.set_value("send_to_party",0)
+            }
         }
         if(frm.doc.purpose == "Repack"){
             frm.doc.from_warehouse = ""
