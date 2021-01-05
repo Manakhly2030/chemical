@@ -122,6 +122,7 @@ def get_invoice_dict(self, row=None):
 		return frappe._dict({
 			"uom": default_uom,
 			"rate": rate or 0.0,
+			"price":rate or 0.0,
 			"qty": row.qty,
 			"conversion_factor": 1.0,
 			"item_name": row.item_name or "Opening Invoice Item",
