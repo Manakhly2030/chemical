@@ -124,6 +124,7 @@ def get_invoice_dict(self, row=None):
 			"rate": rate or 0.0,
 			"price":rate or 0.0,
 			"qty": row.qty,
+			"quantity":row.qty,
 			"conversion_factor": 1.0,
 			"item_name": row.item_name or "Opening Invoice Item",
 			"description": row.item_name or "Opening Invoice Item",
