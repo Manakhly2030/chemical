@@ -307,6 +307,7 @@ doc_events = {
 
 	},
 	"Stock Ledger Entry": {
+		"validate":"chemical.chemical.doc_events.stock_ledger_entry.sl_before_submit",
 		"before_submit": "chemical.chemical.doc_events.stock_ledger_entry.sl_before_submit"
 	},
 	"Sales Order": {
