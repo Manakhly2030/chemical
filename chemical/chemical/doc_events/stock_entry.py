@@ -53,12 +53,6 @@ def before_submit(self, method):
 def se_before_submit(self, method):
 	validate_concentration(self)
 
-def on_submit(self, method):
-	try:
-		update_po(self)
-	except Exception as e:
-		frappe.throw(str(e))
-
 def stock_entry_on_submit(self, method):
 	update_po(self)
 
@@ -275,7 +269,10 @@ def update_po(self):
 			finished_item = {}
 			finished_item_list = []
 			s = ', '
-
+			
+			po.finish_item = []
+			if po.bom_no:
+				bom_doc = frappe.get_doc("BOM",po.bom_no)
 			# po.append("finish_item",finished_item_list)							
 			for row in self.items:
 				if row.t_warehouse:
@@ -285,38 +282,58 @@ def update_po(self):
 					total_qty += row.qty
 					actual_total_qty += row.quantity
 					valuation_rate += flt(row.qty)*flt(row.valuation_rate)
-					actual_valuation = 0
 					lot.append(row.lot_no)
-
-					for finish_items in po.finish_item:
-						if row.item_code == finish_items.item_code:
-							finish_items.db_set("item_code",row.item_code)
-							finish_items.db_set("actual_qty",row.qty)
-							finish_items.db_set("actual_valuation",row.actual_valuation_rate)
-							finish_items.db_set("lot_no",row.lot_no)
-							finish_items.db_set("packing_size",row.packing_size)
-							finish_items.db_set("no_of_packages",row.no_of_packages)
-							finish_items.db_set("purity",row.concentration)
-							finish_items.db_set("batch_yield",row.batch_yield)
-							finish_items.db_set("batch_no",row.batch_no)
-							actual_valuation += (flt(row.qty) * row.actual_valuation_rate)
-					# finished_item['item_code'] = row.item_code
-					# finished_item['quantity']  = row.quantity
-					# finished_item['actual_valuation'] = row.actual_valuation_rate
-					# finished_item['lot_no'] = row.lot_no
-					# finished_item['packing_size'] = row.packing_size
-					# finished_item['no_of_packages'] = row.no_of_packages
-					# finished_item['purity'] = row.concentration
-					# finished_item['batch_yield'] = row.batch_yield
-					# finished_item['batch_no'] = row.batch_no
-					# po.append("finish_item",finished_item)
-					# finished_item_list.append(finished_item)
-					
+					if bom_doc.multiple_finish_item:
+						for bom_fi in bom_doc.multiple_finish_item:
+							po.append("finish_item",{
+								'item_code': row.item_code,
+								'actual_qty': row.qty,
+								'actual_valuation': row.valuation_rate,
+								'lot_no': row.lot_no,
+								'purity': row.concentration,
+								'packing_size': row.packing_size,
+								'no_of_packages': row.no_of_packages,
+								'batch_yield': row.batch_yield,
+								'batch_no': row.batch_no,
+								"bom_cost_ratio":bom_fi.cost_ratio,
+								"bom_qty_ratio":bom_fi.qty_ratio,
+								"bom_qty":po.qty * bom_fi.qty_ratio / 100,
+								"bom_yield":bom_fi.batch_yield
+							})
+					else:
+						po.append("finish_item",{
+							'item_code': row.item_code,
+							'actual_qty': row.qty,
+							'actual_valuation': row.valuation_rate,
+							'lot_no': row.lot_no,
+							'purity': row.concentration,
+							'packing_size': row.packing_size,
+							'no_of_packages': row.no_of_packages,
+							'batch_yield': row.batch_yield,
+							'batch_no': row.batch_no,
+							"bom_cost_ratio":100,
+							"bom_qty_ratio":100,
+							"bom_qty": po.qty,
+							"bom_yield": bom_doc.batch_yield
+						})
+					# for finish_items in po.finish_item:
+					# 	if row.item_code == finish_items.item_code:
+					# 		finish_items.db_set("item_code",row.item_code)
+					# 		finish_items.db_set("actual_qty",row.qty)
+					# 		finish_items.db_set("actual_valuation",row.actual_valuation_rate)
+					# 		finish_items.db_set("lot_no",row.lot_no)
+					# 		finish_items.db_set("packing_size",row.packing_size)
+					# 		finish_items.db_set("no_of_packages",row.no_of_packages)
+					# 		finish_items.db_set("purity",row.concentration)
+					# 		finish_items.db_set("batch_yield",row.batch_yield)
+					# 		finish_items.db_set("batch_no",row.batch_no)
+					# 		actual_valuation += (flt(row.qty) * row.actual_valuation_rate)
+			
 			for child in po.finish_item:
 				child.db_update()
 			po.db_set("batch_yield", flt(batch_yield/count))
 			po.db_set("concentration", flt(concentration/count))
-			po.db_set("valuation_rate", actual_valuation / flt(total_qty))
+			po.db_set("valuation_rate", valuation_rate / flt(total_qty))
 			po.db_set("produced_qty", total_qty)
 			po.db_set("produced_quantity",actual_total_qty)
 			if len(lot)!=0:
@@ -325,31 +342,32 @@ def update_po(self):
 def update_work_order_on_cancel(self, method):
 	if self.purpose == 'Manufacture' and self.work_order:
 		doc = frappe.get_doc("Work Order",self.work_order)
-		doc.db_set('batch_yield',0)
-		doc.db_set('concentration',0)
-		doc.db_set('valuation_rate',0)
-		doc.db_set('produced_quantity',0)
-		doc.db_set('lot_no','')
-		for item in doc.finish_item:
-			item.db_set("actual_qty",0)
-			item.db_set("actual_valuation",0)
-			item.db_set("lot_no",'')
-			item.db_set("packing_size",0)
-			item.db_set("no_of_packages",0)
-			item.db_set("purity",0)
-			item.db_set("batch_yield",0)
-			item.db_set("batch_no",'')
-			item.db_update()
-		doc.db_update()
+		doc.finish_item = []
+		# doc.db_set('batch_yield',0)
+		# doc.db_set('concentration',0)
+		# doc.db_set('valuation_rate',0)
+		# doc.db_set('produced_quantity',0)
+		# doc.db_set('lot_no','')
+		# for item in doc.finish_item:
+		# 	item.db_set("actual_qty",0)
+		# 	item.db_set("actual_valuation",0)
+		# 	item.db_set("lot_no",'')
+		# 	item.db_set("packing_size",0)
+		# 	item.db_set("no_of_packages",0)
+		# 	item.db_set("purity",0)
+		# 	item.db_set("batch_yield",0)
+		# 	item.db_set("batch_no",'')
+		# 	item.db_update()
 		# frappe.db.set_value("Work Order",self.work_order,"batch_yield", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"concentration",0)
 		# frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
 
-		# frappe.db.sql("""delete from `tabWork Order Finish Item`
-		# 	where parent = %s""", self.work_order)
-		# frappe.db.commit()
+		frappe.db.sql("""delete from `tabWork Order Finish Item`
+			where parent = %s""", self.work_order)
+		
+		#doc.db_update()
 
 def set_po_status(self, pro_doc):
 	status = None
