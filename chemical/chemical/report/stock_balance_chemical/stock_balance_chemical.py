@@ -92,7 +92,8 @@ def execute(filters=None):
 
 	add_additional_uom_columns(columns, data, include_uom, conversion_factors)
 	filter_company = filters.get("company")
-	from_date_fiscal = frappe.db.get_value("Fiscal Year","2019-2020","year_start_date")
+	current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
+	from_date_fiscal = frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date")
 	for row in data:
 		has_batch_no = frappe.db.get_value("Item",row['item_code'],"has_batch_no")
 		item_code = row['item_code']
@@ -112,8 +113,8 @@ def get_columns(filters):
 	columns = [
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 170},
 		#{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
-		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
-		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
+		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 120},
+		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 140},
 		{"label": _("As Is Qty"), "fieldname": "as_is_qty", "fieldtype": "Float", "width": 100},
 		{"label": _("Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Price"), "fieldname": "val_rate", "fieldtype": "Currency", "width": 90, "convertible": "rate", "options": "currency"},
@@ -147,7 +148,7 @@ def get_columns(filters):
 
 	columns +=[
 		{"label": _("Batch Wise"), "fieldname": "batch_wise", "fieldtype": "button", "width": 120},
-		{"label": _("Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 120},
+		{"label": _("Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 140},
 	]
 
 

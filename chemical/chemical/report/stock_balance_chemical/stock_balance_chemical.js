@@ -111,8 +111,8 @@ frappe.query_reports["Stock Balance Chemical"] = {
 function view_batch_wise_report(item_code, company, to_date) {
 	window.open(window.location.href.split("#")[0] + "#query-report/Batch Wise Balance Chemical" + "/?" + "item_code=" + item_code + "&" + "company="+company + "&" + "to_date=" + to_date,"_blank")	
 }
-function view_stock_leder_report(item_code, company, from_date, to_date) {
-	window.open(window.location.href.split("#")[0] + "#query-report/Stock Ledger Chemical" + "/?" + "item_code=" + item_code + "&" +  "company="+company + "&" + "from_date=" + from_date + "&" + "to_date=" + to_date,"_blank")	
+function view_stock_leder_report(item_code,company, from_date, to_date) {
+	window.open(window.location.href.split("#")[0] + "#query-report/Stock Ledger Chemical" + "/?" + "item_code=" + item_code + "&" + "company=" + company + "&" + "from_date=" + from_date + "&" + "to_date=" + to_date,"_blank")	
 }
 $(window).on("load resize scroll",function(){
     setTimeout(function(){

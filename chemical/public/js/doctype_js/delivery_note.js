@@ -79,12 +79,14 @@ frappe.ui.form.on("Delivery Note", {
     validate: function(frm) {
         frm.doc.items.forEach(function (d) {
             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
+                if (r.maintain_as_is_stock){
+                    if(!d.concentration){
+                        frappe.throw("Please add concentration for Item " + d.item_code)
+                    }
+                }
                 if (d.packing_size && d.no_of_packages) {
                     frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
                     if (r.maintain_as_is_stock) {
-                        if (!d.concentration) {
-                            frappe.throw("Please add concentration for Item " + d.item_code)
-                        }
                         frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
                         if (d.price) {
                             frappe.model.set_value(d.doctype, d.name, 'rate', flt(d.quantity * d.price) / flt(d.qty));
@@ -99,27 +101,31 @@ frappe.ui.form.on("Delivery Note", {
                 }
                 else {
                     if (r.maintain_as_is_stock) {
-                        if (!d.concentration) {
-                            frappe.throw("Please add concentration for Item " + d.item_code)
+                        if(d.quantity){
+                            frappe.model.set_value(d.doctype, d.name, 'qty', d.quantity * 100 / d.concentration);
                         }
-                        if (d.quantity) {
-                            frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / d.concentration));
+                        if (!d.quantity && d.qty){
+                            frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
                         }
                         if (d.price) {
                             frappe.model.set_value(d.doctype, d.name, 'rate', flt(d.quantity * d.price) / flt(d.qty));
                         }
                     }
                     else {
-                        if (d.quantity) {
-                            frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
+                        if(d.quantity){
+                            frappe.model.set_value(d.doctype, d.name, 'qty', d.quantity);
+                        }
+                        if(!d.quantity && d.qty){
+                            frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty);
                         }
                         if (d.price) {
                             frappe.model.set_value(d.doctype, d.name, 'rate', flt(d.price));
                         }
                     }
-                }			
+                }
 			})
         });
+        frm.trigger("cal_total_quantity");
     },
     cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
@@ -127,9 +133,6 @@ frappe.ui.form.on("Delivery Note", {
             if (d.packing_size && d.no_of_packages) {
                 frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
                 if (r.maintain_as_is_stock) {
-                    if (!d.concentration) {
-                        frappe.throw("Please add concentration for Item " + d.item_code)
-                    }
                     frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
                     if (d.price) {
                         frappe.model.set_value(d.doctype, d.name, 'rate', flt(d.quantity * d.price) / flt(d.qty));
@@ -144,26 +147,38 @@ frappe.ui.form.on("Delivery Note", {
             }
             else {
                 if (r.maintain_as_is_stock) {
-                    if (!d.concentration) {
-                        frappe.throw("Please add concentration for Item " + d.item_code)
+                    if(d.quantity){
+                        frappe.model.set_value(d.doctype, d.name, 'qty', d.quantity * 100 / d.concentration);
                     }
-                    if (d.quantity) {
-                        frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / d.concentration));
+                    if (!d.quantity && d.qty){
+                        frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
                     }
                     if (d.price) {
                         frappe.model.set_value(d.doctype, d.name, 'rate', flt(d.quantity * d.price) / flt(d.qty));
                     }
                 }
                 else {
-                    if (d.quantity) {
-                        frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
+                    if(d.quantity){
+                        frappe.model.set_value(d.doctype, d.name, 'qty', d.quantity);
+                    }
+                    if(!d.quantity && d.qty){
+                        frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty);
                     }
                     if (d.price) {
                         frappe.model.set_value(d.doctype, d.name, 'rate', flt(d.price));
                     }
                 }
-            }		
+            }
 		})
+    },
+    
+    cal_total_quantity: function (frm) {
+		let total_quantity = 0.0;
+		
+		frm.doc.items.forEach(function (d) {
+			total_quantity += flt(d.quantity);
+		});
+		frm.set_value("total_quantity", total_quantity);
 	},
     
 });
