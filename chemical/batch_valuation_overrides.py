@@ -85,7 +85,7 @@ def process_sle(self, sle):
 	# Finbyz Changes
 	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
 	if sle.batch_no and batch_wise_cost:
-		get_batch_values(self,sle)
+		self.get_batch_values(sle)
 		self.qty_after_transaction += flt(sle.actual_qty)
 		if sle.voucher_type == "Stock Reconciliation":
 			self.qty_after_transaction = sle.qty_after_transaction

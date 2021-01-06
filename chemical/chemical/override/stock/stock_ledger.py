@@ -59,9 +59,20 @@ def process_sle(self, sle):
 
 # Finbyz changes
 def get_batch_values(self, sle):
+	
 	incoming_rate = flt(sle.incoming_rate)
 	actual_qty = flt(sle.actual_qty)
 	batch_no = cstr(sle.batch_no)
+	item_code = cstr(sle.item_code)
+	conditions = f"and item_code = '{item_code}' and batch_no = '{batch_no}' "
+
+	if sle.get("warehouse"):
+		warehouse = sle.get("warehouse")
+		conditions += f" and warehouse = '{warehouse}' "
+
+	if sle.get("company"):
+		company =  sle.get("company")
+		conditions += f" and company = '{company}' "
 
 	if incoming_rate < 0:
 		# wrong incoming rate
@@ -70,11 +81,12 @@ def get_batch_values(self, sle):
 	stock_value_change = 0
 	if incoming_rate:
 		stock_value_change = actual_qty * incoming_rate
+		
 	elif actual_qty < 0:
 		# In case of delivery/stock issue, get average purchase rate
 		# of serial nos of current entry
-		stock_value_change = actual_qty * flt(frappe.db.sql("""select valuation_rate
-			from `tabBatch` where name = %s """, batch_no)[0][0])
+		stock_value_change = actual_qty * flt(frappe.db.sql(f"""SELECT incoming_rate FROM `tabStock Ledger Entry` 
+	WHERE actual_qty > 0 and docstatus = 1 {conditions}""")[0][0])
 
 	new_stock_qty = self.qty_after_transaction + actual_qty
 
@@ -86,7 +98,7 @@ def get_batch_values(self, sle):
 			self.valuation_rate = new_stock_value / new_stock_qty
 
 	if not self.valuation_rate and sle.voucher_detail_no:
-		allow_zero_rate = self.check_if_allow_zero_valuation_rate(sle.voucher_type, sle.voucher_detail_no)
+		allow_zero_rate = update_entries_after.check_if_allow_zero_valuation_rate(sle.voucher_type, sle.voucher_detail_no)
 		if not allow_zero_rate:
 			self.valuation_rate = get_valuation_rate(sle.item_code, sle.warehouse,
 				sle.voucher_type, sle.voucher_no, self.allow_zero_rate,
