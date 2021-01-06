@@ -78,4 +78,4 @@ def delete_item_price_history(self):
 	while frappe.db.exists("Item Price History",{"update_from":self.doctype,"docname":self.name}):
 		doc = frappe.get_doc("Item Price History",{"update_from":self.doctype,"docname":self.name})
 		doc.db_set('docname','')
-		doc.delete(ignore_permissions=True)
+		doc.delete()
