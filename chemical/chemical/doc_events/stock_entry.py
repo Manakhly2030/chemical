@@ -421,11 +421,12 @@ def cal_rate_for_finished_item(self):
 							if item_map[self.based_on]['yield_weights'] > 0:
 								item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
 
+							based_on_qty_ratio = d.quantity / (self.fg_completed_quantity or self.fg_completed_qty)
 							if self.based_on:
 								# if item_yield:
 								# 	d.batch_yield = flt((d.qty * d.concentration * item_yield) / (100*flt(item_map[self.based_on]['quantity']*finish_items.bom_qty_ratio/100)))
 								# else:
-								d.batch_yield = flt((d.qty * d.concentration) / (100*flt(item_map[self.based_on]['quantity']*finish_items.bom_qty_ratio/100)))
+								d.batch_yield = flt((d.qty * d.concentration) / (100*flt(item_map[self.based_on]['quantity']*flt(based_on_qty_ratio)/100)))
 
 						total_incoming_amount += flt(d.amount)
 

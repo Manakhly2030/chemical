@@ -12,6 +12,6 @@ def batch_qty_validation_with_date_time(self):
 			where warehouse=%s and item_code=%s and batch_no=%s and timestamp(posting_date, posting_time) <= timestamp(%s, %s)""",
 			(self.warehouse, self.item_code, self.batch_no, self.posting_date, self.posting_time))[0][0])
 		
-		if flt(batch_bal_after_transaction) <= 0:
+		if flt(batch_bal_after_transaction) < 0:
 			frappe.throw(_("Stock balance in Batch {0} will become negative {1} for Item {2} at Warehouse {3} at date {4} and time {5}")
 				.format(self.batch_no, batch_bal_after_transaction, self.item_code, self.warehouse, self.posting_date, self.posting_time))
