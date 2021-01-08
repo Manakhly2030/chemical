@@ -199,6 +199,7 @@ def delete_batches(self, warehouse):
 			if self.get('work_order') and frappe.db.get_value("Work Order", self.work_order, 'batch'):
 				frappe.db.set_value("Work Order", self.work_order, 'batch', '')
 
+			frappe.db.set_value('Batch',row.batch_no,'reference_name','')
 			row.db_set('batch_no', None)
 			#row.batch_no = ''
 			#check_if_doc_is_linked(batch_no)
