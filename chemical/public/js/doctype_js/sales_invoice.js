@@ -213,21 +213,21 @@ frappe.ui.form.on("Sales Invoice", {
     
 });
 frappe.ui.form.on("Sales Invoice Item", {
-    // item_code: function (frm, cdt, cdn) {
-    //     let d = locals[cdt][cdn];
-    //     setTimeout(function () {
-    //         frappe.db.get_value("Batch", d.batch_no, ['packaging_material', 'packing_size', 'lot_no', 'batch_yield', 'concentration'], function (r) {
-    //             frappe.model.set_value(cdt, cdn, 'packaging_material', r.packaging_material);
-    //             frappe.model.set_value(cdt, cdn, 'packing_size', r.packing_size);
-    //             frappe.model.set_value(cdt, cdn, 'lot_no', r.lot_no);
-    //             frappe.model.set_value(cdt, cdn, 'batch_yield', r.batch_yield);
-    //             frappe.model.set_value(cdt, cdn, 'concentration', r.concentration);
-    //         })
-    //     }, 1000)
-    // },
-    quantity: function(frm,cdt,cdn){
-        frm.events.cal_rate_qty(frm,cdt,cdn)
+    item_code: function (frm, cdt, cdn) {
+        let d = locals[cdt][cdn];
+        setTimeout(function () {
+            frappe.db.get_value("Batch", d.batch_no, ['packaging_material', 'packing_size', 'lot_no', 'batch_yield', 'concentration'], function (r) {
+                frappe.model.set_value(cdt, cdn, 'packaging_material', r.packaging_material);
+                frappe.model.set_value(cdt, cdn, 'packing_size', r.packing_size);
+                frappe.model.set_value(cdt, cdn, 'lot_no', r.lot_no);
+                frappe.model.set_value(cdt, cdn, 'batch_yield', r.batch_yield);
+                frappe.model.set_value(cdt, cdn, 'concentration', r.concentration);
+            })
+        }, 1000)
     },
+    // quantity: function(frm,cdt,cdn){
+    //     frm.events.cal_rate_qty(frm,cdt,cdn)
+    // },
     price:function(frm,cdt,cdn){
         frm.events.cal_rate_qty(frm,cdt,cdn)
     },
