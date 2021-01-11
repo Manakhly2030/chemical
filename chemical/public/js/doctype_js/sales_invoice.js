@@ -234,14 +234,15 @@ frappe.ui.form.on("Sales Invoice Item", {
     concentration: function(frm, cdt, cdn){
         frm.events.cal_rate_qty(frm,cdt,cdn)
     },
-    packing_size: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
-    no_of_packages: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
+    // packing_size: function (frm, cdt, cdn) {
+    //     frm.events.cal_rate_qty(frm, cdt, cdn)
+    // },
+    // no_of_packages: function (frm, cdt, cdn) {
+    //     frm.events.cal_rate_qty(frm, cdt, cdn)
+    // },
 
     batch_no: function (frm, cdt, cdn) {
+        console.log("in batch")
         let d = locals[cdt][cdn];
         frappe.db.get_value("Batch", d.batch_no, ['packaging_material', 'packing_size', 'lot_no', 'batch_yield', 'concentration'], function (r) {
             frappe.model.set_value(cdt, cdn, 'packaging_material', r.packaging_material);
