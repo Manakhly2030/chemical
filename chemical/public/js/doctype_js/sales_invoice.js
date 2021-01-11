@@ -228,12 +228,12 @@ frappe.ui.form.on("Sales Invoice Item", {
     // quantity: function(frm,cdt,cdn){
     //     frm.events.cal_rate_qty(frm,cdt,cdn)
     // },
-    price:function(frm,cdt,cdn){
-        frm.events.cal_rate_qty(frm,cdt,cdn)
-    },
-    concentration: function(frm, cdt, cdn){
-        frm.events.cal_rate_qty(frm,cdt,cdn)
-    },
+    // price:function(frm,cdt,cdn){
+    //     frm.events.cal_rate_qty(frm,cdt,cdn)
+    // },
+    // concentration: function(frm, cdt, cdn){
+    //     frm.events.cal_rate_qty(frm,cdt,cdn)
+    // },
     // packing_size: function (frm, cdt, cdn) {
     //     frm.events.cal_rate_qty(frm, cdt, cdn)
     // },
