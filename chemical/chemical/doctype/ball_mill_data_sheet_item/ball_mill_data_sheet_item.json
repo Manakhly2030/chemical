@@ -9,6 +9,7 @@
   "batch_yield",
   "quantity",
   "batch_no",
+  "lot_no",
   "packing_size",
   "no_of_packages",
   "column_break_4",
@@ -165,10 +166,18 @@
    "fieldtype": "Int",
    "in_list_view": 1,
    "label": "No of Packages"
+  },
+  {
+   "fetch_from": "batch_no.lot_no",
+   "fieldname": "lot_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Lot No",
+   "read_only": 1
   }
  ],
  "istable": 1,
- "modified": "2020-12-08 15:40:34.222177",
+ "modified": "2021-01-11 17:36:25.054412",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet Item",
