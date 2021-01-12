@@ -226,6 +226,8 @@ class BallMillDataSheet(Document):
 		self.total_qty = sum([flt(item.qty) for item in self.items])		
 		self.total_quantity = sum([flt(item.quantity) for item in self.items])
 		self.actual_quantity = sum([flt(item.quantity) for item in self.packaging])
+		self.total_packing_qty = sum([flt(item.qty) for item in self.packaging])
+		self.total_packing_quantity = sum([flt(item.quantity) for item in self.packaging])
 		self.price = self.amount/ flt(self.actual_quantity)
 
 	def before_save(self):

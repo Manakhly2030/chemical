@@ -155,7 +155,14 @@ def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, r
 				is_multiple_finish +=1
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
-			cal_rate_for_finished_item(self)
+			bom_doc = frappe.get_doc("BOM",self.bom_no)
+			if hasattr(bom_doc,'equal_cost_ratio'):
+				if not bom_doc.equal_cost_ratio:
+					cal_rate_for_finished_item(self)
+				else:
+					calculate_multiple_repack_valuation(self)
+			else:
+				cal_rate_for_finished_item(self)
 
 		elif is_multiple_finish > 1 and self.purpose == "Repack":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
@@ -379,7 +386,7 @@ def set_po_status(self, pro_doc):
 
 def calculate_multiple_repack_valuation(self):
 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
-	if self.purpose == 'Repack' and self.items:
+	if self.items:
 		qty = 0.0
 		quantity = 0.0
 		total_outgoing_value = 0.0
@@ -439,11 +446,12 @@ def cal_rate_for_finished_item(self):
 							if item_map[self.based_on]['yield_weights'] > 0:
 								item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
 
+							based_on_qty_ratio = d.quantity / (self.fg_completed_quantity or self.fg_completed_qty)
 							if self.based_on:
 								# if item_yield:
 								# 	d.batch_yield = flt((d.qty * d.concentration * item_yield) / (100*flt(item_map[self.based_on]['quantity']*finish_items.bom_qty_ratio/100)))
 								# else:
-								d.batch_yield = flt((d.qty * d.concentration) / (100*flt(item_map[self.based_on]['quantity']*finish_items.bom_qty_ratio/100)))
+								d.batch_yield = flt((d.qty * d.concentration) / (100*flt(item_map[self.based_on]['quantity']*flt(based_on_qty_ratio)/100)))
 
 						total_incoming_amount += flt(d.amount)
 
