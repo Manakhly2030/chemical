@@ -29,6 +29,113 @@ erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceControlle
         }
 
     },
+    payment_terms_template: function() {
+		var me = this;
+        const doc = me.frm.doc;
+		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
+            if (frappe.meta.get_docfield("Sales Invoice", "bl_date") || frappe.meta.get_docfield("Sales Invoice", "shipping_bill_date")){
+                var posting_date = doc.bl_date || doc.shipping_bill_date
+            }
+            else{
+                var posting_date =  doc.posting_date || doc.transaction_date;
+            }
+			frappe.call({
+				method: "erpnext.controllers.accounts_controller.get_payment_terms",
+				args: {
+					terms_template: doc.payment_terms_template,
+					posting_date: posting_date,
+					grand_total: doc.rounded_total || doc.grand_total,
+					bill_date: doc.bill_date
+				},
+				callback: function(r) {
+					if(r.message && !r.exc) {
+						me.frm.set_value("payment_schedule", r.message);
+					}
+				}
+			})
+		}
+    },
+    // posting_date: function() {
+	// 	var me = this;
+	// 	if (this.frm.doc.posting_date) {
+	// 		if (frappe.meta.get_docfield("Sales Invoice", "bl_date") || frappe.meta.get_docfield("Sales Invoice", "shipping_bill_date")){
+    //             var posting_date = this.frm.doc.bl_date || this.frm.doc.shipping_bill_date
+    //         }
+    //         else{
+    //             var posting_date =  this.frm.posting_date || this.frm.doc.transaction_date;
+    //         }
+	// 		if ((this.frm.doc.doctype == "Sales Invoice" && this.frm.doc.customer) ||
+	// 			(this.frm.doc.doctype == "Purchase Invoice" && this.frm.doc.supplier)) {
+	// 			return frappe.call({
+	// 				method: "erpnext.accounts.party.get_due_date",
+	// 				args: {
+	// 					"posting_date":posting_date,
+	// 					"party_type": me.frm.doc.doctype == "Sales Invoice" ? "Customer" : "Supplier",
+	// 					"bill_date": me.frm.doc.bill_date,
+	// 					"party": me.frm.doc.doctype == "Sales Invoice" ? me.frm.doc.customer : me.frm.doc.supplier,
+	// 					"company": me.frm.doc.company
+	// 				},
+	// 				callback: function(r, rt) {
+	// 					if(r.message) {
+	// 						me.frm.doc.due_date = r.message;
+    //                         refresh_field("due_date");
+    //                         console.log(r.message)
+	// 						frappe.ui.form.trigger(me.frm.doc.doctype, "currency");
+	// 						me.recalculate_terms();
+	// 					}
+	// 				}
+	// 			})
+	// 		} else {
+	// 			frappe.ui.form.trigger(me.frm.doc.doctype, "currency");
+	// 		}
+	// 	}
+    // },
+    // recalculate_terms: function() {
+	// 	const doc = this.frm.doc;
+	// 	if (doc.payment_terms_template) {
+	// 		this.payment_terms_template();
+	// 	} else if (doc.payment_schedule) {
+	// 		const me = this;
+	// 		doc.payment_schedule.forEach(
+	// 			function(term) {
+	// 				if (term.payment_term) {
+	// 					me.payment_term(doc, term.doctype, term.name);
+	// 				} else {
+	// 					frappe.model.set_value(
+	// 						term.doctype, term.name, 'due_date',
+	// 						doc.posting_date || doc.transaction_date
+	// 					);
+	// 				}
+	// 			}
+	// 		);
+	// 	}
+	// },
+
+    set_batch_number: function(cdt, cdn) {
+		const doc = frappe.get_doc(cdt, cdn);
+		if (doc && doc.has_batch_no && doc.warehouse && !doc.batch_no) {
+			this._set_batch_number(doc);
+		}
+	},
+
+	_set_batch_number: function(doc) {
+		let args = {'item_code': doc.item_code, 'warehouse': doc.warehouse, 'qty': flt(doc.qty) * flt(doc.conversion_factor)};
+		if (doc.has_serial_no && doc.serial_no) {
+			args['serial_no'] = doc.serial_no
+		}
+
+		return frappe.call({
+			method: 'erpnext.stock.doctype.batch.batch.get_batch_no',
+			args: args,
+			callback: function(r) {
+				if(r.message) {
+					frappe.model.set_value(doc.doctype, doc.name, 'batch_no', r.message);
+				} else {
+				    frappe.model.set_value(doc.doctype, doc.name, 'batch_no', r.message);
+				}
+			}
+		});
+	},
 })
 
 $.extend(cur_frm.cscript, new erpnext.accounts.SalesInvoiceController({ frm: cur_frm }));
@@ -209,8 +316,8 @@ frappe.ui.form.on("Sales Invoice", {
                 });
             });
         }
-    }
-    
+    },
+   
 });
 frappe.ui.form.on("Sales Invoice Item", {
     item_code: function (frm, cdt, cdn) {
@@ -255,29 +362,5 @@ frappe.ui.form.on("Sales Invoice Item", {
 });
 
 erpnext.selling.SellingController = erpnext.TransactionController.extend({
-    set_batch_number: function(cdt, cdn) {
-		const doc = frappe.get_doc(cdt, cdn);
-		if (doc && doc.has_batch_no && doc.warehouse && !doc.batch_no) {
-			this._set_batch_number(doc);
-		}
-	},
-
-	_set_batch_number: function(doc) {
-		let args = {'item_code': doc.item_code, 'warehouse': doc.warehouse, 'qty': flt(doc.qty) * flt(doc.conversion_factor)};
-		if (doc.has_serial_no && doc.serial_no) {
-			args['serial_no'] = doc.serial_no
-		}
-
-		return frappe.call({
-			method: 'erpnext.stock.doctype.batch.batch.get_batch_no',
-			args: args,
-			callback: function(r) {
-				if(r.message) {
-					frappe.model.set_value(doc.doctype, doc.name, 'batch_no', r.message);
-				} else {
-				    frappe.model.set_value(doc.doctype, doc.name, 'batch_no', r.message);
-				}
-			}
-		});
-	},
+    
 })
