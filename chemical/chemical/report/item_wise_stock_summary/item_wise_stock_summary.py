@@ -73,7 +73,10 @@ def get_sle_data(filters):
 			sle.sent_to_job_work = abs(sle.actual_qty)
 		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Material Receipt" and sle.actual_qty > 0:
 			sle.receipt = sle.actual_qty
-
+		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Send Jobwork Finish" and sle.actual_qty < 0:
+			sle.send_jobwork_finish = abs(sle.actual_qty)
+		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Receive Jobwork Raw Material" and sle.actual_qty > 0:
+			sle.receive_jobwork_raw_material = abs(sle.actual_qty)
 	return sle_data
 
 def get_item_details(sle_data,opening_data,closing_data):
@@ -84,7 +87,9 @@ def get_item_details(sle_data,opening_data,closing_data):
 	qty_dict = {}
 	for sle in sle_data:
 		item_map.setdefault(sle.item_code,frappe._dict({
-			"received":0.0 , "receipt":0.0, "sales":0.0,"production":0.0, "captive_consumption":0.0,"unprocessed_return":0.0, "processed_return":0.0,"sent_to_job_work":0.0
+			"received":0.0 , "receipt":0.0, "sales":0.0,"production":0.0, "captive_consumption":0.0,\
+			"unprocessed_return":0.0, "processed_return":0.0,\
+			"sent_to_job_work":0.0, "send_jobwork_finish":0.0, "receive_jobwork_raw_material":0.0
 		}))
 		item_map[sle.item_code].received += flt(sle.received)
 		item_map[sle.item_code].receipt += flt(sle.receipt)
@@ -94,6 +99,8 @@ def get_item_details(sle_data,opening_data,closing_data):
 		item_map[sle.item_code].unprocessed_return += flt(sle.unprocessed_return)
 		item_map[sle.item_code].processed_return += flt(sle.processed_return)
 		item_map[sle.item_code].sent_to_job_work += flt(sle.sent_to_job_work)
+		item_map[sle.item_code].send_jobwork_finish += flt(sle.send_jobwork_finish)
+		item_map[sle.item_code].receive_jobwork_raw_material += flt(sle.receive_jobwork_raw_material)
 
 	for opening in opening_data:
 		opening_map.setdefault(opening.item_code,frappe._dict({
@@ -131,6 +138,8 @@ def get_item_details(sle_data,opening_data,closing_data):
 			"unprocessed_return":flt(value.unprocessed_return,2),
 			"processed_return":flt(value.processed_return,2),
 			"sent_to_job_work":flt(value.sent_to_job_work,2),
+			"send_jobwork_finish":flt(value.send_jobwork_finish,2),
+			"receive_jobwork_raw_material":flt(value.receive_jobwork_raw_material,2),
 			"opening_stock":flt(opening_stock,2),
 			"closing_stock":flt(closing_stock,2),
 		})
@@ -159,6 +168,8 @@ def get_columns(filters):
 			{"label": _("Unprocessed Return"), "fieldname": "unprocessed_return", "fieldtype": "Float", "width": 100},
 			{"label": _("Processed Return"), "fieldname": "processed_return", "fieldtype": "Float", "width": 100},
 			{"label": _("Sent to Job Work"), "fieldname": "sent_to_job_work", "fieldtype": "Float", "width": 100},
+			{"label": _("Send Jobwork Finish"), "fieldname": "send_jobwork_finish", "fieldtype": "Float", "width": 100},
+			{"label": _("Receive Jobwork Raw material"), "fieldname": "receive_jobwork_raw_material", "fieldtype": "Float", "width": 100},
 			{"label": _("Sales"), "fieldname": "sales", "fieldtype": "Float", "width": 100},
 			{"label": _("Captive Consumption"), "fieldname": "captive_consumption", "fieldtype": "Float", "width": 100},
 			{"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},

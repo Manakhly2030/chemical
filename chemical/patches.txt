@@ -1,4 +1,0 @@
-chemical.chemical.patches.qty_rate_to_quantity_price
-chemical.chemical.patches.bom_patches
-chemical.chemical.patches.work_order_patches
-chemical.chemical.patches.stock_entry_patches

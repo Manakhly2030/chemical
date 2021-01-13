@@ -50,6 +50,6 @@ frappe.query_reports["Batch Wise Balance Chemical"] = {
 		
 	]
 }
-function view_stock_leder_report(item_code, company, from_date, to_date, batch_no) {
-	window.open(window.location.href.split("#")[0] + "#query-report/Stock Ledger Chemical" + "/?" + "item_code=" + item_code + "&" +  "company="+company + "&" + "from_date=" + from_date + "&" + "to_date=" + to_date + "&" + "batch_no=" + batch_no,"_blank")	
+function view_stock_leder_report(item_code, from_date, to_date, batch_no) {
+	window.open(window.location.href.split("#")[0] + "#query-report/Stock Ledger Chemical" + "/?" + "item_code=" + item_code  + "&" + "company= " + "&" + "from_date=" + from_date + "&" + "to_date=" + to_date + "&" + "batch_no=" + batch_no,"_blank")	
 }

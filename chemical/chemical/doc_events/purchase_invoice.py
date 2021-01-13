@@ -17,8 +17,11 @@ def before_submit(self, method):
 	override_pi_status_updater_args()
 
 def before_cancel(self, method):
+	delete_item_price_history(self)
 	override_pi_status_updater_args()
 
+def on_trash(self, method):
+	delete_item_price_history(self)
 
 def override_pi_status_updater_args():
 	PurchaseInvoice.update_status_updater_args = pi_update_status_updater_args
@@ -58,13 +61,21 @@ def pi_update_status_updater_args(self):
 			})
 
 def update_item_price_history(self):
-	for item in self.items:
-		doc = frappe.new_doc("Item Price History")
-		doc.date = self.posting_date
-		doc.item_code = item.item_code
-		doc.price = item.price
-		doc.supplier = self.supplier
-		doc.buying = 1
-		doc.update_from = self.doctype
-		doc.docname = self.name
-		doc.save()
+	if self.items:
+		for item in self.items:
+			if item.item_code:
+				doc = frappe.new_doc("Item Price History")
+				doc.date = self.posting_date
+				doc.item_code = item.item_code
+				doc.price = item.price
+				doc.supplier = self.supplier
+				doc.buying = 1
+				doc.update_from = self.doctype
+				doc.docname = self.name
+				doc.save(ignore_permissions=True)
+
+def delete_item_price_history(self):
+	while frappe.db.exists("Item Price History",{"update_from":self.doctype,"docname":self.name}):
+		doc = frappe.get_doc("Item Price History",{"update_from":self.doctype,"docname":self.name})
+		doc.db_set('docname','')
+		doc.delete()

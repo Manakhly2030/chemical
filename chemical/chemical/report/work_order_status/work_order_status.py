@@ -45,6 +45,7 @@ def get_columns(filters):
 		{"label": _("Manufactured Qty"), "fieldname": "real_produced_qty", "fieldtype": "Float", "width": 100},
 		{"label": _("Concentration / Purity"), "fieldname": "concentration", "fieldtype": "Percent", "width": 100},
 		{"label": _("Valuation Rate"), "fieldname": "valuation_rate", "fieldtype": "Currency", "width": 80},
+		{"label": _("Yield"), "fieldname": "batch_yield", "fieldtype": "Percent", "width": 80},
 		{"label": _("As is Qty"), "fieldname": "produced_qty", "fieldtype": "Float", "width": 100},
 	]
 
@@ -103,7 +104,8 @@ def data_query(filters):
 	wo.qty,
 	wo.produced_qty,
 	wo.concentration,
-	wo.valuation_rate
+	wo.valuation_rate,
+	wo.batch_yield
 	FROM  `tabWork Order Item` as woi
 	LEFT JOIN `tabWork Order` as wo ON woi.parent = wo.name 
 	{}

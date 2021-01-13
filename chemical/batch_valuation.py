@@ -37,7 +37,7 @@ def stock_entry_validate(self, method):
 		if self.purpose not in ['Material Transfer', 'Material Transfer for Manufacture']:
 			make_batches(self, 't_warehouse')
 			
-	if self.purpose in ['Repack','Manufacture','Material Issue'] and cint(self.from_ball_mill) != 1:
+	if self.purpose in ['Repack','Manufacture','Material Issue']:
 		self.get_stock_and_rate()
 	if self._action == "submit":
 		validate_additional_cost(self,method)
@@ -199,6 +199,7 @@ def delete_batches(self, warehouse):
 			if self.get('work_order') and frappe.db.get_value("Work Order", self.work_order, 'batch'):
 				frappe.db.set_value("Work Order", self.work_order, 'batch', '')
 
+			frappe.db.set_value('Batch',row.batch_no,'reference_name','')
 			row.db_set('batch_no', None)
 			#row.batch_no = ''
 			#check_if_doc_is_linked(batch_no)

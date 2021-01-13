@@ -23,6 +23,10 @@ def before_validate(self,method):
 	validate_fg_completed_quantity(self)
 
 def validate(self,method):
+	if self.purpose in ['Manufacture']:
+		item_list = [item.item_code for item in self.items]
+		if self.based_on not in item_list:
+			frappe.throw("Based on Item {} Required in Raw Materials".format(frappe.bold(self.based_on)))	
 	cal_validate_additional_cost_qty(self)
 	update_additional_cost_scrap(self)
 	calculate_rate_and_amount(self)
@@ -48,12 +52,6 @@ def before_submit(self, method):
 
 def se_before_submit(self, method):
 	validate_concentration(self)
-
-def on_submit(self, method):
-	try:
-		update_po(self)
-	except Exception as e:
-		frappe.throw(str(e))
 
 def stock_entry_on_submit(self, method):
 	update_po(self)
@@ -157,7 +155,14 @@ def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, r
 				is_multiple_finish +=1
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
-			cal_rate_for_finished_item(self)
+			bom_doc = frappe.get_doc("BOM",self.bom_no)
+			if hasattr(bom_doc,'equal_cost_ratio'):
+				if not bom_doc.equal_cost_ratio:
+					cal_rate_for_finished_item(self)
+				else:
+					calculate_multiple_repack_valuation(self)
+			else:
+				cal_rate_for_finished_item(self)
 
 		elif is_multiple_finish > 1 and self.purpose == "Repack":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
@@ -196,10 +201,14 @@ def cal_target_yield_cons(self):
 		for d in self.items:
 			if d.t_warehouse:
 				flag+=1		
-			if d.item_code not in item_arr:
-				item_map.setdefault(d.item_code, 0)
 			
-			item_map[d.item_code] += flt(d.quantity)
+			if d.item_code not in item_arr:
+					item_map.setdefault(d.item_code, {'quantity':0, 'qty':0, 'yield_weights':0})
+				
+			item_map[d.item_code]['quantity'] += flt(d.quantity)
+			item_map[d.item_code]['qty'] += flt(d.qty)
+			item_map[d.item_code]['yield_weights'] += flt(d.batch_yield)*flt(d.quantity)
+
 		if flag == 1:
 			# Last row object
 			last_row = self.items[-1]
@@ -212,7 +221,14 @@ def cal_target_yield_cons(self):
 
 			# Check if items list has frm.doc.based_on value
 			if self.based_on in items_list:
-				cal_yield = flt(last_row.quantity / item_map[self.based_on]) # Last row qty / sum of items of based_on item from map variable
+				# item_yield = 0.0
+				# if item_map[self.based_on]['yield_weights'] > 0:
+				# 	item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
+
+				# 	if item_yield:
+				# 		cal_yield = flt(item_yield) * flt(last_row.qty / item_map[self.based_on]['quantity']) # Last row qty / sum of items of based_on item from map variable
+				# 	else:
+				cal_yield =  flt(last_row.qty / item_map[self.based_on]['quantity'])
 			last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)		
 
 def cal_validate_additional_cost_qty(self):
@@ -260,7 +276,10 @@ def update_po(self):
 			finished_item = {}
 			finished_item_list = []
 			s = ', '
-
+			
+			po.finish_item = []
+			if po.bom_no:
+				bom_doc = frappe.get_doc("BOM",po.bom_no)
 			# po.append("finish_item",finished_item_list)							
 			for row in self.items:
 				if row.t_warehouse:
@@ -270,38 +289,58 @@ def update_po(self):
 					total_qty += row.qty
 					actual_total_qty += row.quantity
 					valuation_rate += flt(row.qty)*flt(row.valuation_rate)
-					actual_valuation = 0
 					lot.append(row.lot_no)
-
-					for finish_items in po.finish_item:
-						if row.item_code == finish_items.item_code:
-							finish_items.db_set("item_code",row.item_code)
-							finish_items.db_set("actual_qty",row.qty)
-							finish_items.db_set("actual_valuation",row.actual_valuation_rate)
-							finish_items.db_set("lot_no",row.lot_no)
-							finish_items.db_set("packing_size",row.packing_size)
-							finish_items.db_set("no_of_packages",row.no_of_packages)
-							finish_items.db_set("purity",row.concentration)
-							finish_items.db_set("batch_yield",row.batch_yield)
-							finish_items.db_set("batch_no",row.batch_no)
-							actual_valuation += (flt(row.qty) * row.actual_valuation_rate)
-					# finished_item['item_code'] = row.item_code
-					# finished_item['quantity']  = row.quantity
-					# finished_item['actual_valuation'] = row.actual_valuation_rate
-					# finished_item['lot_no'] = row.lot_no
-					# finished_item['packing_size'] = row.packing_size
-					# finished_item['no_of_packages'] = row.no_of_packages
-					# finished_item['purity'] = row.concentration
-					# finished_item['batch_yield'] = row.batch_yield
-					# finished_item['batch_no'] = row.batch_no
-					# po.append("finish_item",finished_item)
-					# finished_item_list.append(finished_item)
-					
+					if bom_doc.multiple_finish_item:
+						for bom_fi in bom_doc.multiple_finish_item:
+							po.append("finish_item",{
+								'item_code': row.item_code,
+								'actual_qty': row.qty,
+								'actual_valuation': row.valuation_rate,
+								'lot_no': row.lot_no,
+								'purity': row.concentration,
+								'packing_size': row.packing_size,
+								'no_of_packages': row.no_of_packages,
+								'batch_yield': row.batch_yield,
+								'batch_no': row.batch_no,
+								"bom_cost_ratio":bom_fi.cost_ratio,
+								"bom_qty_ratio":bom_fi.qty_ratio,
+								"bom_qty":po.qty * bom_fi.qty_ratio / 100,
+								"bom_yield":bom_fi.batch_yield
+							})
+					else:
+						po.append("finish_item",{
+							'item_code': row.item_code,
+							'actual_qty': row.qty,
+							'actual_valuation': row.valuation_rate,
+							'lot_no': row.lot_no,
+							'purity': row.concentration,
+							'packing_size': row.packing_size,
+							'no_of_packages': row.no_of_packages,
+							'batch_yield': row.batch_yield,
+							'batch_no': row.batch_no,
+							"bom_cost_ratio":100,
+							"bom_qty_ratio":100,
+							"bom_qty": po.qty,
+							"bom_yield": bom_doc.batch_yield
+						})
+					# for finish_items in po.finish_item:
+					# 	if row.item_code == finish_items.item_code:
+					# 		finish_items.db_set("item_code",row.item_code)
+					# 		finish_items.db_set("actual_qty",row.qty)
+					# 		finish_items.db_set("actual_valuation",row.actual_valuation_rate)
+					# 		finish_items.db_set("lot_no",row.lot_no)
+					# 		finish_items.db_set("packing_size",row.packing_size)
+					# 		finish_items.db_set("no_of_packages",row.no_of_packages)
+					# 		finish_items.db_set("purity",row.concentration)
+					# 		finish_items.db_set("batch_yield",row.batch_yield)
+					# 		finish_items.db_set("batch_no",row.batch_no)
+					# 		actual_valuation += (flt(row.qty) * row.actual_valuation_rate)
+			
 			for child in po.finish_item:
 				child.db_update()
 			po.db_set("batch_yield", flt(batch_yield/count))
 			po.db_set("concentration", flt(concentration/count))
-			po.db_set("valuation_rate", actual_valuation / flt(total_qty))
+			po.db_set("valuation_rate", valuation_rate / flt(total_qty))
 			po.db_set("produced_qty", total_qty)
 			po.db_set("produced_quantity",actual_total_qty)
 			if len(lot)!=0:
@@ -310,31 +349,32 @@ def update_po(self):
 def update_work_order_on_cancel(self, method):
 	if self.purpose == 'Manufacture' and self.work_order:
 		doc = frappe.get_doc("Work Order",self.work_order)
-		doc.db_set('batch_yield',0)
-		doc.db_set('concentration',0)
-		doc.db_set('valuation_rate',0)
-		doc.db_set('produced_quantity',0)
-		doc.db_set('lot_no','')
-		for item in doc.finish_item:
-			item.db_set("actual_qty",0)
-			item.db_set("actual_valuation",0)
-			item.db_set("lot_no",'')
-			item.db_set("packing_size",0)
-			item.db_set("no_of_packages",0)
-			item.db_set("purity",0)
-			item.db_set("batch_yield",0)
-			item.db_set("batch_no",'')
-			item.db_update()
-		doc.db_update()
+		doc.finish_item = []
+		# doc.db_set('batch_yield',0)
+		# doc.db_set('concentration',0)
+		# doc.db_set('valuation_rate',0)
+		# doc.db_set('produced_quantity',0)
+		# doc.db_set('lot_no','')
+		# for item in doc.finish_item:
+		# 	item.db_set("actual_qty",0)
+		# 	item.db_set("actual_valuation",0)
+		# 	item.db_set("lot_no",'')
+		# 	item.db_set("packing_size",0)
+		# 	item.db_set("no_of_packages",0)
+		# 	item.db_set("purity",0)
+		# 	item.db_set("batch_yield",0)
+		# 	item.db_set("batch_no",'')
+		# 	item.db_update()
 		# frappe.db.set_value("Work Order",self.work_order,"batch_yield", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"concentration",0)
 		# frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
 
-		# frappe.db.sql("""delete from `tabWork Order Finish Item`
-		# 	where parent = %s""", self.work_order)
-		# frappe.db.commit()
+		frappe.db.sql("""delete from `tabWork Order Finish Item`
+			where parent = %s""", self.work_order)
+		
+		#doc.db_update()
 
 def set_po_status(self, pro_doc):
 	status = None
@@ -346,7 +386,7 @@ def set_po_status(self, pro_doc):
 
 def calculate_multiple_repack_valuation(self):
 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
-	if self.purpose == 'Repack' and self.items:
+	if self.items:
 		qty = 0.0
 		quantity = 0.0
 		total_outgoing_value = 0.0
@@ -387,9 +427,12 @@ def cal_rate_for_finished_item(self):
 						
 			for d in self.items:
 				if d.item_code not in item_arr:
-					item_map.setdefault(d.item_code, 0)
+					item_map.setdefault(d.item_code, {'quantity':0, 'qty':0, 'yield_weights':0})
 				
-				item_map[d.item_code] += flt(d.quantity)
+				item_map[d.item_code]['quantity'] += flt(d.quantity)
+				item_map[d.item_code]['qty'] += flt(d.qty)
+				item_map[d.item_code]['yield_weights'] += flt(d.batch_yield)*flt(d.quantity)
+
 				
 				if d.t_warehouse:
 					for finish_items in work_order.finish_item:
@@ -399,10 +442,17 @@ def cal_rate_for_finished_item(self):
 							d.db_set('amount',flt(d.basic_amount + d.additional_cost))
 							d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
 							d.db_set('valuation_rate',flt(d.amount/ d.qty))
+							item_yield = 0.0
+							if item_map[self.based_on]['yield_weights'] > 0:
+								item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
 
+							based_on_qty_ratio = d.quantity / (self.fg_completed_quantity or self.fg_completed_qty)
 							if self.based_on:
-								d.batch_yield = flt(d.quantity / flt(item_map[self.based_on]*finish_items.bom_qty_ratio/100))
-			
+								# if item_yield:
+								# 	d.batch_yield = flt((d.qty * d.concentration * item_yield) / (100*flt(item_map[self.based_on]['quantity']*finish_items.bom_qty_ratio/100)))
+								# else:
+								d.batch_yield = flt((d.qty * d.concentration) / (100*flt(item_map[self.based_on]['quantity']*flt(based_on_qty_ratio)/100)))
+
 						total_incoming_amount += flt(d.amount)
 
 			d.db_update()

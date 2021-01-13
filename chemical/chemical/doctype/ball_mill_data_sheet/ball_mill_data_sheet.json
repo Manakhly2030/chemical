@@ -28,15 +28,22 @@
   "total_qty",
   "concentration",
   "actual_qty",
+  "actual_quantity",
   "total_sub_loat",
-  "amended_from",
   "remarks",
   "amount",
   "column_break_11",
+  "total_quantity",
   "handling_loss",
   "per_unit_amount",
+  "price",
+  "amended_from",
   "section_break_27",
   "packaging",
+  "section_break_34",
+  "total_packing_qty",
+  "column_break_36",
+  "total_packing_quantity",
   "2",
   "strength",
   "da",
@@ -51,11 +58,11 @@
  ],
  "fields": [
   {
-   "default": "BMD-",
+   "default": "BMD-.company_series.-.fiscal.-.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "SR No",
-   "options": "BMD-"
+   "options": "BMD-.company_series.-.fiscal.-.#####\nBMD-"
   },
   {
    "fieldname": "customer_name",
@@ -175,7 +182,6 @@
    "read_only": 1
   },
   {
-   "allow_on_submit": 1,
    "fieldname": "actual_qty",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -240,6 +246,7 @@
    "options": "Ball Mill Packaging"
   },
   {
+   "collapsible": 1,
    "fieldname": "2",
    "fieldtype": "Section Break"
   },
@@ -299,10 +306,51 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Company Series"
+<<<<<<< HEAD
+=======
+  },
+  {
+   "fieldname": "total_quantity",
+   "fieldtype": "Float",
+   "label": "Total Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "price",
+   "fieldtype": "Currency",
+   "label": "Price",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actual_quantity",
+   "fieldtype": "Float",
+   "label": "Actual Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_34",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_packing_qty",
+   "fieldtype": "Float",
+   "label": "Total Packing Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_packing_quantity",
+   "fieldtype": "Float",
+   "label": "Total Packing Quantity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_36",
+   "fieldtype": "Column Break"
+>>>>>>> 2ee6c0d5c54fe9bd7ae6c5c1e2530e2094071fb9
   }
  ],
  "is_submittable": 1,
- "modified": "2020-11-21 10:51:12.925660",
+ "modified": "2021-01-11 17:51:54.372311",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
