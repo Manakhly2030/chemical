@@ -3,6 +3,6 @@ from . import __version__ as app_version
 import frappe
 
 import erpnext
-from chemical.batch_valuation_overrides import get_incoming_rate as my_incoming_rate, process_sle as my_process_sle, get_args_for_incoming_rate as my_get_args_for_incoming_rate, update_raw_materials_supplied_based_on_bom as my_update_raw_materials_supplied_based_on_bom, update_stock_ledger as my_update_stock_ledger
+#from chemical.batch_valuation_overrides import get_incoming_rate as my_incoming_rate, process_sle as my_process_sle, get_args_for_incoming_rate as my_get_args_for_incoming_rate, update_raw_materials_supplied_based_on_bom as my_update_raw_materials_supplied_based_on_bom, update_stock_ledger as my_update_stock_ledger
 
-erpnext.stock.utils.get_incoming_rate = my_incoming_rate
+#erpnext.stock.utils.get_incoming_rate = my_incoming_rate

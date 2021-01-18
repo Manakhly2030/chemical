@@ -25,6 +25,11 @@ WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_f
 WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_required_items
 
 
+#payment term override
+from chemical.api import get_due_date
+from erpnext.controllers import accounts_controller
+accounts_controller.get_due_date = get_due_date
+
 # import erpnext
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
 
@@ -226,9 +231,8 @@ doc_events = {
 			"chemical.chemical.doc_events.stock_entry.before_submit",
 		],
 		"on_submit": [
-			"chemical.chemical.doc_events.stock_entry.stock_entry_on_submit",
-			"chemical.chemical.doc_events.stock_entry.on_submit",
 			"chemical.batch_valuation.stock_entry_on_submit",
+			"chemical.chemical.doc_events.stock_entry.stock_entry_on_submit",
 		],
 		"before_cancel":[
 			"chemical.chemical.doc_events.stock_entry.se_before_cancel",
@@ -265,6 +269,7 @@ doc_events = {
 		"on_cancel": "chemical.batch_valuation.pi_on_cancel",
 		"before_submit": "chemical.chemical.doc_events.purchase_invoice.before_submit",
 		"before_cancel": "chemical.chemical.doc_events.purchase_invoice.before_cancel",
+		"on_trash":"chemical.chemical.doc_events.purchase_invoice.on_trash",
 
 	},
 	"Purchase Order": {
@@ -302,6 +307,7 @@ doc_events = {
 		],
 		"validate": "chemical.chemical.doc_events.sales_invoice.validate",
 		"before_cancel": "chemical.chemical.doc_events.sales_invoice.before_cancel",
+		"on_trash":"chemical.chemical.doc_events.sales_invoice.on_trash",
 
 	},
 	"Stock Ledger Entry": {

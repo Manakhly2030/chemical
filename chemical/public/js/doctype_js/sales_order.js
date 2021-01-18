@@ -46,6 +46,7 @@ frappe.ui.form.on("Sales Order", {
 				}
 			})
         });
+        frm.trigger("cal_total_quantity");
     },
     cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
@@ -70,6 +71,15 @@ frappe.ui.form.on("Sales Order", {
                 }
             }
 		})
+    },
+    
+    cal_total_quantity: function (frm) {
+		let total_quantity = 0.0;
+		
+		frm.doc.items.forEach(function (d) {
+			total_quantity += flt(d.quantity);
+		});
+		frm.set_value("total_quantity", total_quantity);
 	},
     
     

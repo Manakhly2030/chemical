@@ -92,18 +92,20 @@ def execute(filters=None):
 
 	add_additional_uom_columns(columns, data, include_uom, conversion_factors)
 	filter_company = filters.get("company")
-	from_date_fiscal = frappe.db.get_value("Fiscal Year","2019-2020","year_start_date")
+	current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
+	from_date_fiscal = frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date")
 	for row in data:
 		has_batch_no = frappe.db.get_value("Item",row['item_code'],"has_batch_no")
 		item_code = row['item_code']
+		warehouse = row['warehouse']
 		if has_batch_no:
 			row['batch_wise'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
-			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}'
-			onClick=view_batch_wise_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('to_date'))>View Batch Detail</button>"""
+			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}' warehouse='{warehouse}'
+			onClick=view_batch_wise_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Batch Detail</button>"""
 		
 		row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
-			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date_fiscal}' to_date='{to_date}'
-			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'))>View Stock Ledger</button>"""
+			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date_fiscal}' to_date='{to_date}' warehouse='{warehouse}'
+			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Stock Ledger</button>"""
 		
 	return columns, data
 
@@ -112,8 +114,8 @@ def get_columns(filters):
 	columns = [
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 170},
 		#{"label": _("Item Name"), "fieldname": "item_name", "width": 150},
-		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 100},
-		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},
+		{"label": _("Item Group"), "fieldname": "item_group", "fieldtype": "Link", "options": "Item Group", "width": 120},
+		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 140},
 		{"label": _("As Is Qty"), "fieldname": "as_is_qty", "fieldtype": "Float", "width": 100},
 		{"label": _("Qty"), "fieldname": "bal_qty", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Price"), "fieldname": "val_rate", "fieldtype": "Currency", "width": 90, "convertible": "rate", "options": "currency"},
@@ -147,7 +149,7 @@ def get_columns(filters):
 
 	columns +=[
 		{"label": _("Batch Wise"), "fieldname": "batch_wise", "fieldtype": "button", "width": 120},
-		{"label": _("Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 120},
+		{"label": _("Stock Ledger"), "fieldname": "stock_ledger", "fieldtype": "button", "width": 140},
 	]
 
 

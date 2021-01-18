@@ -6,32 +6,55 @@ from __future__ import unicode_literals
 import frappe, erpnext
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import nowtime, flt
+from frappe.utils import nowtime, flt, cint, getdate, get_fullname, get_url_to_form
 from erpnext.stock.utils import get_incoming_rate
 from erpnext.stock.stock_ledger import get_valuation_rate
 from frappe.model.mapper import get_mapped_doc
+from finbyzerp.api import get_fiscal, naming_series_name
+import datetime
 
 class BallMillDataSheet(Document):
 
+	def before_naming(self):
+		if not self.get('amended_from') and not self.get('name'):
+			date = self.get("date") or getdate()
+			fiscal = get_fiscal(date)
+			self.fiscal = fiscal
+			if not self.get('company_series'):
+				self.company_series = None
+			if self.get('series_value'):
+				if self.series_value > 0:
+					name = naming_series_name(self.naming_series, fiscal, self.company_series)
+					check = frappe.db.get_value('Series', name, 'current', order_by="name")
+					if check == 0:
+						pass
+					elif not check:
+						frappe.db.sql("insert into tabSeries (name, current) values ('{}', 0)".format(name))
+
+					frappe.db.sql("update `tabSeries` set current = {} where name = '{}'".format(cint(self.series_value) - 1, name))
+
+
 	def validate(self):
 		self.set_incoming_rate()
+		self.repack_calculation()
 		self.cal_total()
 		if self._action == 'submit':
 			self.validate_qty()
-		
+
 	def set_incoming_rate(self):
+		precision = cint(frappe.db.get_default("float_precision")) 
 		for d in self.items:
 			if d.source_warehouse:
 				args = self.get_args_for_incoming_rate(d)
-				d.basic_rate = get_incoming_rate(args)
+				d.basic_rate = flt(get_incoming_rate(args), precision)
 			elif not d.source_warehouse:
 				d.basic_rate = 0.0
 			elif self.warehouse and not d.basic_rate:
-				d.basic_rate = get_valuation_rate(d.item_code, self.warehouse,
+				d.basic_rate = flt(get_valuation_rate(d.item_code, self.warehouse,
 					self.doctype, d.name, 1,
-					currency=erpnext.get_company_currency(self.company))
+					currency=erpnext.get_company_currency(self.company)), precision)
 
-			d.basic_amount = d.basic_rate * d.quantity
+			d.basic_amount = d.basic_rate * d.qty
 	
 	
 	def get_args_for_incoming_rate(self, item):
@@ -48,6 +71,66 @@ class BallMillDataSheet(Document):
 			"allow_zero_valuation": 1,
 			"batch_no":item.batch_no
 		})
+	def repack_calculation(self):
+		for d in self.items:
+			maintain_as_is_stock = frappe.db.get_value("Item",d.item_name,'maintain_as_is_stock')
+
+			concentration = d.concentration or 100
+
+			if d.get('packing_size') and d.get('no_of_packages'):
+				d.qty = (d.packing_size * d.no_of_packages)
+
+				if maintain_as_is_stock:
+					d.quantity = flt(d.qty) * flt(concentration) / 100
+					d.price = flt(d.basic_rate) * 100 / flt(concentration)
+
+				else:
+					d.quantity = flt(d.qty)
+					d.price = flt(d.basic_rate)
+
+			else:
+				if maintain_as_is_stock:
+					d.price = flt(d.basic_rate)*100/flt(concentration)
+
+					if d.quantity:
+						d.qty = flt((d.quantity * 100.0) / flt(concentration))
+
+					if d.qty and not d.quantity:
+						d.quantity = flt(d.qty) * flt(concentration) / 100.0
+				else:
+					d.price = flt(d.basic_rate)
+
+					if d.quantity:
+						d.qty = flt(d.quantity)
+
+					if d.qty and not d.quantity:
+						d.quantity = flt(d.qty)
+		
+		for d in self.packaging:
+			maintain_as_is_stock = frappe.db.get_value("Item",self.product_name,'maintain_as_is_stock')
+			if d.get('packing_size') and d.get('no_of_packages'):
+				d.qty = d.packing_size * d.no_of_packages
+				if maintain_as_is_stock:
+					if d.qty:
+						d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
+
+				else:
+					if d.qty:
+						d.quantity = flt(d.qty)
+			else:
+				if maintain_as_is_stock:
+					if d.qty:
+						d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
+					
+					if d.quantity and not d.qty:
+						d.qty = flt(d.quantity) * 100 / flt(d.concentration)
+
+				else:
+					if d.qty:
+						d.quantity = flt(d.qty)				
+
+					if d.quantity and not d.qty:
+						d.qty = flt(d.quantity)
 	
 	def on_submit(self):
 		se = frappe.new_doc("Stock Entry")
@@ -64,12 +147,17 @@ class BallMillDataSheet(Document):
 			se.append('items',{
 				'item_code': row.item_name,
 				's_warehouse': row.source_warehouse,
+				'qty': row.qty,
+				'quantity':row.quantity,
+				'basic_rate': row.basic_rate,
+				'price':row.price,
+				'basic_amount': row.basic_amount,
+				'cost_center': cost_center,
 				'batch_no': row.batch_no,
 				'concentration':row.concentration,
-				'basic_rate': row.basic_rate,
-				'basic_amount': row.basic_amount,
-				'qty': row.quantity,
-				'cost_center': cost_center
+				'packaging_material':row.packaging_material,
+				'packing_size':row.packing_size,
+				'no_of_packages':row.no_of_packages
 			})
 
 		for d in self.packaging:	
@@ -77,11 +165,12 @@ class BallMillDataSheet(Document):
 				'item_code': self.product_name,
 				't_warehouse': self.warehouse,
 				'qty': d.qty,
+				'quantity':d.quantity,
 				'packaging_material': d.packaging_material,
 				'packing_size': d.packing_size,
 				'no_of_packages': d.no_of_packages,
 				'lot_no': d.lot_no,
-				'concentration': self.concentration,
+				'concentration': d.concentration or self.concentration,
 				'basic_rate': self.per_unit_amount,
 				'valuation_rate': self.per_unit_amount,
 				'basic_amount': flt(d.qty * self.per_unit_amount),
@@ -134,7 +223,12 @@ class BallMillDataSheet(Document):
 	def cal_total(self):
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
 		self.per_unit_amount = self.amount/ self.actual_qty
-		self.total_qty = sum([flt(item.quantity) for item in self.items])		
+		self.total_qty = sum([flt(item.qty) for item in self.items])		
+		self.total_quantity = sum([flt(item.quantity) for item in self.items])
+		self.actual_quantity = sum([flt(item.quantity) for item in self.packaging])
+		self.total_packing_qty = sum([flt(item.qty) for item in self.packaging])
+		self.total_packing_quantity = sum([flt(item.quantity) for item in self.packaging])
+		self.price = self.amount/ flt(self.actual_quantity)
 
 	def before_save(self):
 		self.handling_loss = flt(self.total_qty) - flt(self.actual_qty)
@@ -166,7 +260,7 @@ def make_outward_sample(source_name, target_doc=None):
 					d.rate = (price * 2.2) / d.batch_yield
 			else:
 				d.rate = price
-			
+			 
 			d.price_list_rate = price
 			d.amount = flt(d.rate) * d.quantity
 			total_amount += d.amount

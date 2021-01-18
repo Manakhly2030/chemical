@@ -4,7 +4,7 @@ import frappe
 import frappe.defaults
 from frappe import _
 from frappe import msgprint, _
-from frappe.utils import nowdate, flt, cint, cstr,now_datetime
+from frappe.utils import nowdate, flt, cint, cstr,now_datetime,getdate, add_days, add_months, get_last_day
 #from frappe.utils.background_jobs import enqueue
 #from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.contacts.doctype.address.address import get_address_display, get_default_address
@@ -135,38 +135,48 @@ def cal_rate_qty(self):
 	for d in self.items:
 		maintain_as_is_stock = frappe.db.get_value("Item",d.item_code,'maintain_as_is_stock')
 		if maintain_as_is_stock:
-			if not d.concentration and d.t_warehouse:
+			if not d.concentration:
 				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-			concentration = 0.0
+			concentration = 100
 			if d.get('batch_no'):
-				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
+				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration") or 100
 			else:
-				concentration = d.concentration
+				concentration = d.concentration or 100
 		if d.get('packing_size') and d.get('no_of_packages'):
 			d.qty = d.packing_size * d.no_of_packages
 			if maintain_as_is_stock:
 				if d.get('batch_no'):
-					concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
+					concentration = frappe.db.get_value("Batch",d.batch_no,"concentration") or 100
 				else:
-					concentration = d.concentration
-				d.quantity = d.qty * concentration / 100
+					concentration = d.concentration or 100
+				d.quantity = flt(d.qty) * flt(d.concentration) / 100
+
 				if d.price:
 					d.rate =  flt(d.quantity * d.price) / flt(d.qty)
 			else:
-				d.quantity = d.qty
+				d.quantity = flt(d.qty)
+
 				if d.price:
-					d.rate= d.price
+					d.rate= flt(d.price)
 		else:
 			if maintain_as_is_stock:
 				if d.quantity:
-					d.qty = flt((d.quantity * 100.0) / d.concentration)
+					d.qty = flt(d.quantity) * 100 / flt(d.concentration)
+
+				if not d.quantity and d.qty:
+					d.quantity = flt(d.qty) * flt(d.concentration) / 100
+
 				if d.price:
 					d.rate =  flt(d.quantity * d.price) / flt(d.qty)
 			else:
 				if d.quantity:
-					d.qty = d.quantity
+					d.qty = flt(d.quantity)
+
+				if not d.quantity and d.qty:
+					d.quantity = flt(d.qty)		
+
 				if d.price:
-					d.rate= d.price
+					d.rate= flt(d.price)
 
 def purchase_cal_rate_qty(self):
 	for d in self.items:
@@ -265,7 +275,6 @@ def purchase_cal_rate_qty(self):
 				d.qty = flt(d.accepted_qty) or flt(d.receive_qty)
 			if hasattr(doc_items,'accepted_concentration') and hasattr(doc_items,'received_concentration'): 
 				d.concentration = flt(d.accepted_concentration) or flt(d.received_concentration)
-
 			if not hasattr(doc_items,'receive_qty') and (not d.packing_size or not d.no_of_packages):
 				if d.quantity:
 					d.qty = flt(d.quantity)
@@ -403,11 +412,11 @@ def se_repack_cal_rate_qty(self):
 			if maintain_as_is_stock:
 				if not d.concentration and d.t_warehouse:
 					frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-				concentration = 0.0
+				concentration = 100
 				if d.batch_no:
-					concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
+					concentration = frappe.db.get_value("Batch",d.batch_no,"concentration") or 100
 				else:
-					concentration = d.concentration
+					concentration = d.concentration or 100
 			if d.get('packing_size') and d.get('no_of_packages'):
 				d.qty = (d.packing_size * d.no_of_packages)
 				if maintain_as_is_stock:
@@ -446,15 +455,15 @@ def se_cal_rate_qty(self):
 		if maintain_as_is_stock:
 			if not d.concentration and d.t_warehouse:
 				frappe.throw("{} Row: {} Please add concentration".format(d.doctype,d.idx))
-			concentration = 0.0
-			if d.batch_no:
-				concentration = frappe.db.get_value("Batch",d.batch_no,"concentration")
-			else:
-				concentration = d.concentration
+		concentration = 100
+		if d.batch_no:
+			concentration = frappe.db.get_value("Batch",d.batch_no,"concentration") or 100
+		else:
+			concentration = d.concentration or 100
 		if d.get('packing_size') and d.get('no_of_packages'):
 			d.qty = (d.packing_size * d.no_of_packages)
 			if maintain_as_is_stock:
-				d.quantity = d.qty * concentration / 100
+				d.quantity = flt(d.qty) * flt(concentration) / 100
 				if d.price:
 					d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 			else:
@@ -620,3 +629,16 @@ def quantity_price_to_qty_rate(self):
 					else:
 						item.db_set("price",flt(item.rate))
 								
+def get_due_date(term, posting_date=None, bill_date=None):
+	due_date = None
+	date = bill_date or posting_date
+	if term.due_date_based_on == "Day(s) after invoice date":
+		due_date = add_days(date, term.credit_days)
+	elif term.due_date_based_on == 'Day(s) after bl date':
+		due_date = add_days(date, term.credit_days)
+	elif term.due_date_based_on == "Day(s) after the end of the invoice month":
+		due_date = add_days(get_last_day(date), term.credit_days)
+	elif term.due_date_based_on == "Month(s) after the end of the invoice month":
+		due_date = add_months(get_last_day(date), term.credit_months)
+	return due_date
+

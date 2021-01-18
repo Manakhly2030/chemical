@@ -117,6 +117,33 @@ function get_qty(frm) {
 }
 
 frappe.ui.form.on('Ball Mill Data Sheet', {
+	onload: (frm) => {
+		if (frm.doc.__islocal){
+		frm.trigger('naming_series');
+		}
+	},
+	naming_series: function (frm) {
+		if (frappe.meta.get_docfield("Ball Mill Data Sheet", "series_value", frm.doc.name)){
+			if (frm.doc.__islocal && frm.doc.company && !frm.doc.amended_from) {
+				frappe.call({
+					method: "finbyzerp.api.check_counter_series",
+					args: {
+						'name': frm.doc.naming_series,
+						'date': frm.doc.transaction_date,
+						'company_series': frm.doc.company_series || null,
+					},
+					callback: function (e) {
+						// frm.doc.series_value = e.message;
+						frm.set_value('series_value', e.message);
+					}
+				});
+				// frm.refresh_field('series_value')
+			}
+		}
+	},
+	company: function (frm) {
+		frm.trigger('naming_series');
+	},
 	refresh: function(frm){
 		if(frm.doc.docstatus == 1){
 			frm.add_custom_button(__("Outward Sample"), function() {
@@ -165,7 +192,102 @@ frappe.ui.form.on('Ball Mill Data Sheet', {
 			d.source_warehouse = frm.doc.default_source_warehouse;
 		});
 		frm.refresh_field("items");
-	}	
+	},
+	repack_calculation: function(frm,cdt,cdn){
+        var d = locals[cdt][cdn];
+        frappe.db.get_value("Item", d.item_name, 'maintain_as_is_stock', function (r) {
+			var concentration = d.concentration || 100
+
+			if (d.packing_size && d.no_of_packages){
+				frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size) * flt(d.no_of_packages));
+				if (r.maintain_as_is_stock) {
+					frappe.model.set_value(d.doctype, d.name, 'quantity', (flt(d.qty) * flt(concentration))/100);
+					frappe.model.set_value(d.doctype, d.name, 'price', (flt(d.basic_rate) * 100)/flt(concentration));
+				}
+				else{
+					frappe.model.set_value(d.doctype, d.name, 'quantity', flt(d.qty));
+					frappe.model.set_value(d.doctype, d.name, 'price', flt(d.basic_rate));					
+				}
+			}
+			else{
+				if (r.maintain_as_is_stock) {
+					frappe.model.set_value(d.doctype, d.name, 'price', (flt(d.basic_rate) * 100)/flt(concentration));
+					if (d.quantity){
+						frappe.model.set_value(d.doctype, d.name, 'qty', (flt(d.quantity)*100) / flt(concentration));
+					}
+					if (d.qty && !d.quantity){
+						frappe.model.set_value(d.doctype, d.name, 'quantity', (flt(d.qty)*flt(concentration)) / 100);
+					}
+				}
+				else{
+					frappe.model.set_value(d.doctype, d.name, 'price', flt(d.basic_rate));
+					if (d.quantity){
+						frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
+					}
+					if (d.qty && !d.quantity){
+						frappe.model.set_value(d.doctype, d.name, 'quantity', flt(d.qty));
+					}
+				}
+			}
+		})		
+	},
+	packaging_calculation: function(frm,cdt,cdn){
+		var d = locals[cdt][cdn];
+        frappe.db.get_value("Item", frm.doc.product_name, 'maintain_as_is_stock', function (r) {
+			var concentration = frm.doc.concentration || 100
+			if (d.packing_size && d.no_of_packages){
+				frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size) * flt(d.no_of_packages));
+				if (r.maintain_as_is_stock) {
+					frappe.model.set_value(d.doctype, d.name, 'quantity', (flt(d.qty) * flt(concentration))/100);
+				}
+				else{
+					frappe.model.set_value(d.doctype, d.name, 'quantity', flt(d.qty));
+				}
+			}
+			else{
+				if (r.maintain_as_is_stock) {
+					if (d.qty){
+						frappe.model.set_value(d.doctype, d.name, 'quantity', (flt(d.qty)*flt(concentration)) / 100);
+					}
+					if (d.quantity && !d.qty){
+						frappe.model.set_value(d.doctype, d.name, 'qty', (flt(d.quantity)*100) / flt(concentration));
+					}
+				}
+				else{
+					if (d.qty){
+						frappe.model.set_value(d.doctype, d.name, 'quantity', flt(d.qty));
+					}
+					if (d.quantity && !d.qty){
+						frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
+					}
+				}
+			}
+		})		
+        // frappe.db.get_value("Item", frm.doc.product_name, 'maintain_as_is_stock', function (r) {
+		// 	if (r.maintain_as_is_stock) {
+		// 		if (d.qty){
+		// 			frappe.model.set_value(d.doctype, d.name, 'quantity', (flt(d.qty)*flt(frm.doc.concentration)) / 100);
+		// 		}
+		// 		if (d.quantity && !d.qty){
+		// 			frappe.model.set_value(d.doctype, d.name, 'qty', (flt(d.quantity)*100) / flt(frm.doc.concentration));
+		// 		}
+		// 	}
+		// 	else{
+		// 		if (d.qty){
+		// 			frappe.model.set_value(d.doctype, d.name, 'quantity', flt(d.qty));
+		// 		}
+		// 		if (d.quantity && !d.qty){
+		// 			frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity));
+		// 		}
+		// 	}
+		// })
+	},
+	concentration: function(frm){
+		$.each(frm.doc.packaging || [], function(i, d) {
+			d.concentration = frm.doc.concentration;
+		});
+		refresh_field("packaging");
+	}
 });
 
 frappe.ui.form.on('Ball Mill Data Sheet Item', {
@@ -182,5 +304,37 @@ frappe.ui.form.on('Ball Mill Data Sheet Item', {
 			frappe.model.set_value(cdt,cdn,"quantity",row.required_quantity*row.concentration)
 			frappe.model.set_value(cdt,cdn,"required_quantity",row.required_quantity*row.concentration)
 		}
+	},
+	quantity: function(frm,cdt,cdn){
+		frm.events.repack_calculation(frm, cdt, cdn)
+	},
+	qty: function(frm,cdt,cdn){
+		frm.events.repack_calculation(frm, cdt, cdn)
+	},
+	no_of_packages: function(frm,cdt,cdn){
+		frm.events.repack_calculation(frm, cdt, cdn)
+	},
+	batch_no: function(frm,cdt,cdn){
+		frm.events.repack_calculation(frm, cdt, cdn)
+	},
+});
+
+frappe.ui.form.on('Ball Mill Packaging', {
+	quantity: function(frm,cdt,cdn){
+		frm.events.packaging_calculation(frm, cdt, cdn)
+	},
+	qty: function(frm,cdt,cdn){
+		frm.events.packaging_calculation(frm, cdt, cdn)
+	},
+	no_of_packages: function(frm,cdt,cdn){
+		frm.events.repack_calculation(frm, cdt, cdn)
+	},
+	packing_size: function(frm,cdt,cdn){
+		frm.events.repack_calculation(frm, cdt, cdn)
+	},
+	packaging_add: function(frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+		row.concentration = frm.doc.concentration;
+		refresh_field("packaging");
 	},
 });
