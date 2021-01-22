@@ -59,6 +59,7 @@ frappe.ui.form.on("Purchase Receipt", {
                 }
                 else{
                     if (d.packing_size && d.no_of_packages){
+                        packing_size=d.packing_size
                         frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
                         frappe.model.set_value(d.doctype, d.name, 'received_qty', d.packing_size * d.no_of_packages);
                     }
@@ -262,6 +263,7 @@ frappe.ui.form.on("Purchase Receipt", {
 
                 else{
                     if (d.packing_size && d.no_of_packages){
+                        packing_size=d.packing_size
                         frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
                         frappe.model.set_value(d.doctype, d.name, 'received_qty', d.packing_size * d.no_of_packages);
                     }
@@ -417,25 +419,10 @@ frappe.ui.form.on("Purchase Receipt", {
 });
 
 frappe.ui.form.on("Purchase Receipt Item", {
-    price: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
-    quantity: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
-    qty: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
-    receive_packing_size: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
     receive_no_of_packages: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     received_concentration: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
-    concentration: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     packing_size: function (frm, cdt, cdn) {
@@ -447,16 +434,10 @@ frappe.ui.form.on("Purchase Receipt Item", {
     no_of_packages: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
-    supplier_packing_size: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
     supplier_no_of_packages: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     supplier_concentration: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
-    accepted_packing_size: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     accepted_no_of_packages: function (frm, cdt, cdn) {
