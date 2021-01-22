@@ -4,7 +4,7 @@ import frappe
 import frappe.defaults
 from frappe import _
 from frappe import msgprint, _
-from frappe.utils import nowdate, flt, cint, cstr,now_datetime
+from frappe.utils import nowdate, flt, cint, cstr,now_datetime,getdate, add_days, add_months, get_last_day
 #from frappe.utils.background_jobs import enqueue
 #from frappe.desk.reportview import get_match_cond, get_filters_cond
 from frappe.contacts.doctype.address.address import get_address_display, get_default_address
@@ -629,3 +629,16 @@ def quantity_price_to_qty_rate(self):
 					else:
 						item.db_set("price",flt(item.rate))
 								
+def get_due_date(term, posting_date=None, bill_date=None):
+	due_date = None
+	date = bill_date or posting_date
+	if term.due_date_based_on == "Day(s) after invoice date":
+		due_date = add_days(date, term.credit_days)
+	elif term.due_date_based_on == 'Day(s) after bl date':
+		due_date = add_days(date, term.credit_days)
+	elif term.due_date_based_on == "Day(s) after the end of the invoice month":
+		due_date = add_days(get_last_day(date), term.credit_days)
+	elif term.due_date_based_on == "Month(s) after the end of the invoice month":
+		due_date = add_months(get_last_day(date), term.credit_months)
+	return due_date
+
