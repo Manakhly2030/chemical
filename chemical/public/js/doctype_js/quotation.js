@@ -1,11 +1,4 @@
 frappe.ui.form.on("Quotation", {
-    onload: function(frm){
-        frm.doc.items.forEach(function(d){
-            var item = d.item_code
-            frappe.model.set_value(d.doctype,d.name,"item_code","")
-            frappe.model.set_value(d.doctype,d.name,"item_code",item)
-        })
-    },
     get_approved: function(frm){
         if(frm.doc.quotation_to=="Customer" && frm.doc.party_name){
             frappe.call({
@@ -17,24 +10,15 @@ frappe.ui.form.on("Quotation", {
                 callback: function(r){
                     if(r.message){
                         frm.doc.items = []
-                        r.message.forEach(function (lst){
-                            frappe.model.with_doc("Outward Sample", lst.name, function(){
-                                let doc_outward = frappe.get_doc("Outward Sample", lst.name)
-                                frm.refresh_field("items")
-                                let d = frm.add_child("items");
-                                d.item_code = doc_outward.product_name;
-                                d.item_name = doc_outward.product_name;
-                                d.outward_sample = doc_outward.name;
-                                d.rmc = doc_outward.per_unit_price;
-                                d.sample_ref_no = doc_outward.ref_no;
-                                d.base_cost = doc_outward.per_unit_price;
-                                var item = d.item_code
-                                frappe.model.set_value(d.doctype,d.name,"item_code","")
-                                frappe.model.set_value(d.doctype,d.name,"item_code",item)
-                                frm.refresh_field("items")
+                        r.message.forEach(function (item){
+                                var d = frm.add_child("items");
+                                frappe.model.set_value(d.doctype,d.name,"item_code",item.product_name)
+                                frappe.model.set_value(d.doctype,d.name,"outward_sample",item.name)
+                                frappe.model.set_value(d.doctype,d.name,"sample_ref_no",item.ref_no)
+                                frappe.model.set_value(d.doctype,d.name,"base_cost",item.per_unit_price)
                             })
-                        })
-                    }
+                            frm.refresh_field("items")
+                        }
                 }
             })
         }
@@ -50,27 +34,17 @@ frappe.ui.form.on("Quotation", {
                 callback: function(r){
                     if(r.message){
                         frm.doc.items = []
-                        r.message.forEach(function (lst){
-                            frappe.model.with_doc("Outward Sample", lst.name, function(){
-                                let doc_outward = frappe.get_doc("Outward Sample", lst.name)
-                                frm.refresh_field("items")
-                                let d = frm.add_child("items");
-                                d.item_code = doc_outward.product_name;
-                                d.item_name = doc_outward.product_name;
-                                d.outward_sample = doc_outward.name;
-                                d.rmc = doc_outward.per_unit_price;
-                                d.sample_ref_no = doc_outward.ref_no;
-                                d.base_cost = doc_outward.per_unit_price;
-                                var item = d.item_code
-                                frappe.model.set_value(d.doctype,d.name,"item_code","")
-                                frappe.model.set_value(d.doctype,d.name,"item_code",item)
-                                frm.refresh_field("items")
+                        r.message.forEach(function (item){
+                                var d = frm.add_child("items");
+                                frappe.model.set_value(d.doctype,d.name,"item_code",item.product_name)
+                                frappe.model.set_value(d.doctype,d.name,"outward_sample",item.name)
+                                frappe.model.set_value(d.doctype,d.name,"sample_ref_no",item.ref_no)
+                                frappe.model.set_value(d.doctype,d.name,"base_cost",item.per_unit_price)
                             })
-                        })
-                    }
+                        frm.refresh_field("items")
+                        }
                 }
             })
-
         }
     },
     cal_margin: function(frm,cdt,cdn)
