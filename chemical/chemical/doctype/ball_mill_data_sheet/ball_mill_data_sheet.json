@@ -306,8 +306,6 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Company Series"
-<<<<<<< HEAD
-=======
   },
   {
    "fieldname": "total_quantity",
@@ -346,7 +344,6 @@
   {
    "fieldname": "column_break_36",
    "fieldtype": "Column Break"
->>>>>>> 2ee6c0d5c54fe9bd7ae6c5c1e2530e2094071fb9
   }
  ],
  "is_submittable": 1,
