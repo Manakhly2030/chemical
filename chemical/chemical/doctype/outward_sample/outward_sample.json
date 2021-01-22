@@ -31,7 +31,6 @@
   "po_no",
   "contact_display",
   "is_master_sample",
-  "is_approved",
   "section_break_22",
   "sample_type",
   "remarks",
@@ -506,17 +505,10 @@
    "fieldtype": "Small Text",
    "hidden": 1,
    "label": "Fiscal"
-  },
-  {
-   "allow_on_submit": 1,
-   "default": "0",
-   "fieldname": "is_approved",
-   "fieldtype": "Check",
-   "label": "Is Approved"
   }
  ],
  "is_submittable": 1,
- "modified": "2021-01-22 11:00:54.372002",
+ "modified": "2021-01-22 14:53:41.678281",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",
