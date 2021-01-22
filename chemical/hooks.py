@@ -92,7 +92,8 @@ doctype_js = {
 	"Production Plan": "public/js/doctype_js/production_plan.js",
 	"Purchase Receipt": "public/js/doctype_js/purchase_receipt.js",
 	"Item": "public/js/doctype_js/item.js",
-	"Batch": "public/js/doctype_js/batch.js"
+	"Batch": "public/js/doctype_js/batch.js",
+	"Quotation":"public/js/doctype_js/quotation.js",
 }
 
 # Home Pages

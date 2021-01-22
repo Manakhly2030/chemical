@@ -20,6 +20,7 @@
   "against",
   "column_break_12",
   "series_value",
+  "status",
   "destination",
   "batch_yield",
   "price_list",
@@ -30,9 +31,9 @@
   "po_no",
   "contact_display",
   "is_master_sample",
+  "is_approved",
   "section_break_22",
   "sample_type",
-  "status",
   "remarks",
   "cmc",
   "currency",
@@ -222,7 +223,8 @@
    "fieldname": "sales_order",
    "fieldtype": "Link",
    "label": "Sales Order",
-   "options": "Sales Order"
+   "options": "Sales Order",
+   "read_only": 1
   },
   {
    "fetch_from": "sales_order.po_no",
@@ -238,6 +240,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fieldname": "is_master_sample",
    "fieldtype": "Check",
@@ -503,10 +506,17 @@
    "fieldtype": "Small Text",
    "hidden": 1,
    "label": "Fiscal"
+  },
+  {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "is_approved",
+   "fieldtype": "Check",
+   "label": "Is Approved"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-06-23 17:50:33.299349",
+ "modified": "2021-01-22 11:00:54.372002",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",
