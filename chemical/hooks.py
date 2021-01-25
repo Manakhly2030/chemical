@@ -25,10 +25,10 @@ WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_f
 WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_required_items
 
 
-#payment term override
-from chemical.api import get_due_date
-from erpnext.controllers import accounts_controller
-accounts_controller.get_due_date = get_due_date
+# #payment term override
+# from chemical.api import get_due_date
+# from erpnext.controllers import accounts_controller
+# accounts_controller.get_due_date = get_due_date
 
 # import erpnext
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
