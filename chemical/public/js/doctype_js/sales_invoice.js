@@ -34,7 +34,7 @@ erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceControlle
         const doc = me.frm.doc;
 		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
             if (frappe.meta.get_docfield("Sales Invoice", "bl_date") || frappe.meta.get_docfield("Sales Invoice", "shipping_bill_date")){
-                var posting_date = doc.bl_date || doc.shipping_bill_date
+                var posting_date = doc.bl_date || doc.shipping_bill_date || doc.posting_date
             }
             else{
                 var posting_date =  doc.posting_date || doc.transaction_date;

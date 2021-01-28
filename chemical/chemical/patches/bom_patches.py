@@ -24,7 +24,10 @@ def execute():
 
             etp_qty = frappe.db.get_value("BOM",bom[0],'etp_qty')
             etp_rate = frappe.db.get_value("BOM",bom[0],'etp_rate')
-            etp_amount = frappe.db.get_value("BOM",bom[0],'etp_amount') 
+            etp_amount = frappe.db.get_value("BOM",bom[0],'etp_amount')
+            # uom_doc = frappe.new_doc("UOM")
+            # uom_doc.uom_name = 'FG QTY'
+            # uom_doc.save()
             if etp_qty:
                 doc = frappe.get_doc("BOM",bom[0])
                 doc.append("additional_cost",{

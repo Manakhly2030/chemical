@@ -349,32 +349,32 @@ def update_po(self):
 def update_work_order_on_cancel(self, method):
 	if self.purpose == 'Manufacture' and self.work_order:
 		doc = frappe.get_doc("Work Order",self.work_order)
-		doc.finish_item = []
+		# doc.finish_item = []
 		# doc.db_set('batch_yield',0)
 		# doc.db_set('concentration',0)
 		# doc.db_set('valuation_rate',0)
 		# doc.db_set('produced_quantity',0)
 		# doc.db_set('lot_no','')
-		# for item in doc.finish_item:
-		# 	item.db_set("actual_qty",0)
-		# 	item.db_set("actual_valuation",0)
-		# 	item.db_set("lot_no",'')
-		# 	item.db_set("packing_size",0)
-		# 	item.db_set("no_of_packages",0)
-		# 	item.db_set("purity",0)
-		# 	item.db_set("batch_yield",0)
-		# 	item.db_set("batch_no",'')
-		# 	item.db_update()
+		for item in doc.finish_item:
+			item.db_set("actual_qty",0)
+			item.db_set("actual_valuation",0)
+			item.db_set("lot_no",'')
+			item.db_set("packing_size",0)
+			item.db_set("no_of_packages",0)
+			item.db_set("purity",0)
+			item.db_set("batch_yield",0)
+			item.db_set("batch_no",'')
+			# item.db_update()
 		# frappe.db.set_value("Work Order",self.work_order,"batch_yield", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"concentration",0)
 		# frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
 
-		frappe.db.sql("""delete from `tabWork Order Finish Item`
-			where parent = %s""", self.work_order)
+		# frappe.db.sql("""delete from `tabWork Order Finish Item`
+		# 	where parent = %s""", self.work_order)
 		
-		#doc.db_update()
+		# doc.db_update()
 
 def set_po_status(self, pro_doc):
 	status = None
@@ -442,6 +442,8 @@ def cal_rate_for_finished_item(self):
 							d.db_set('amount',flt(d.basic_amount + d.additional_cost))
 							d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
 							d.db_set('valuation_rate',flt(d.amount/ d.qty))
+							print(result[d.item_code])
+							print(finish_items.bom_cost_ratio)
 							item_yield = 0.0
 							if item_map[self.based_on]['yield_weights'] > 0:
 								item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']

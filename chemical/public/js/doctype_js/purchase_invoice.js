@@ -170,7 +170,9 @@ frappe.ui.form.on("Purchase Invoice", {
                         frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.accepted_quantity) || flt(d.receive_quantity));
                     }
                     else{
-                        frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty));
+                        if(!d.qty){
+                            frappe.model.set_value(d.doctype, d.name, 'qty',flt(d.quantity));
+                        }
                     }
                     frappe.model.set_value(d.doctype, d.name, 'rate',d.price);
                 }
@@ -334,11 +336,13 @@ frappe.ui.form.on("Purchase Invoice", {
                     frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.accepted_quantity) || flt(d.receive_quantity));
                 }
                 else{
-                    frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty));
+                    if (!d.qty){
+                        frappe.model.set_value(d.doctype, d.name, 'qty',flt(d.quantity));
+                    }
+                    frappe.model.set_value(d.doctype, d.name, 'rate',d.price);
                 }
-                frappe.model.set_value(d.doctype, d.name, 'rate',d.price);
-            }
 
+                }    
             if (frappe.meta.get_docfield("Purchase Invoice Item", "short_quantity")){
                 frappe.model.set_value(d.doctype, d.name, 'short_quantity',flt(d.quantity) - flt(d.supplier_quantity));
                 if(d.short_quantity){
@@ -354,6 +358,9 @@ frappe.ui.form.on("Purchase Invoice", {
 	},
 });
 frappe.ui.form.on("Purchase Invoice Item", {
+    quantity: function (frm, cdt, cdn) {
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
 	price: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
