@@ -132,6 +132,8 @@ def make_quotation(source_name, target_doc=None):
 		target.append('items', {
 			'item_code': source.product_name,
 			'item_name': source.product_name,
+			'outward_sample':source.name,
+			'sample_ref_no':source.ref_no,
 			'base_cost' : source.per_unit_price
 			})
 
