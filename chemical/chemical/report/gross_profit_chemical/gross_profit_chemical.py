@@ -18,12 +18,12 @@ def execute(filters=None):
 	data = []
 
 	group_wise_columns = frappe._dict({
-		"invoice": ["posting_date","parent", "customer","item_code", \
-			"reference_name","qty", "gross_profit", "gross_profit_percent", "base_amount",\
+		"invoice": ["parent","posting_date", "customer","item_code", \
+			"reference_name","qty", "base_amount",\
 			"buying_amount", "base_rate", "buying_rate",\
-			"warehouse","batch_no","reference_doctype"],
-		"item_code": ["item_code","qty",  "gross_profit", "gross_profit_percent","base_rate",
-			"buying_rate", "base_amount", "buying_amount"],
+			"warehouse","batch_no","reference_doctype", "gross_profit", "gross_profit_percent"],
+		"item_code": ["item_code","qty","base_rate",
+			"buying_rate", "base_amount", "buying_amount", "gross_profit", "gross_profit_percent"],
 		"batch_no": ["item_code","reference_doctype","reference_name"],
 		"warehouse": ["warehouse", "qty", "base_rate", "buying_rate", "base_amount", "buying_amount",
 			"gross_profit", "gross_profit_percent"],
@@ -51,7 +51,40 @@ def execute(filters=None):
 		row.append(filters.currency)
 		data.append(row)
 
-	return columns, data
+	chart_data = get_chart_data(data, filters)
+
+	return columns, data, None, chart_data
+
+def get_chart_data(data, filters):
+	if not data:
+		return []
+
+	labels, datapoints = [], []
+
+	if filters.get("group_by"):
+		data = [row for row in data if row[0]]
+	data = sorted(data, key = lambda i: i[-3],reverse=True)
+
+	if len(data) > 10:
+		# get top 10 if data too long
+		data = data[:10]
+
+	for row in data:
+		labels.append(row[0])
+		datapoints.append(row[-3])
+
+	return {
+		"data": {
+			"labels" : labels,
+			"datasets" : [
+				{
+				"name": _("Amount"),
+				"values": datapoints
+				}
+			]
+		},
+		"type" : "bar"
+	}
 
 def get_columns(group_wise_columns, filters):
 	columns = []
