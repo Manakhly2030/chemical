@@ -177,6 +177,9 @@ def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, r
 		self.distribute_additional_costs()
 
 	self.update_valuation_rate()
+	# Finbyz Changes start: Calculate Valuation Price Based on Valuation Rate and concentration for AS IS Items 
+	update_valuation_price(self)
+	# Finbyz Changes End
 	self.set_total_incoming_outgoing_value()
 	self.set_total_amount()
 	price_to_rate(self)
@@ -340,7 +343,7 @@ def update_po(self):
 				child.db_update()
 			po.db_set("batch_yield", flt(batch_yield/count))
 			po.db_set("concentration", flt(concentration/count))
-			po.db_set("valuation_rate", valuation_rate / flt(total_qty))
+			po.db_set("valuation_rate", valuation_rate / flt(actual_total_qty))
 			po.db_set("produced_qty", total_qty)
 			po.db_set("produced_quantity",actual_total_qty)
 			if len(lot)!=0:
@@ -479,6 +482,15 @@ def cal_rate_for_finished_item(self):
 						
 					# 	if self.based_on:
 					# 		d.batch_yield = flt(result[d.item_code] / flt(item_map[self.based_on]*self.qty_ratio_of_second_item/100))  # cost_ratio_of_second_item percent of sum of items of based_on item from map variable 				
+
+def update_valuation_price(self):
+	for item in self.items:
+		maintain_as_is_stock = frappe.db.get_value('Item', item.item_code, 'maintain_as_is_stock')
+		concentration = item.concentration or 100
+		if maintain_as_is_stock:
+			item.valuation_price = item.valuation_rate * 100 / concentration
+		else:
+			item.valuation_price = item.valuation_rate
 
 def update_additional_cost(self):
 	if self.purpose == "Manufacture" and self.bom_no:
