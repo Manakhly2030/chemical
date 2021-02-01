@@ -142,6 +142,12 @@ class BallMillDataSheet(Document):
 		se.posting_time = self.posting_time
 		se.from_ball_mill = 1
 		cost_center = frappe.db.get_value("Company",self.company,"cost_center")
+		if hasattr(self,'send_to_party'):
+			se.send_to_party = self.send_to_party
+		if hasattr(self,'party_type'):
+			se.party_type = self.party_type
+		if hasattr(self,'party'):
+			se.party = self.party
 
 		for row in self.items:
 			se.append('items',{

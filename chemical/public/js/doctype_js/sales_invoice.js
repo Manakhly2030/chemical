@@ -34,7 +34,7 @@ erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceControlle
         const doc = me.frm.doc;
 		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
             if (frappe.meta.get_docfield("Sales Invoice", "bl_date") || frappe.meta.get_docfield("Sales Invoice", "shipping_bill_date")){
-                var posting_date = doc.bl_date || doc.shipping_bill_date
+                var posting_date = doc.bl_date || doc.shipping_bill_date || doc.posting_date
             }
             else{
                 var posting_date =  doc.posting_date || doc.transaction_date;
@@ -252,7 +252,6 @@ frappe.ui.form.on("Sales Invoice", {
         frm.trigger("cal_total_quantity");
     },
     cal_rate_qty: function (frm, cdt, cdn) {
-        console.log('called')
         let d = locals[cdt][cdn];
         frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
             if (d.packing_size && d.no_of_packages) {
@@ -346,7 +345,6 @@ frappe.ui.form.on("Sales Invoice Item", {
     // },
 
     batch_no: function (frm, cdt, cdn) {
-        console.log("in batch")
         let d = locals[cdt][cdn];
         frappe.db.get_value("Batch", d.batch_no, ['packaging_material', 'packing_size', 'lot_no', 'batch_yield', 'concentration'], function (r) {
             frappe.model.set_value(cdt, cdn, 'packaging_material', r.packaging_material);
