@@ -334,3 +334,8 @@ override_doctype_dashboards = {
 	"Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
 	"Customer": "chemical.chemical.dashboard.customer.get_data"
 }
+
+#Work Order Summary Report Override From Finbyz Dashboard For Chart
+from chemical.chemical.report.work_order_summary import execute as wos_execute
+from finbyz_dashboard.finbyz_dashboard.report.work_order_summary import work_order_summary
+work_order_summary.execute = wos_execute
