@@ -39,11 +39,11 @@ def execute(filters=None):
 			})
 		else:
 			sle.update({
-				'as_is_qty': (flt(sle.actual_qty) * 100)/flt(concentration),
+				'as_is_qty': flt(sle.actual_qty),
 				'actual_qty': flt(sle.actual_qty),
 				'incoming_rate': flt(sle.incoming_rate),
 				'valuation_rate': flt(sle.valuation_rate),
-				'as_is_balance_qty': (flt(sle.qty_after_transaction) * 100)/flt(concentration)
+				'as_is_balance_qty': flt(sle.qty_after_transaction)
 			})
 
 		#frappe.msgprint(str(sle))

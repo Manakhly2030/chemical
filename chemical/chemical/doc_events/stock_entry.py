@@ -177,6 +177,9 @@ def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, r
 		self.distribute_additional_costs()
 
 	self.update_valuation_rate()
+	# Finbyz Changes start: Calculate Valuation Price Based on Valuation Rate and concentration for AS IS Items 
+	update_valuation_price(self)
+	# Finbyz Changes End
 	self.set_total_incoming_outgoing_value()
 	self.set_total_amount()
 	price_to_rate(self)
@@ -340,7 +343,7 @@ def update_po(self):
 				child.db_update()
 			po.db_set("batch_yield", flt(batch_yield/count))
 			po.db_set("concentration", flt(concentration/count))
-			po.db_set("valuation_rate", valuation_rate / flt(total_qty))
+			po.db_set("valuation_rate", valuation_rate / flt(actual_total_qty))
 			po.db_set("produced_qty", total_qty)
 			po.db_set("produced_quantity",actual_total_qty)
 			if len(lot)!=0:
@@ -349,32 +352,32 @@ def update_po(self):
 def update_work_order_on_cancel(self, method):
 	if self.purpose == 'Manufacture' and self.work_order:
 		doc = frappe.get_doc("Work Order",self.work_order)
-		doc.finish_item = []
+		# doc.finish_item = []
 		# doc.db_set('batch_yield',0)
 		# doc.db_set('concentration',0)
 		# doc.db_set('valuation_rate',0)
 		# doc.db_set('produced_quantity',0)
 		# doc.db_set('lot_no','')
-		# for item in doc.finish_item:
-		# 	item.db_set("actual_qty",0)
-		# 	item.db_set("actual_valuation",0)
-		# 	item.db_set("lot_no",'')
-		# 	item.db_set("packing_size",0)
-		# 	item.db_set("no_of_packages",0)
-		# 	item.db_set("purity",0)
-		# 	item.db_set("batch_yield",0)
-		# 	item.db_set("batch_no",'')
-		# 	item.db_update()
+		for item in doc.finish_item:
+			item.db_set("actual_qty",0)
+			item.db_set("actual_valuation",0)
+			item.db_set("lot_no",'')
+			item.db_set("packing_size",0)
+			item.db_set("no_of_packages",0)
+			item.db_set("purity",0)
+			item.db_set("batch_yield",0)
+			item.db_set("batch_no",'')
+			# item.db_update()
 		# frappe.db.set_value("Work Order",self.work_order,"batch_yield", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"concentration",0)
 		# frappe.db.set_value("Work Order",self.work_order,"valuation_rate", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"produced_quantity", 0)
 		# frappe.db.set_value("Work Order",self.work_order,"lot_no", "")
 
-		frappe.db.sql("""delete from `tabWork Order Finish Item`
-			where parent = %s""", self.work_order)
+		# frappe.db.sql("""delete from `tabWork Order Finish Item`
+		# 	where parent = %s""", self.work_order)
 		
-		#doc.db_update()
+		# doc.db_update()
 
 def set_po_status(self, pro_doc):
 	status = None
@@ -442,6 +445,8 @@ def cal_rate_for_finished_item(self):
 							d.db_set('amount',flt(d.basic_amount + d.additional_cost))
 							d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
 							d.db_set('valuation_rate',flt(d.amount/ d.qty))
+							print(result[d.item_code])
+							print(finish_items.bom_cost_ratio)
 							item_yield = 0.0
 							if item_map[self.based_on]['yield_weights'] > 0:
 								item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
@@ -479,6 +484,15 @@ def cal_rate_for_finished_item(self):
 						
 					# 	if self.based_on:
 					# 		d.batch_yield = flt(result[d.item_code] / flt(item_map[self.based_on]*self.qty_ratio_of_second_item/100))  # cost_ratio_of_second_item percent of sum of items of based_on item from map variable 				
+
+def update_valuation_price(self):
+	for item in self.items:
+		maintain_as_is_stock = frappe.db.get_value('Item', item.item_code, 'maintain_as_is_stock')
+		concentration = item.concentration or 100
+		if maintain_as_is_stock:
+			item.valuation_price = item.valuation_rate * 100 / concentration
+		else:
+			item.valuation_price = item.valuation_rate
 
 def update_additional_cost(self):
 	if self.purpose == "Manufacture" and self.bom_no:
