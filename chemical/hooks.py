@@ -25,7 +25,7 @@ WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_f
 WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_required_items
 
 
-# #payment term override
+#payment term override
 from chemical.api import get_due_date
 from erpnext.controllers import accounts_controller
 accounts_controller.get_due_date = get_due_date
@@ -335,3 +335,8 @@ override_doctype_dashboards = {
 	"Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
 	"Customer": "chemical.chemical.dashboard.customer.get_data"
 }
+
+#Work Order Summary Report Override From Finbyz Dashboard For Chart
+from chemical.chemical.report.work_order_summary import execute as wos_execute
+from finbyz_dashboard.finbyz_dashboard.report.work_order_summary import work_order_summary
+work_order_summary.execute = wos_execute
