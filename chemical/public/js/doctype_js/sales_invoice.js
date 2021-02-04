@@ -209,6 +209,9 @@ frappe.ui.form.on("Sales Invoice", {
                     }
                 }
                 if (d.packing_size && d.no_of_packages) {
+                    if(frm.doc.is_return == 1){
+                        frappe.model.set_value(d.doctype, d.name, 'no_of_packages', -Math.abs(d.no_of_packages));
+                    }
                     frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
                     if (r.maintain_as_is_stock) {
                         frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);
@@ -252,10 +255,12 @@ frappe.ui.form.on("Sales Invoice", {
         frm.trigger("cal_total_quantity");
     },
     cal_rate_qty: function (frm, cdt, cdn) {
-        console.log('called')
         let d = locals[cdt][cdn];
         frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
             if (d.packing_size && d.no_of_packages) {
+                if(frm.doc.is_return == 1){
+                    frappe.model.set_value(d.doctype, d.name, 'no_of_packages', -Math.abs(d.no_of_packages));
+                }
                 frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
                 if (r.maintain_as_is_stock) {
                     if(d.quantity != (d.qty * d.concentration / 100)){
@@ -346,7 +351,6 @@ frappe.ui.form.on("Sales Invoice Item", {
     // },
 
     batch_no: function (frm, cdt, cdn) {
-        console.log("in batch")
         let d = locals[cdt][cdn];
         frappe.db.get_value("Batch", d.batch_no, ['packaging_material', 'packing_size', 'lot_no', 'batch_yield', 'concentration'], function (r) {
             frappe.model.set_value(cdt, cdn, 'packaging_material', r.packaging_material);

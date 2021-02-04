@@ -107,7 +107,38 @@ def execute(filters=None):
 			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date_fiscal}' to_date='{to_date}' warehouse='{warehouse}'
 			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Stock Ledger</button>"""
 		
-	return columns, data
+	chart_data = get_chart_data(data, filters)
+
+	return columns, data, None, chart_data
+
+def get_chart_data(data, filters):
+	if not data:
+		return []
+
+	labels, datapoints = [], []
+	data = sorted(data, key = lambda i: i['bal_qty'], reverse=True)
+
+	if len(data) > 10:
+		# get top 10 if data too long
+		data = data[:10]
+
+	for row in data:
+		labels.append(row['item_code'])
+		datapoints.append(row['bal_qty'])
+
+	return {
+		"data": {
+			"labels" : labels,
+			"datasets" : [
+				{
+				"name": _("Balance Qty"),
+				"values": datapoints
+				}
+			]
+		},
+		"type" : "bar",
+		"colors":["#5e64ff"]
+	}
 
 def get_columns(filters):
 	"""return columns"""

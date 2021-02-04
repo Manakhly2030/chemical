@@ -33,8 +33,13 @@ def validate_customer_batch(self):
 				if batch_customer != self.customer:
 					frappe.msgprint(_("The batch selected doesn't have <strong>{}</strong> in row {}".format(self.customer,row.idx)))
 
-def validate(self,method):
+def before_validate(self,method):
+	# sales invoice return quantity not working on validate
 	cal_rate_qty(self)
+
+def validate(self,method):
+	pass
+	#cal_rate_qty(self)
 
 def si_update_status_updater_args(self):
 	if cint(self.update_stock):
