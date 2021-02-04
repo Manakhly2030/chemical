@@ -306,6 +306,7 @@ doc_events = {
 			"chemical.chemical.doc_events.sales_invoice.si_before_submit",
 			"chemical.chemical.doc_events.sales_invoice.before_submit",
 		],
+		"before_validate": "chemical.chemical.doc_events.sales_invoice.before_validate",
 		"validate": "chemical.chemical.doc_events.sales_invoice.validate",
 		"before_cancel": "chemical.chemical.doc_events.sales_invoice.before_cancel",
 		"on_trash":"chemical.chemical.doc_events.sales_invoice.on_trash",
