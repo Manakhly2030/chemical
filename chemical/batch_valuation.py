@@ -64,7 +64,7 @@ def make_transfer_batches(self):
 		has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
 		if has_batch_no:
 			if row.batch_no:
-				if not frappe.db.exists("Stock Ledger Entry", {'company':self.company,'warehouse':row.get('t_warehouse'),'batch_no':row.batch_no,'voucher_no':('!=',self.name)}):
+				if row.valuation_rate == frappe.db.get_value("Stock Ledger Entry", {'company':self.company,'warehouse':row.get('t_warehouse'),'batch_no':row.batch_no,'incoming_rate':('!=', 0)},"incoming_rate"):
 					if hasattr(self, 'send_to_party') and hasattr(row, 'party_concentration'):
 						if not self.send_to_party:
 							continue

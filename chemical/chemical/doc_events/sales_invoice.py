@@ -9,6 +9,7 @@ def onload(self,method):
 
 def si_before_submit(self,method):
 	validate_customer_batch(self)
+
 #added	
 def before_submit(self, method):
 	update_item_price_history(self)
@@ -30,10 +31,15 @@ def validate_customer_batch(self):
 			batch_customer = frappe.db.get_value("Batch",row.batch_no,"customer")
 			if batch_customer:
 				if batch_customer != self.customer:
-					frappe.throw(_("Please select correct batch for customer <strong>{}</strong> in row {}".format(self.customer,row.idx)))
+					frappe.msgprint(_("The batch selected doesn't have <strong>{}</strong> in row {}".format(self.customer,row.idx)))
+
+def before_validate(self,method):
+	# sales invoice return quantity not working on validate
+	cal_rate_qty(self)
 
 def validate(self,method):
-	cal_rate_qty(self)
+	pass
+	#cal_rate_qty(self)
 
 def si_update_status_updater_args(self):
 	if cint(self.update_stock):

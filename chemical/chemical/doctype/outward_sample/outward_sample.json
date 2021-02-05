@@ -101,11 +101,10 @@
    "fieldtype": "Section Break"
   },
   {
-   "default": "MDI/.YY./.####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "Naming Series",
-   "options": "MDI/.YY./.####\nTest-",
+   "options": "OWT/.YY./.####",
    "reqd": 1
   },
   {
@@ -518,7 +517,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2021-01-22 14:53:41.678281",
+ "modified": "2021-01-30 16:40:59.928010",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",
