@@ -1,7 +1,10 @@
 frappe.ui.form.on("Supplier", {
 	refresh: function(frm) {
-        dashboard_link_doctype(frm, "Outward Sample");
-        dashboard_link_doctype(frm, "Inward Sample");
+		if(!frm.doc.__islocal){
+
+			dashboard_link_doctype(frm, "Outward Sample");
+			dashboard_link_doctype(frm, "Inward Sample");
+		}
 	},
 	onload_post_render: function(frm){
 		if(frm.doc.alias && !frm.doc.__islocal && frm.doc.name != frm.doc.alias){
