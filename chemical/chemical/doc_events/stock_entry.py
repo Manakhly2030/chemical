@@ -346,6 +346,8 @@ def update_po(self):
 			po.db_set("valuation_rate", valuation_rate / flt(actual_total_qty))
 			po.db_set("produced_qty", total_qty)
 			po.db_set("produced_quantity",actual_total_qty)
+			# valuation price = valuation_rate * produced_qty / produced_quantity
+			po.db_set('valuation_price',(((flt(valuation_rate) / flt(actual_total_qty)) * total_qty) / actual_total_qty))
 			if len(lot)!=0:
 				po.db_set("lot_no", s.join(lot))
 

@@ -137,9 +137,11 @@ def get_invoice_dict(self, row=None):
 
 	party_type = "Customer"
 	income_expense_account_field = "income_account"
+	account_field = "debit_to"
 	if self.invoice_type == "Purchase":
 		party_type = "Supplier"
 		income_expense_account_field = "expense_account"
+		account_field = "credit_to"
 
 	item = get_item_dict()
 
@@ -153,7 +155,9 @@ def get_invoice_dict(self, row=None):
 		"posting_date": row.posting_date,
 		frappe.scrub(party_type): row.party,
 		"doctype": "Sales Invoice" if self.invoice_type == "Sales" else "Purchase Invoice",
-		"currency": frappe.get_cached_value('Company',  self.company,  "default_currency")
+		"currency": row.currency or frappe.get_cached_value('Company',  self.company,  "default_currency"),
+		"conversion_rate": row.exchange_rate,
+		account_field: row.account
 	})
 
 	# accounting_dimension = get_accounting_dimensions()
