@@ -143,7 +143,7 @@ def cal_rate_qty(self):
 			else:
 				concentration = d.concentration or 100
 		if d.get('packing_size') and d.get('no_of_packages'):
-			if self.is_return:
+			if self.get('is_return'):
 				d.no_of_packages = -abs(d.no_of_packages)
 			d.qty = d.packing_size * d.no_of_packages
 			if maintain_as_is_stock:
