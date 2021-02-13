@@ -164,7 +164,7 @@ def get_columns(filters):
 			"width": 70
 		},
 		{
-			"label": _("Qty"),
+			"label": _("Quantity"),
 			"fieldname": "bal_qty",
 			"fieldtype": "Float",
 			"width": 90
