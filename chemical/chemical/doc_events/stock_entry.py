@@ -20,7 +20,7 @@ def before_validate(self,method):
 		se_cal_rate_qty(self)
 	fg_completed_quantity_to_fg_completed_qty(self)
 	cal_actual_valuations(self)
-	validate_fg_completed_quantity(self)
+	#validate_fg_completed_quantity(self)
 
 def validate(self,method):
 	if self.purpose in ['Manufacture']:
