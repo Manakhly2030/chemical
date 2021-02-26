@@ -356,7 +356,7 @@ erpnext.stock.MaterialTransferInstruction = erpnext.stock.StockController.extend
 	get_items: function() {
 		var me = this;
 		if(!this.frm.doc.fg_completed_qty || !this.frm.doc.bom_no)
-			frappe.throw(__("BOM and Manufacturing Quantity are required"));
+			//frappe.throw(__("BOM and Manufacturing Quantity are required"));
 
 		if(this.frm.doc.work_order || this.frm.doc.bom_no) {
 			// if Work Order / bom is mentioned, get items
