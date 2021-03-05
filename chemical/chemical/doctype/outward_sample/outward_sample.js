@@ -224,6 +224,12 @@ frappe.ui.form.on('Outward Sample', {
 					frm: cur_frm
 				})
 			}, __("Make"))
+			frm.add_custom_button(__("Quality Inspection"), function () {
+				frappe.model.open_mapped_doc({
+					method: "chemical.chemical.doctype.outward_sample.outward_sample.make_quality_inspection",
+					frm: cur_frm
+				})
+			}, __("Make"))
 		}
 	},
 	address_name: function (frm) {
