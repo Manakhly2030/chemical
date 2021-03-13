@@ -361,12 +361,7 @@ frappe.ui.form.on("Stock Entry", {
                                 //frappe.throw("Please add concentration for Item " + d.item_code);
                             }
                             let concentration = 0
-                            if (d.batch_no) {
-                                concentration = frappe.get_value("Batch", d.batch_no, "concentration")
-                            }
-                            else {
-                                concentration = d.concentration
-                            }
+                            concentration = d.concentration
                             if (d.quantity) {
                                 frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
                             }
@@ -416,12 +411,8 @@ frappe.ui.form.on("Stock Entry", {
                             //     frappe.throw("Please add concentration for Item " + d.item_code)
                             // }
                             let concentration = 0
-                            if (d.batch_no) {
-                                concentration = frappe.get_value("Batch", d.batch_no, "concentration")
-                            }
-                            else {
-                                concentration = d.concentration
-                            }
+
+                            concentration = d.concentration
                             if (d.quantity) {
                                 frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
                             }
@@ -629,12 +620,8 @@ frappe.ui.form.on("Stock Entry", {
                     }
                    
                     let concentration = 0
-                    if (d.batch_no) {
-                        concentration = frappe.get_value("Batch", d.batch_no, "concentration")
-                    }
-                    else {
-                        concentration = d.concentration
-                    }
+
+                    concentration = d.concentration
                     if (d.quantity) {
                         frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / concentration));
                     }

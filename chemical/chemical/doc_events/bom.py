@@ -305,7 +305,8 @@ def _update_bom_cost(self,update_parent=False, from_child_bom=False, save=False)
 			"qty": d.qty,
 			"uom": d.uom,
 			"stock_uom": d.stock_uom,
-			"conversion_factor": d.conversion_factor
+			"conversion_factor": d.conversion_factor,
+			"company": self.company
 		})
 
 		if rate:

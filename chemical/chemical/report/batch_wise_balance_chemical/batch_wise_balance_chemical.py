@@ -164,7 +164,7 @@ def get_columns(filters):
 			"width": 70
 		},
 		{
-			"label": _("Qty"),
+			"label": _("Quantity"),
 			"fieldname": "bal_qty",
 			"fieldtype": "Float",
 			"width": 90
@@ -248,7 +248,8 @@ def get_stock_ledger_entries(filters):
 		select sle.item_code, sle.batch_no, sle.warehouse, sle.posting_date,sle.company, sum(sle.actual_qty) as actual_qty
 		from `tabStock Ledger Entry` as sle
 		where sle.docstatus < 2 and ifnull(sle.batch_no, '') != '' %s
-		group by sle.voucher_no, sle.batch_no, sle.item_code, sle.warehouse
+		group by sle.batch_no, sle.item_code, sle.warehouse
+		having sum(sle.actual_qty) != 0
 		order by sle.item_code, sle.warehouse, sle.batch_no""" %
 		conditions, as_dict=1)
 

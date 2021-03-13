@@ -2,14 +2,14 @@
 from __future__ import unicode_literals
 from . import __version__ as app_version
 
-from erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool import OpeningInvoiceCreationTool
-from chemical.chemical.doc_events.opening_invoice_creation_tool import get_invoice_dict, make_invoices
+# from erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool import OpeningInvoiceCreationTool
+# from chemical.chemical.doc_events.opening_invoice_creation_tool import get_invoice_dict, make_invoices
+
+# OpeningInvoiceCreationTool.get_invoice_dict = get_invoice_dict
+# OpeningInvoiceCreationTool.make_invoices = make_invoices
+
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-
-OpeningInvoiceCreationTool.get_invoice_dict = get_invoice_dict
-OpeningInvoiceCreationTool.make_invoices = make_invoices
-
 
 #Chemical
 from chemical.chemical.doc_events.stock_entry import validate_fg_completed_quantity, calculate_rate_and_amount, validate_finished_goods
@@ -29,6 +29,11 @@ WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_requi
 from chemical.api import get_due_date
 from erpnext.controllers import accounts_controller
 accounts_controller.get_due_date = get_due_date
+
+# overide reason bcz raw material changes on change event of fg_completed_qty
+from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+from chemical.chemical.doc_events.work_order import get_items
+StockEntry.get_items = get_items
 
 # import erpnext
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
@@ -337,6 +342,6 @@ override_doctype_dashboards = {
 }
 
 #Work Order Summary Report Override From Finbyz Dashboard For Chart
-from chemical.chemical.report.work_order_summary import execute as wos_execute
-from finbyz_dashboard.finbyz_dashboard.report.work_order_summary import work_order_summary
-work_order_summary.execute = wos_execute
+# from chemical.chemical.report.work_order_summary import execute as wos_execute
+# from finbyz_dashboard.finbyz_dashboard.report.work_order_summary import work_order_summary
+# work_order_summary.execute = wos_execute

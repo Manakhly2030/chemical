@@ -63,7 +63,7 @@ frappe.ui.form.on("Work Order", {
 				})
 			}
 		}
-		
+		frm.trigger('set_source_warehouse')
 	},
 	refresh: function(frm){
 		$(".form-inner-toolbar").find("button[data-label=Finish]").css({"float":"right"})
@@ -94,7 +94,35 @@ frappe.ui.form.on("Work Order", {
 		if (frm.doc.based_on && frm.doc.based_on != "") {
 			cur_frm.set_df_property('based_on_qty', 'label', "Required "+ cstr(frm.doc.based_on) + " Qty");
 		}
-		
+		frm.trigger('set_source_warehouse')
+	},
+	set_source_warehouse: function(frm){
+		if (frm.doc.company){
+			if (frappe.meta.get_docfield(frm.doc.doctype, "source_warehouse")){
+				if (!frm.doc.source_warehouse){
+					frappe.db.get_value("Company",frm.doc.company,'default_raw_material_warehouse', function(r){
+						if (r.default_raw_material_warehouse){
+							frm.set_value('source_warehouse', r.default_raw_material_warehouse);
+						}
+					})
+				}
+			}
+		}
+	},
+	qty: function(frm){
+		frm.trigger('source_warehouse')
+	},
+	source_warehouse: function(frm){
+		if (frappe.meta.get_docfield(frm.doc.doctype, "source_warehouse")){
+			if (frm.doc.source_warehouse)
+				{
+					if(frm.doc.required_items){
+						frm.doc.required_items.forEach(function (d){
+							frappe.model.set_value(d.doctype,d.name,'source_warehouse',frm.doc.source_warehouse)
+						});
+					}
+				}
+		}
 	},
 	production_item: function(frm){
 		//frm.trigger("add_finish_item");
@@ -253,6 +281,7 @@ frappe.ui.form.on("Work Order", {
 
 		frm.dashboard.add_progress(__('Status'), bars, message);
 	},
+
 });
 
 // erpnext.work_order.set_custom_buttons = function(frm) {

@@ -150,6 +150,21 @@ def make_quotation(source_name, target_doc=None):
 
 	return doclist
 
+@frappe.whitelist()
+def make_quality_inspection(source_name, target_doc=None):
+	doclist = get_mapped_doc("Outward Sample" , source_name,{
+		"Outward Sample":{
+			"doctype" : "Quality Inspection",
+			"field_map":{
+				"product_name" : "item_code",
+				"doctype" : "reference_type",
+				"name" : "reference_name" ,
+			},
+		}
+	},target_doc)
+
+	return doclist
+
 # def get_outward_sample(doctype, txt, searchfield, start, page_len, filters, as_dict):
 # 	return frappe.db.sql("""
 # 		SELECT 
