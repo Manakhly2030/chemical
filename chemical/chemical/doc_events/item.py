@@ -3,6 +3,12 @@ import frappe
 from frappe.utils import cstr
 
 def item_validate(self, method):
+	if self.is_new():
+		if not self.is_stock_item and not self.has_batch_no:
+			frappe.msgprint("Maintain stock is 0 <br> Has Batch No is 0")
+		if self.is_stock_item and not self.has_batch_no:
+			frappe.msgprint("Maintain stock is 1 <br> Has Batch No is 0")
+
 	fill_customer_code(self)
 	no_change(self)
 

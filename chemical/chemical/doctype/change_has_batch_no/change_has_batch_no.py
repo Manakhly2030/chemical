@@ -35,7 +35,7 @@ class ChangeHasBatchNo(Document):
 				batch.packing_size = cstr(doc.packing_size)
 				batch.batch_yield = flt(doc.batch_yield, 3)
 				batch.concentration = flt(doc.concentration, 3)
-				batch.valuation_rate = flt(doc.valuation_rate, 4)
+				batch.valuation_rate = flt(sle_doc.incoming_rate)
 				batch.price = flt(doc.price,2)
 				batch.actual_quantity = flt(doc.qty * flt(doc.conversion_factor))
 				batch.reference_doctype = sle_doc.voucher_type
