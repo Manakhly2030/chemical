@@ -7,6 +7,7 @@ import frappe
 from frappe import db,_
 from frappe.model.document import Document
 from finbyzerp.api import before_naming as naming_series
+from frappe.model.mapper import get_mapped_doc
 
 class InwardSample(Document):
 	def onclick_update_price(self):
@@ -68,3 +69,17 @@ class InwardSample(Document):
 	def before_naming(self):
 		naming_series(self, 'save')
 
+@frappe.whitelist()
+def make_quality_inspection(source_name, target_doc=None):
+	doclist = get_mapped_doc("Inward Sample" , source_name,{
+		"Inward Sample":{
+			"doctype" : "Quality Inspection",
+			"field_map":{
+				"product_name" : "item_code",
+				"doctype" : "reference_type",
+				"name" : "reference_name" ,
+			},
+		}
+	},target_doc)
+
+	return doclist
