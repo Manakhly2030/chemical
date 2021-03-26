@@ -99,6 +99,7 @@ doctype_js = {
 	"Item": "public/js/doctype_js/item.js",
 	"Batch": "public/js/doctype_js/batch.js",
 	"Quotation":"public/js/doctype_js/quotation.js",
+	"Quality Inspection":"public/js/doctype_js/quality_inspection.js",
 }
 
 # Home Pages
