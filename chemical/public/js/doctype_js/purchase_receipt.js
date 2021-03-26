@@ -420,9 +420,9 @@ frappe.ui.form.on("Purchase Receipt Item", {
     received_concentration: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
-    // concentration: function (frm, cdt, cdn) {
-    //     frm.events.cal_rate_qty(frm, cdt, cdn)
-    // },
+    concentration: function (frm, cdt, cdn) {
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
     packing_size: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
