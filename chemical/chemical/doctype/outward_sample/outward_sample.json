@@ -21,6 +21,7 @@
   "column_break_12",
   "series_value",
   "status",
+  "sample_type",
   "destination",
   "batch_yield",
   "price_list",
@@ -30,19 +31,10 @@
   "sales_order",
   "po_no",
   "contact_display",
-  "is_master_sample",
-  "section_break_22",
-  "sample_type",
-  "remarks",
-  "cmc",
-  "currency",
-  "column_break_27",
   "supply_site",
-  "da",
-  "db",
-  "strength",
-  "batch_size",
-  "packing_size",
+  "remarks",
+  "currency",
+  "is_master_sample",
   "section_break_38",
   "master_sample",
   "last_sample",
@@ -160,6 +152,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval: doc.__islocal",
    "fieldname": "series_value",
    "fieldtype": "Int",
    "label": "Series Value"
@@ -231,10 +224,6 @@
    "label": "Is Master Sample"
   },
   {
-   "fieldname": "section_break_22",
-   "fieldtype": "Section Break"
-  },
-  {
    "allow_on_submit": 1,
    "fieldname": "sample_type",
    "fieldtype": "Select",
@@ -258,58 +247,17 @@
    "label": "Remarks"
   },
   {
-   "fieldname": "cmc",
-   "fieldtype": "Data",
-   "label": "CMC"
-  },
-  {
    "fieldname": "currency",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Currency",
    "options": "Currency"
-  },
-  {
-   "fieldname": "column_break_27",
-   "fieldtype": "Column Break"
   },
   {
    "allow_on_submit": 1,
    "fieldname": "supply_site",
    "fieldtype": "Data",
    "label": "Supply Site"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "da",
-   "fieldtype": "Float",
-   "hidden": 1,
-   "label": "DA"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "db",
-   "fieldtype": "Float",
-   "hidden": 1,
-   "label": "DB"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "strength",
-   "fieldtype": "Float",
-   "hidden": 1,
-   "label": "Strength "
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "batch_size",
-   "fieldtype": "Float",
-   "hidden": 1,
-   "label": "Batch Size"
-  },
-  {
-   "fieldname": "packing_size",
-   "fieldtype": "Int",
-   "label": "Packing Size"
   },
   {
    "fieldname": "section_break_38",
@@ -422,7 +370,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2021-03-15 13:02:13.525166",
+ "modified": "2021-04-03 18:03:20.408045",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",
