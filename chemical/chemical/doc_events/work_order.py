@@ -8,7 +8,7 @@ from erpnext.manufacturing.doctype.work_order.work_order import StockOverProduct
 
 def before_submit(self, method):
 	validate_multiple_item_bom(self)
-	validate_finish_item_table(self)
+	# validate_finish_item_table(self)
 
 @frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):
