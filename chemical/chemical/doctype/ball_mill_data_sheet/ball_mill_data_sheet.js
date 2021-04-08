@@ -300,10 +300,10 @@ frappe.ui.form.on('Ball Mill Data Sheet Item', {
 	},
 	concentration: function(frm, cdt, cdn) {
 		let row = locals[cdt][cdn];
-		if (row.required_quantity){
-			frappe.model.set_value(cdt,cdn,"quantity",row.required_quantity*row.concentration)
-			frappe.model.set_value(cdt,cdn,"required_quantity",row.required_quantity*row.concentration)
-		}
+		// if (row.required_quantity){
+		// 	frappe.model.set_value(cdt,cdn,"quantity",row.required_quantity*row.concentration)
+		// 	frappe.model.set_value(cdt,cdn,"required_quantity",row.required_quantity*row.concentration)
+		// }
 	},
 	quantity: function(frm,cdt,cdn){
 		frm.events.repack_calculation(frm, cdt, cdn)
