@@ -281,4 +281,4 @@ def get_outward_sample_batch_no(doctype, txt, searchfield, start, page_len, filt
 	FROM
 			`tabBatch`
 	WHERE
-			item = '{0}' """.format(filters.get("item_name")))
+			item = '{0}' """.format(filters.get("item_code")))

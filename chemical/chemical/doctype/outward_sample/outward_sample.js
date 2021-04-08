@@ -53,7 +53,7 @@ this.frm.cscript.onload = function (frm) {
 			return {
 				query: "chemical.query.get_batch_no",
 				filters: {
-					'item_code': d.item_name,
+					'item_code': d.item_code,
 				}
 			}
 		}
