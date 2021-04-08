@@ -284,7 +284,6 @@ def get_outward_sample_batch_no(doctype, txt, searchfield, start, page_len, filt
 			item = '{0}' """.format(filters.get("item_name")))
 
 @frappe.whitelist()
-@frappe.validate_and_sanitize_search_inputs
 def item_query(doctype, txt, searchfield, start, page_len, filters):
 	if filters.get("from"):
 		from frappe.desk.reportview import get_match_cond
