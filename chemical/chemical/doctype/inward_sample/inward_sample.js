@@ -47,6 +47,16 @@ frappe.ui.form.on('Inward Sample', {
 			}
 		});
 	},
+	refresh: function (frm) {
+		if (!frm.doc.__is_local) {
+			frm.add_custom_button(__("Quality Inspection"), function () {
+				frappe.model.open_mapped_doc({
+					method: "chemical.chemical.doctype.inward_sample.inward_sample.make_quality_inspection",
+					frm: cur_frm
+				})
+			}, __("Make"))
+		}
+	},
 	get_party_details: function (frm) {
 		frappe.call({
 			method: "chemical.api.get_party_details",

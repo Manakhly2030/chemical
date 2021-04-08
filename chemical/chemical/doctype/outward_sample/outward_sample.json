@@ -14,7 +14,6 @@
   "date",
   "product_name",
   "item_name",
-  "customer_item_name",
   "company",
   "link_to",
   "party",
@@ -22,6 +21,7 @@
   "column_break_12",
   "series_value",
   "status",
+  "sample_type",
   "destination",
   "batch_yield",
   "price_list",
@@ -31,20 +31,10 @@
   "sales_order",
   "po_no",
   "contact_display",
-  "is_master_sample",
-  "section_break_22",
-  "sample_type",
-  "remarks",
-  "cmc",
-  "currency",
-  "column_break_27",
   "supply_site",
-  "da",
-  "db",
-  "strength",
-  "batch_size",
-  "packing_size",
-  "application",
+  "remarks",
+  "currency",
+  "is_master_sample",
   "section_break_38",
   "master_sample",
   "last_sample",
@@ -59,20 +49,6 @@
   "total_amount",
   "column_break_40",
   "per_unit_price",
-  "control_testing_section",
-  "standard_strength",
-  "color_variation",
-  "lightness_variation",
-  "hue_variation",
-  "chroma_variation",
-  "ph_of_solution",
-  "column_break_49",
-  "water_solubility",
-  "tlc_standard",
-  "physical_appearance",
-  "multi_fibre",
-  "electrolyte_solubility",
-  "abs_at_lmax",
   "amended_from",
   "company_series",
   "fiscal"
@@ -152,7 +128,8 @@
    "fieldname": "link_to",
    "fieldtype": "Select",
    "label": "Link To",
-   "options": "\nLead\nCustomer\nSupplier"
+   "options": "\nLead\nCustomer\nSupplier",
+   "reqd": 1
   },
   {
    "fieldname": "party",
@@ -160,7 +137,8 @@
    "ignore_user_permissions": 1,
    "in_list_view": 1,
    "label": "Party",
-   "options": "link_to"
+   "options": "link_to",
+   "reqd": 1
   },
   {
    "allow_on_submit": 1,
@@ -174,6 +152,7 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval: doc.__islocal",
    "fieldname": "series_value",
    "fieldtype": "Int",
    "label": "Series Value"
@@ -245,15 +224,11 @@
    "label": "Is Master Sample"
   },
   {
-   "fieldname": "section_break_22",
-   "fieldtype": "Section Break"
-  },
-  {
    "allow_on_submit": 1,
    "fieldname": "sample_type",
    "fieldtype": "Select",
    "label": "Sample Type",
-   "options": "PSS\nDevelopment\nStandard\nPost Shipment Sample",
+   "options": "PSS\nDevelopment\nPost Shipment Sample",
    "reqd": 1
   },
   {
@@ -272,54 +247,17 @@
    "label": "Remarks"
   },
   {
-   "fieldname": "cmc",
-   "fieldtype": "Data",
-   "label": "CMC"
-  },
-  {
    "fieldname": "currency",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Currency",
    "options": "Currency"
-  },
-  {
-   "fieldname": "column_break_27",
-   "fieldtype": "Column Break"
   },
   {
    "allow_on_submit": 1,
    "fieldname": "supply_site",
    "fieldtype": "Data",
    "label": "Supply Site"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "da",
-   "fieldtype": "Float",
-   "label": "DA"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "db",
-   "fieldtype": "Float",
-   "label": "DB"
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "strength",
-   "fieldtype": "Float",
-   "label": "Strength "
-  },
-  {
-   "allow_on_submit": 1,
-   "fieldname": "batch_size",
-   "fieldtype": "Float",
-   "label": "Batch Size"
-  },
-  {
-   "fieldname": "packing_size",
-   "fieldtype": "Int",
-   "label": "Packing Size"
   },
   {
    "fieldname": "section_break_38",
@@ -409,81 +347,6 @@
    "read_only": 1
   },
   {
-   "collapsible": 1,
-   "fieldname": "control_testing_section",
-   "fieldtype": "Section Break",
-   "label": "Control Testing"
-  },
-  {
-   "fieldname": "standard_strength",
-   "fieldtype": "Float",
-   "label": "Standard Strength"
-  },
-  {
-   "fieldname": "color_variation",
-   "fieldtype": "Float",
-   "label": "Color Variation"
-  },
-  {
-   "fieldname": "lightness_variation",
-   "fieldtype": "Float",
-   "label": "Lightness Variation"
-  },
-  {
-   "fieldname": "hue_variation",
-   "fieldtype": "Float",
-   "label": "Hue Variation"
-  },
-  {
-   "fieldname": "chroma_variation",
-   "fieldtype": "Float",
-   "label": "Chroma Variation"
-  },
-  {
-   "fieldname": "ph_of_solution",
-   "fieldtype": "Float",
-   "label": "pH of Solution "
-  },
-  {
-   "fieldname": "column_break_49",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "water_solubility",
-   "fieldtype": "Int",
-   "label": "Water Solubility"
-  },
-  {
-   "fieldname": "tlc_standard",
-   "fieldtype": "Select",
-   "label": "TLC Standard"
-  },
-  {
-   "default": "OKAY",
-   "fieldname": "physical_appearance",
-   "fieldtype": "Select",
-   "label": "Physical Appearance",
-   "options": "\nOKAY"
-  },
-  {
-   "default": "OKAY",
-   "fieldname": "multi_fibre",
-   "fieldtype": "Select",
-   "label": "Multi Fibre",
-   "options": "\nOKAY"
-  },
-  {
-   "default": "20",
-   "fieldname": "electrolyte_solubility",
-   "fieldtype": "Int",
-   "label": "ELECTROLYTE SOLUBILITY"
-  },
-  {
-   "fieldname": "abs_at_lmax",
-   "fieldtype": "Data",
-   "label": "ABS at Lmax"
-  },
-  {
    "fieldname": "amended_from",
    "fieldtype": "Link",
    "label": "Amended From",
@@ -504,20 +367,10 @@
    "fieldtype": "Small Text",
    "hidden": 1,
    "label": "Fiscal"
-  },
-  {
-   "fieldname": "application",
-   "fieldtype": "Data",
-   "label": "Application"
-  },
-  {
-   "fieldname": "customer_item_name",
-   "fieldtype": "Data",
-   "label": "Customer Item Name"
   }
  ],
  "is_submittable": 1,
- "modified": "2021-03-01 10:09:45.243380",
+ "modified": "2021-04-03 18:03:20.408045",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",

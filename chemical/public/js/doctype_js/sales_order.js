@@ -52,9 +52,6 @@ frappe.ui.form.on("Sales Order", {
         let d = locals[cdt][cdn];
 		frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
 			if(r.maintain_as_is_stock){
-                if (!d.concentration) {
-                    frappe.throw("Please add concentration for Item " + d.item_code)
-                }
                 if (d.quantity){
                     frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / d.concentration));
                 }

@@ -136,7 +136,7 @@ frappe.ui.form.on("Work Order", {
 			cost = flt(frm.doc.volume * frm.doc.volume_rate);
 			frm.set_value('volume_cost', cost);
 		}
-		frm.trigger("add_finish_item")
+		// frm.trigger("add_finish_item")
 	},
 	bom_no: function (frm) {
 		frm.refresh_field("finish_item");
@@ -152,8 +152,10 @@ frappe.ui.form.on("Work Order", {
 		]);
 	},
 	add_finish_item: function(frm){
+		console.log(frm.doc.finish_item)
 	if (!frm.doc.finish_item || frm.doc.finish_item==undefined || frm.doc.finish_item.length==0)
 	{
+		console.log('called')
 		if(frm.doc.bom_no){
 			if(frm.doc.is_multiple_item){
 				frappe.model.with_doc("BOM", frm.doc.bom_no, function(){
