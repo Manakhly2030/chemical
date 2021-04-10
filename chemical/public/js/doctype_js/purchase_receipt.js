@@ -15,6 +15,22 @@ erpnext.stock.PurchaseReceiptController = erpnext.stock.PurchaseReceiptControlle
 
     },
 })
+cur_frm.fields_dict.set_warehouse.get_query = function(doc) {
+	return {
+		filters: {
+			"company": doc.company,
+           
+		}
+	}
+};
+cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
+	return {
+		filters: {
+			"company": doc.company,
+           
+		}
+	}
+};
 
 $.extend(cur_frm.cscript, new erpnext.stock.PurchaseReceiptController({ frm: cur_frm }));
 

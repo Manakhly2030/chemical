@@ -11,6 +11,14 @@ this.frm.cscript.onload = function(frm) {
 	});
 }
 
+cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
+	return {
+		filters: {
+			"company": doc.company
+		}
+	}
+};
+
 frappe.ui.form.on("Purchase Order", {
     validate: function(frm) {
         frm.doc.items.forEach(function (d) {
