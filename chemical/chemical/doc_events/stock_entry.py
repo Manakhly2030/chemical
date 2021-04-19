@@ -293,39 +293,47 @@ def update_po(self):
 					actual_total_qty += row.quantity
 					valuation_rate += flt(row.qty)*flt(row.valuation_rate)
 					lot.append(row.lot_no)
-					if bom_doc.multiple_finish_item:
-						for bom_fi in bom_doc.multiple_finish_item:
-							po.append("finish_item",{
-								'item_code': row.item_code,
-								'actual_qty': row.qty,
-								'actual_valuation': row.valuation_rate,
-								'lot_no': row.lot_no,
-								'purity': row.concentration,
-								'packing_size': row.packing_size,
-								'no_of_packages': row.no_of_packages,
-								'batch_yield': row.batch_yield,
-								'batch_no': row.batch_no,
-								"bom_cost_ratio":bom_fi.cost_ratio,
-								"bom_qty_ratio":bom_fi.qty_ratio,
-								"bom_qty":po.qty * bom_fi.qty_ratio / 100,
-								"bom_yield":bom_fi.batch_yield
-							})
-					else:
-						po.append("finish_item",{
-							'item_code': row.item_code,
-							'actual_qty': row.qty,
-							'actual_valuation': row.valuation_rate,
-							'lot_no': row.lot_no,
-							'purity': row.concentration,
-							'packing_size': row.packing_size,
-							'no_of_packages': row.no_of_packages,
-							'batch_yield': row.batch_yield,
-							'batch_no': row.batch_no,
-							"bom_cost_ratio":100,
-							"bom_qty_ratio":100,
-							"bom_qty": po.qty,
-							"bom_yield": bom_doc.batch_yield
-						})
+					for finish_items in po.finish_item:
+						if row.item_code == finish_items.item_code:
+							finish_items.db_set("actual_qty",row.qty)
+							finish_items.db_set("actual_valuation",row.valuation_rate)
+							finish_items.db_set("lot_no",row.lot_no)
+							finish_items.db_set("packing_size",row.packing_size)
+							finish_items.db_set("no_of_packages",row.no_of_packages)
+							finish_items.db_set("purity",row.concentration)
+							finish_items.db_set("batch_yield",row.batch_yield)
+							finish_items.db_set("batch_no",row.batch_no)
+							# po.append("finish_item",{
+							# 	'item_code': row.item_code,
+							# 	'actual_qty': row.qty,
+							# 	'actual_valuation': row.valuation_rate,
+							# 	'lot_no': row.lot_no,
+							# 	'purity': row.concentration,
+							# 	'packing_size': row.packing_size,
+							# 	'no_of_packages': row.no_of_packages,
+							# 	'batch_yield': row.batch_yield,
+							# 	'batch_no': row.batch_no,
+							# 	"bom_cost_ratio":bom_fi.cost_ratio,
+							# 	"bom_qty_ratio":bom_fi.qty_ratio,
+							# 	"bom_qty":po.qty * bom_fi.qty_ratio / 100,
+							# 	"bom_yield":bom_fi.batch_yield
+							# })
+					# else:
+						# po.append("finish_item",{
+						# 	'item_code': row.item_code,
+						# 	'actual_qty': row.qty,
+						# 	'actual_valuation': row.valuation_rate,
+						# 	'lot_no': row.lot_no,
+						# 	'purity': row.concentration,
+						# 	'packing_size': row.packing_size,
+						# 	'no_of_packages': row.no_of_packages,
+						# 	'batch_yield': row.batch_yield,
+						# 	'batch_no': row.batch_no,
+						# 	"bom_cost_ratio":100,
+						# 	"bom_qty_ratio":100,
+						# 	"bom_qty": po.qty,
+						# 	"bom_yield": bom_doc.batch_yield
+						# })
 					# for finish_items in po.finish_item:
 					# 	if row.item_code == finish_items.item_code:
 					# 		finish_items.db_set("item_code",row.item_code)

@@ -846,7 +846,7 @@ frappe.ui.form.on("Stock Entry Detail", {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     quantity: function(frm,cdt,cdn){
-        frm.events.cal_rate_qty(frm, cdt, cdn)
+        // frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     price: function(frm,cdt,cdn){
 		frm.events.cal_rate_qty(frm, cdt, cdn)
