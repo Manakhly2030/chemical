@@ -840,13 +840,13 @@ frappe.ui.form.on("Stock Entry Detail", {
             frm.events.set_basic_rate(frm, cdt, cdn);
         });
 
-        if (!d.s_warehouse && d.t_warehouse && d.bom_no == frm.doc.bom_no) {
-            frm.set_value('fg_completed_qty', d.qty);
-        }
+        // if (!d.s_warehouse && d.t_warehouse && d.bom_no == frm.doc.bom_no) {
+        //     frm.set_value('fg_completed_qty', d.qty);
+        // }
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     quantity: function(frm,cdt,cdn){
-        // frm.events.cal_rate_qty(frm, cdt, cdn)
+        frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     price: function(frm,cdt,cdn){
 		frm.events.cal_rate_qty(frm, cdt, cdn)
