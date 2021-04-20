@@ -22,6 +22,14 @@ erpnext.stock.DeliveryNoteController = erpnext.stock.DeliveryNoteController.exte
     },
 })
 
+cur_frm.fields_dict.taxes_and_charges.get_query = function (doc) {
+	return {
+		filters: {
+			"company": doc.company,
+		}
+	}
+};
+
 $.extend(cur_frm.cscript, new erpnext.stock.DeliveryNoteController({ frm: cur_frm }));
 
 // Add searchfield to Item query
@@ -52,6 +60,7 @@ this.frm.cscript.onload = function (frm) {
         }
     });
 }
+
 frappe.ui.form.on("Delivery Note", {
     before_save: function (frm) {
 

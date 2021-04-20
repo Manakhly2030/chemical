@@ -52,9 +52,6 @@ frappe.ui.form.on("Sales Order", {
         let d = locals[cdt][cdn];
 		frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
 			if(r.maintain_as_is_stock){
-                if (!d.concentration) {
-                    frappe.throw("Please add concentration for Item " + d.item_code)
-                }
                 if (d.quantity){
                     frappe.model.set_value(d.doctype, d.name, 'qty', flt((d.quantity * 100.0) / d.concentration));
                 }
@@ -97,6 +94,14 @@ cur_frm.fields_dict.items.grid.get_field("outward_sample").get_query = function(
             "product_name": d.item_code,
             "party":doc.customer,
             
+		}
+	}
+};
+// filter
+cur_frm.fields_dict.taxes_and_charges.get_query = function (doc) {
+	return {
+		filters: {
+			"company": doc.company,
 		}
 	}
 };

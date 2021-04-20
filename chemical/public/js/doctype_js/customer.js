@@ -23,6 +23,7 @@ frappe.ui.form.on("Customer", {
 		}
 	},
 	// before_save: function(frm){
+	// 	console.log('call')
 	// 	if((frm.doc.accounts == undefined || frm.doc.accounts.length == 0) && frm.doc.default_currency != undefined){
     //         if (frm.doc.default_currency == 'USD') {
 				

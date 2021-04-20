@@ -38,6 +38,11 @@ StockEntry.get_items = get_items
 # import erpnext
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
 
+#quality inspection override for sample
+from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection
+from chemical.chemical.doc_events.quality_inspection import update_qc_reference
+QualityInspection.update_qc_reference = update_qc_reference
+
 app_name = "chemical"
 app_title = "Chemical"
 app_publisher = "FinByz Tech Pvt. Ltd."
@@ -99,6 +104,7 @@ doctype_js = {
 	"Item": "public/js/doctype_js/item.js",
 	"Batch": "public/js/doctype_js/batch.js",
 	"Quotation":"public/js/doctype_js/quotation.js",
+	"Quality Inspection":"public/js/doctype_js/quality_inspection.js",
 }
 
 # Home Pages

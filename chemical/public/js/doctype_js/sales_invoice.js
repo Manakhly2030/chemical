@@ -11,7 +11,29 @@
 		}
 	}
 }; */
-
+cur_frm.fields_dict.set_warehouse.get_query = function (doc) {
+	return {
+		filters: {
+			"company": doc.company,
+            "is_group":0,
+		}
+	}
+};
+cur_frm.fields_dict.items.grid.get_field("warehouse").get_query = function (doc) {
+	return {
+		filters: {
+			"company": doc.company,
+            "is_group":0,
+		}
+	}
+};
+cur_frm.fields_dict.taxes_and_charges.get_query = function (doc) {
+	return {
+		filters: {
+			"company": doc.company,
+		}
+	}
+};
 /* Overide Stock Ledger View Button */
 erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceController.extend({
     show_stock_ledger: function () {
@@ -327,15 +349,18 @@ frappe.ui.form.on("Sales Invoice", {
 frappe.ui.form.on("Sales Invoice Item", {
     item_code: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
-        setTimeout(function () {
-            frappe.db.get_value("Batch", d.batch_no, ['packaging_material', 'packing_size', 'lot_no', 'batch_yield', 'concentration'], function (r) {
-                frappe.model.set_value(cdt, cdn, 'packaging_material', r.packaging_material);
-                frappe.model.set_value(cdt, cdn, 'packing_size', r.packing_size);
-                frappe.model.set_value(cdt, cdn, 'lot_no', r.lot_no);
-                frappe.model.set_value(cdt, cdn, 'batch_yield', r.batch_yield);
-                frappe.model.set_value(cdt, cdn, 'concentration', r.concentration);
-            })
-        }, 1000)
+        if(d.batch_no){
+
+            setTimeout(function () {
+                frappe.db.get_value("Batch", d.batch_no, ['packaging_material', 'packing_size', 'lot_no', 'batch_yield', 'concentration'], function (r) {
+                    frappe.model.set_value(cdt, cdn, 'packaging_material', r.packaging_material);
+                    frappe.model.set_value(cdt, cdn, 'packing_size', r.packing_size);
+                    frappe.model.set_value(cdt, cdn, 'lot_no', r.lot_no);
+                    frappe.model.set_value(cdt, cdn, 'batch_yield', r.batch_yield);
+                    frappe.model.set_value(cdt, cdn, 'concentration', r.concentration);
+                })
+            }, 1000)
+        }
     },
     // price:function(frm,cdt,cdn){
     //     frm.events.cal_rate_qty(frm,cdt,cdn)
@@ -346,9 +371,9 @@ frappe.ui.form.on("Sales Invoice Item", {
     // packing_size: function (frm, cdt, cdn) {
     //     frm.events.cal_rate_qty(frm, cdt, cdn)
     // },
-    // no_of_packages: function (frm, cdt, cdn) {
-    //     frm.events.cal_rate_qty(frm, cdt, cdn)
-    // },
+    no_of_packages: function (frm, cdt, cdn) {
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
 
     batch_no: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];

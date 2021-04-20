@@ -15,6 +15,22 @@ erpnext.stock.PurchaseReceiptController = erpnext.stock.PurchaseReceiptControlle
 
     },
 })
+cur_frm.fields_dict.set_warehouse.get_query = function(doc) {
+	return {
+		filters: {
+			"company": doc.company,
+           
+		}
+	}
+};
+cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
+	return {
+		filters: {
+			"company": doc.company,
+           
+		}
+	}
+};
 
 $.extend(cur_frm.cscript, new erpnext.stock.PurchaseReceiptController({ frm: cur_frm }));
 
@@ -420,9 +436,9 @@ frappe.ui.form.on("Purchase Receipt Item", {
     received_concentration: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
-    // concentration: function (frm, cdt, cdn) {
-    //     frm.events.cal_rate_qty(frm, cdt, cdn)
-    // },
+    concentration: function (frm, cdt, cdn) {
+        frm.events.cal_rate_qty(frm, cdt, cdn)
+    },
     packing_size: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },

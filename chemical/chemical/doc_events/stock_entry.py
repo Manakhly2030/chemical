@@ -283,7 +283,8 @@ def update_po(self):
 			po.finish_item = []
 			if po.bom_no:
 				bom_doc = frappe.get_doc("BOM",po.bom_no)
-			# po.append("finish_item",finished_item_list)							
+			# po.append("finish_item",finished_item_list)
+			finish_items_length= [item.idx for item in self.items if item.t_warehouse]		
 			for row in self.items:
 				if row.t_warehouse:
 					count += 1
@@ -326,18 +327,6 @@ def update_po(self):
 							"bom_qty": po.qty,
 							"bom_yield": bom_doc.batch_yield
 						})
-					# for finish_items in po.finish_item:
-					# 	if row.item_code == finish_items.item_code:
-					# 		finish_items.db_set("item_code",row.item_code)
-					# 		finish_items.db_set("actual_qty",row.qty)
-					# 		finish_items.db_set("actual_valuation",row.actual_valuation_rate)
-					# 		finish_items.db_set("lot_no",row.lot_no)
-					# 		finish_items.db_set("packing_size",row.packing_size)
-					# 		finish_items.db_set("no_of_packages",row.no_of_packages)
-					# 		finish_items.db_set("purity",row.concentration)
-					# 		finish_items.db_set("batch_yield",row.batch_yield)
-					# 		finish_items.db_set("batch_no",row.batch_no)
-					# 		actual_valuation += (flt(row.qty) * row.actual_valuation_rate)
 			
 			for child in po.finish_item:
 				child.db_update()
@@ -411,6 +400,7 @@ def cal_rate_for_finished_item(self):
 
 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
 	work_order = frappe.get_doc("Work Order",self.work_order)
+	bom_doc = frappe.get_doc("BOM",self.bom_no)
 	is_multiple_finish = 0
 	for d in self.items:
 		if d.t_warehouse:
@@ -438,17 +428,21 @@ def cal_rate_for_finished_item(self):
 				item_map[d.item_code]['qty'] += flt(d.qty)
 				item_map[d.item_code]['yield_weights'] += flt(d.batch_yield)*flt(d.quantity)
 
-				
+				bom_cost_list = []
+				if bom_doc.is_multiple_item:
+					for bom_fi in bom_doc.multiple_finish_item:
+						bom_cost_list.append({"item_code":bom_fi.item_code,"cost_ratio":bom_fi.cost_ratio})
+				else:
+					bom_cost_list.append({"item_code":bom_doc.item,"cost_ratio":100})
 				if d.t_warehouse:
-					for finish_items in work_order.finish_item:
-						if d.item_code == finish_items.item_code:
-							d.db_set('basic_amount',flt(flt(self.total_outgoing_value*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
-							d.db_set('additional_cost',flt(flt(self.total_additional_costs*finish_items.bom_cost_ratio*d.quantity)/flt(100*result[d.item_code])))
+					for bom_cost_dict in bom_cost_list:
+						if d.item_code == bom_cost_dict["item_code"]:
+							d.db_set('basic_amount',flt(flt(self.total_outgoing_value*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code])))
+							d.db_set('additional_cost',flt(flt(self.total_additional_costs*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code])))
 							d.db_set('amount',flt(d.basic_amount + d.additional_cost))
 							d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
 							d.db_set('valuation_rate',flt(d.amount/ d.qty))
-							print(result[d.item_code])
-							print(finish_items.bom_cost_ratio)
+
 							item_yield = 0.0
 							if item_map[self.based_on]['yield_weights'] > 0:
 								item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
@@ -460,7 +454,7 @@ def cal_rate_for_finished_item(self):
 								# else:
 								d.batch_yield = flt((d.qty * d.concentration) / (100*flt(item_map[self.based_on]['quantity']*flt(based_on_qty_ratio)/100)))
 
-						total_incoming_amount += flt(d.amount)
+					# total_incoming_amount += flt(d.amount)
 
 			d.db_update()
 

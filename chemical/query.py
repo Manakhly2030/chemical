@@ -282,3 +282,33 @@ def get_outward_sample_batch_no(doctype, txt, searchfield, start, page_len, filt
 			`tabBatch`
 	WHERE
 			item = '{0}' """.format(filters.get("item_name")))
+
+@frappe.whitelist()
+def item_query(doctype, txt, searchfield, start, page_len, filters):
+	if filters.get("from"):
+		from frappe.desk.reportview import get_match_cond
+		mcond = get_match_cond(filters["from"])
+		cond, qi_condition = "", "and (quality_inspection is null or quality_inspection = '')"
+		qi_condition = ""
+		
+		if filters.get('from') in ['Purchase Invoice Item', 'Purchase Receipt Item']\
+				and filters.get("inspection_type") != "In Process":
+			cond = """and item_code in (select name from `tabItem` where
+				inspection_required_before_purchase = 1)"""
+		elif filters.get('from') in ['Sales Invoice Item', 'Delivery Note Item']\
+				and filters.get("inspection_type") != "In Process":
+			cond = """and item_code in (select name from `tabItem` where
+				inspection_required_before_delivery = 1)"""
+		elif filters.get('from') == 'Stock Entry Detail':
+			cond = """and s_warehouse is null"""
+
+		if filters.get('from') in ['Supplier Quotation Item']:
+			qi_condition = ""
+
+		return frappe.db.sql(""" select item_code from `tab{doc}`
+			where docstatus < 2 and item_code like %(txt)s
+			{qi_condition} {cond} {mcond}
+			order by item_code limit {start}, {page_len}""".format(doc=filters.get('from'),
+			cond = cond, mcond = mcond, start = start,
+			page_len = page_len, qi_condition = qi_condition),
+			{'txt': "%%%s%%" % txt})
