@@ -8,6 +8,13 @@ this.frm.cscript.onload = function(frm) {
 		}
 	});
 }
+cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
+	return {
+		filters: {
+			"company": doc.company
+		}
+	}
+};
 
 erpnext.accounts.PurchaseInvoice = erpnext.accounts.PurchaseInvoice.extend({
 	show_stock_ledger: function () {
