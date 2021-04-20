@@ -250,6 +250,9 @@ doc_events = {
 			"chemical.chemical.doc_events.stock_entry.on_cancel",
 			"chemical.batch_valuation.stock_entry_on_cancel",
 		],
+		"on_update_after_submit": [
+			"chemical.chemical.doc_events.stock_entry.on_update_after_submit",
+		]
 	},
 	"Batch": {
 		'before_naming': "chemical.batch_valuation.override_batch_autoname",
