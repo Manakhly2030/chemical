@@ -169,7 +169,7 @@ class BallMillDataSheet(Document):
 		for d in self.packaging:	
 			se.append('items',{
 				'item_code': self.product_name,
-				't_warehouse': self.warehouse,
+				't_warehouse': d.warehouse or self.warehouse,
 				'qty': d.qty,
 				'quantity':d.quantity,
 				'packaging_material': d.packaging_material,

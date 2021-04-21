@@ -287,6 +287,12 @@ frappe.ui.form.on('Ball Mill Data Sheet', {
 			d.concentration = frm.doc.concentration;
 		});
 		refresh_field("packaging");
+	},
+	warehouse: function(frm){
+		$.each(frm.doc.packaging || [], function(i, d) {
+			d.warehouse = frm.doc.warehouse;
+		});
+		refresh_field("packaging");
 	}
 });
 
@@ -335,6 +341,7 @@ frappe.ui.form.on('Ball Mill Packaging', {
 	packaging_add: function(frm, cdt, cdn) {
 		var row = locals[cdt][cdn];
 		row.concentration = frm.doc.concentration;
+		row.warehouse =  frm.doc.warehouse
 		refresh_field("packaging");
 	},
 });
