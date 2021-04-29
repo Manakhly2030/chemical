@@ -1,11 +1,4 @@
 frappe.ui.form.on("Quotation", {
-    onload: function(frm){
-        frm.doc.items.forEach(function (d){
-            var item = d.item_code
-            frappe.model.set_value(d.doctype,d.name,"item_code","")
-            frappe.model.set_value(d.doctype,d.name,"item_code",item)
-        })
-    },
     get_approved: function(frm){
         if(frm.doc.quotation_to=="Customer" && frm.doc.party_name){
             frappe.call({
