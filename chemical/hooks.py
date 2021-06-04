@@ -234,7 +234,6 @@ doc_events = {
 			"chemical.batch_valuation.stock_entry_validate",
 			"chemical.chemical.doc_events.stock_entry.validate",
 		],
-		"before_insert": "finbyzerp.api.before_insert",
 		"before_save": [
 			 "chemical.chemical.doc_events.stock_entry.stock_entry_before_save",
 		],
@@ -273,7 +272,6 @@ doc_events = {
 	},
 	"Purchase Invoice": {
 		"onload":"chemical.chemical.doc_events.purchase_invoice.onload",
-		"before_insert": "finbyzerp.api.before_insert",
 		"before_validate": "chemical.chemical.doc_events.purchase_invoice.before_validate",
 		"validate": [
 			"chemical.batch_valuation.pi_validate",
@@ -312,7 +310,6 @@ doc_events = {
 	},
 	"Sales Invoice": {
 		"onload":"chemical.chemical.doc_events.sales_invoice.onload",
-		"before_insert": "finbyzerp.api.before_insert",
 		"before_submit": [
 			"chemical.chemical.doc_events.sales_invoice.si_before_submit",
 			"chemical.chemical.doc_events.sales_invoice.before_submit",
@@ -331,9 +328,6 @@ doc_events = {
 		"on_cancel": "chemical.api.so_on_cancel",
 		"validate": "chemical.chemical.doc_events.sales_order.validate"
 	},
-	"Journal Entry": {
-		"before_insert": "finbyzerp.api.before_insert"
-	}
 }
 
 scheduler_events = {
