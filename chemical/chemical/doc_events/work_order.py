@@ -47,24 +47,23 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	stock_entry.set_stock_entry_type()
 	get_items(stock_entry)
 	if purpose=='Manufacture':
-		if work_order.is_multiple_item:
-			for finish_items in work_order.finish_item:
+		if work_order.is_multiple_item and work_order.bom_no:
+			bom_multi_doc = frappe.get_doc("BOM",work_order.bom_no)
+			for finish_items in bom_multi_doc.multiple_finish_item:
 				if stock_entry.items[-1].item_code == finish_items.item_code:
 					if stock_entry.items[-1].transfer_qty == work_order.qty:
 						stock_entry.items.remove(stock_entry.items[-1]) 					
-				bom = frappe.db.sql(''' select name from tabBOM where item = %s ''',finish_items.item_code)
-				if bom:
-					bom = bom[0][0]
-					stock_entry.append("items",{
-						'item_code': finish_items.item_code,
-						't_warehouse': work_order.fg_warehouse,
-						'qty': finish_items.bom_qty,
-						'uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
-						'stock_uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
-						'conversion_factor': 1 ,
-						'batch_yield':finish_items.bom_yield,
-						'bom_no': bom
-					})
+
+				stock_entry.append("items",{
+					'item_code': finish_items.item_code,
+					't_warehouse': work_order.fg_warehouse,
+					'qty': work_order.qty * finish_items.qty_ratio / 100,
+					'uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
+					'stock_uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
+					'conversion_factor': 1 ,
+					'batch_yield':finish_items.batch_yield,
+					'bom_no':work_order.bom_no
+				})
 		# if hasattr(work_order, 'second_item'):
 		# 	if work_order.second_item:
 		# 		bom = frappe.db.sql(''' select name from tabBOM where item = %s ''',work_order.second_item)

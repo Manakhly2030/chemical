@@ -150,17 +150,21 @@ def sum_total_additional_costs(self):
 def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, raise_error_if_no_rate=True):
 	if self.purpose in ['Manufacture','Repack']:
 		is_multiple_finish  = 0
+		multi_item_list = []
 		for d in self.items:
 			if d.t_warehouse and d.qty != 0:
 				is_multiple_finish +=1
+				multi_item_list.append(d.item_code)
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			bom_doc = frappe.get_doc("BOM",self.bom_no)
 			if hasattr(bom_doc,'equal_cost_ratio'):
 				if not bom_doc.equal_cost_ratio:
 					cal_rate_for_finished_item(self)
-				else:
+				elif len(list(set(multi_item_list))) == 1 and bom_doc.equal_cost_ratio:
 					calculate_multiple_repack_valuation(self)
+				else:
+					cal_rate_for_finished_item(self)
 			else:
 				cal_rate_for_finished_item(self)
 
