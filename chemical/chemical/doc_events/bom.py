@@ -3,7 +3,7 @@ from frappe import msgprint, _
 from frappe.utils import flt
 from frappe.utils.background_jobs import enqueue
 from erpnext.stock.get_item_details import get_price_list_rate
-#from erpnext.manufacturing.doctype.bom import BOM
+from erpnext.manufacturing.doctype.bom.bom import get_valuation_rate
 
 def bom_validate(self, method):
 	item_list = [item.item_code for item in self.items]
@@ -351,14 +351,14 @@ def get_rm_rate(self, arg):
 	last_purchase_rate = 0
 
 	if arg.get('scrap_items'):
-		valuation_rate = self.get_valuation_rate(arg)
+		valuation_rate = get_valuation_rate(arg)
 	elif arg:
 		#Customer Provided parts will have zero rate
 		if not frappe.db.get_value('Item', arg["item_code"], 'is_customer_provided_item'):
 			if arg.get('bom_no') and self.set_rate_of_sub_assembly_item_based_on_bom:
 				rate = flt(self.get_bom_unitcost(arg['bom_no'])) * (arg.get("conversion_factor") or 1)
 			else:
-				valuation_rate = self.get_valuation_rate(arg) * (arg.get("conversion_factor") or 1)
+				valuation_rate = get_valuation_rate(arg) * (arg.get("conversion_factor") or 1)
 				
 				last_purchase_rate = flt(arg.get('last_purchase_rate') \
 					or frappe.db.get_value("Item", arg['item_code'], "last_purchase_rate")) \

@@ -5,9 +5,11 @@ from erpnext.stock.doctype.purchase_receipt.purchase_receipt import PurchaseRece
 import re
 
 def onload(self,method):
-	quantity_price_to_qty_rate(self)
+	pass
+	# quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
+	quantity_price_to_qty_rate(self)
 	purchase_cal_rate_qty(self)
 
 def before_save(self,method):

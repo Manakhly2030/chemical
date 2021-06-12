@@ -147,7 +147,7 @@ def	update_additional_cost_scrap(self):
 def sum_total_additional_costs(self):
 	self.total_additional_costs = sum(m.amount for m in self.additional_costs)
 
-def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, raise_error_if_no_rate=True):
+def calculate_rate_and_amount(self,reset_outgoing_rate=True, raise_error_if_no_rate=True):
 	if self.purpose in ['Manufacture','Repack']:
 		is_multiple_finish  = 0
 		multi_item_list = []
@@ -156,7 +156,7 @@ def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, r
 				is_multiple_finish +=1
 				multi_item_list.append(d.item_code)
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
-			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
+			self.set_basic_rate(reset_outgoing_rate=False, raise_error_if_no_rate=True)
 			bom_doc = frappe.get_doc("BOM",self.bom_no)
 			if hasattr(bom_doc,'equal_cost_ratio'):
 				if not bom_doc.equal_cost_ratio:
@@ -169,15 +169,15 @@ def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, r
 				cal_rate_for_finished_item(self)
 
 		elif is_multiple_finish > 1 and self.purpose == "Repack":
-			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
+			self.set_basic_rate(reset_outgoing_rate=False, raise_error_if_no_rate=True)
 			calculate_multiple_repack_valuation(self)
 		
 		else:
-			self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
+			self.set_basic_rate(reset_outgoing_rate=True, raise_error_if_no_rate=True)
 			self.distribute_additional_costs()
 
 	else:
-		self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
+		self.set_basic_rate(reset_outgoing_rate=True, raise_error_if_no_rate=True)
 		self.distribute_additional_costs()
 
 	self.update_valuation_rate()

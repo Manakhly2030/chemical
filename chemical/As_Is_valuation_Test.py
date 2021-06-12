@@ -195,8 +195,8 @@ first_pr.append("items",{
     "cost_center":cost_center,
     "price":500.00,
     "rate":500.00,
-    "received_qty": math.ceil(flt(25*20*(0.85*100/100))),
-    "qty": math.ceil(flt(25*20*(0.85*100/100))),
+    "received_qty": math.ceil(flt(25*20)),
+    "qty": math.ceil(flt(25*20)),
     "quantity": math.ceil(flt(25*20*(0.85*100/100))),
     #"manufacturer":"gg",
     #"manufacturer_part_no":"gg"
@@ -214,8 +214,8 @@ first_pr.append("items",{
     "cost_center":cost_center,
     "price":250.00,
     "rate":250.00,
-    "received_qty": math.ceil(flt(25*24*(0.95*100/100))),
-    "qty": math.ceil(flt(25*24*(0.95*100/100))),
+    "received_qty": math.ceil(flt(25*24)),
+    "qty": math.ceil(flt(25*24)),
     "quantity": math.ceil(flt(25*24*(0.95*100/100))),
     #"manufacturer":"gg",
     #"manufacturer_part_no":"gg"
@@ -233,8 +233,8 @@ first_pr.append("items",{
     "cost_center":cost_center,
     "price":80,
     "rate":80,
-    "received_qty": math.ceil(flt(25*28*(0.90*100/100))),
-    "qty": math.ceil(flt(25*28*(0.90*100/100))),
+    "received_qty": math.ceil(flt(25*28)),
+    "qty": math.ceil(flt(25*28)),
     "quantity": math.ceil(flt(25*28*(0.90*100/100))),
     #"manufacturer":"gg",
     #"manufacturer_part_no":"gg"
@@ -288,8 +288,8 @@ second_pr.append("items",{
         "cost_center":cost_center,
         "rate":530,
         "price": 530,
-        "received_qty": math.ceil(flt(25*28*(0.95*100/100))),
-        "qty": math.ceil(flt(25*28*(0.95*100/100))),
+        "received_qty": math.ceil(flt(25*28)),
+        "qty": math.ceil(flt(25*28)),
         "quantity": math.ceil(flt(25*28*(0.95*100/100))),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
@@ -307,8 +307,8 @@ second_pr.append("items",{
         "cost_center":cost_center,
         "rate":240,
         "price": 240,
-        "received_qty": math.ceil(flt(25*30*(0.90*100/100))),
-        "qty": math.ceil(flt(25*30*(0.90*100/100))),
+        "received_qty": math.ceil(flt(25*30)),
+        "qty": math.ceil(flt(25*30)),
         "quantity": math.ceil(flt(25*30*(0.90*100/100))),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
@@ -326,8 +326,8 @@ second_pr.append("items",{
         "cost_center":cost_center,
         "rate":78,
         "price": 78,
-        "received_qty": math.ceil(flt(25*32*(0.85*100/100))),
-        "qty": math.ceil(flt(25*32*(0.85*100/100))),
+        "received_qty": math.ceil(flt(25*32)),
+        "qty": math.ceil(flt(25*32)),
         "quantity": math.ceil(flt(25*32*(0.85*100/100))),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
@@ -383,8 +383,8 @@ third_pr.append("items",{
         "cost_center":cost_center,
         "price": 510.00,
         "rate":510.00,
-        "received_qty": math.ceil(flt(25*36*(0.95*100/100))),
-        "qty": math.ceil(flt(25*36*(0.95*100/100))),
+        "received_qty": math.ceil(flt(25*36)),
+        "qty": math.ceil(flt(25*36)),
         "quantity": math.ceil(flt(25*36*(0.95*100/100))),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
@@ -402,8 +402,8 @@ third_pr.append("items",{
         "cost_center":cost_center,
         "rate":275,
         "price": 275,
-        "received_qty": math.ceil(flt(25*40*(0.85*100/100))),
-        "qty": math.ceil(flt(25*40*(0.85*100/100))),
+        "received_qty": math.ceil(flt(25*40)),
+        "qty": math.ceil(flt(25*40)),
         "quantity": math.ceil(flt(25*40*(0.85*100/100))),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
@@ -421,8 +421,8 @@ third_pr.append("items",{
         "cost_center":cost_center,
         "rate":88,
         "price": 88,
-        "received_qty": math.ceil(flt(25*44*(0.95*100/100))),
-        "qty": math.ceil(flt(25*44*(0.95*100/100))),
+        "received_qty": math.ceil(flt(25*44)),
+        "qty": math.ceil(flt(25*44)),
         "quantity": math.ceil(flt(25*44*(0.95*100/100))),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
@@ -1001,30 +1001,30 @@ d.strftime("%d-%m-%Y %H:%M:%S")
 work_order_create.planned_start_date = d
 work_order_store_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
 
-work_order_create.append("finish_item",{
-    "item_code": "FINISH_TEST_ITEM",
-    "bom_cost_ratio": 60,
-    "bom_qty_ratio" : 50,
-    "bom_qty": 100,
-    "bom_yield": 5,
-    "source_warehouse" : work_order_store_warehouse
-})
-work_order_create.append("finish_item",{
-    "item_code": "SECOND_FINISH_TEST_ITEM",
-    "bom_cost_ratio": 20,
-    "bom_qty_ratio":25,
-    "bom_qty": 50,
-    "bom_yield": 2.5,
-    "source_warehouse" : work_order_store_warehouse
-})
-work_order_create.append("finish_item",{
-    "item_code": "AsIs_Finish_item",
-    "bom_cost_ratio": 20,
-    "bom_qty_ratio":25,
-    "bom_qty": 50,
-    "bom_yield": 2.5,
-    "source_warehouse" : work_order_store_warehouse
-})
+# work_order_create.append("finish_item",{
+#     "item_code": "FINISH_TEST_ITEM",
+#     "bom_cost_ratio": 60,
+#     "bom_qty_ratio" : 50,
+#     "bom_qty": 100,
+#     "bom_yield": 5,
+#     "source_warehouse" : work_order_store_warehouse
+# })
+# work_order_create.append("finish_item",{
+#     "item_code": "SECOND_FINISH_TEST_ITEM",
+#     "bom_cost_ratio": 20,
+#     "bom_qty_ratio":25,
+#     "bom_qty": 50,
+#     "bom_yield": 2.5,
+#     "source_warehouse" : work_order_store_warehouse
+# })
+# work_order_create.append("finish_item",{
+#     "item_code": "AsIs_Finish_item",
+#     "bom_cost_ratio": 20,
+#     "bom_qty_ratio":25,
+#     "bom_qty": 50,
+#     "bom_yield": 2.5,
+#     "source_warehouse" : work_order_store_warehouse
+# })
 
 work_order_create.save()
 work_name = work_order_create.name
@@ -1116,52 +1116,59 @@ stock_entry_ma.naming_series = "Test-MA-.###"
 stock_entry_ma.set_posting_time = 1
 stock_entry_ma.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), 0)
 stock_entry_ma.based_on = "TEST_ITEM_1"
+stock_entry_ma.fg_completed_quantity = 200
+stock_entry_ma.fg_completed_qty = 205.556
 stock_entry_ma.from_warehouse = warehouse
-target_warehouse =  frappe.db.get_value("Warehouse",{'company': company, 'warehouse_name': 'Finished Goods'},"name") #it will Fetch the warehouse of the given Company
+target_warehouse =  frappe.db.get_value("Warehouse",{'company': company, 'warehouse_name': 'Finished Products'},"name") #it will Fetch the warehouse of the given Company
 stock_entry_ma.to_warehouse = target_warehouse
 # stock_entry_ma.items[3].concentration = 85
 for item in stock_entry_ma.items:
     if item.item_code == "TEST_ITEM_1":
         # stock_entry_ma.items[item.idx-1].batch_no = first_pr_batch_no
-        stock_entry_ma.items[item.idx-1].quantity = 40
-        stock_entry_ma.items[item.idx-1].qty = 40
+        item.quantity = 40
+        item.qty = 40
     elif item.item_code == "TEST_ITEM_2":
-        # stock_entry_ma.items[item.idx-1].batch_no = second_pr_batch_no
-        stock_entry_ma.items[item.idx-1].quantity = 40
-        stock_entry_ma.items[item.idx-1].qty = 40
+        # item.batch_no = second_pr_batch_no
+        item.quantity = 40
+        item.qty = 40
     elif item.item_code == "TEST_ITEM_3":
-        # stock_entry_ma.items[item.idx-1].batch_no = third_pr_batch_no
-        stock_entry_ma.items[item.idx-1].quantity = 40
-        stock_entry_ma.items[item.idx-1].qty = 40
+        # item.batch_no = third_pr_batch_no
+        item.quantity = 40
+        item.qty = 40
     elif item.item_code == "TEST_ITEM_4":
-        # stock_entry_ma.items[item.idx-1].batch_no = fourth_pr_batch_no
-        stock_entry_ma.items[item.idx-1].quantity = 40
-        stock_entry_ma.items[item.idx-1].qty = 44.444
+        # item.batch_no = fourth_pr_batch_no
+        item.quantity = 40
+        item.qty = 44.444
     elif item.item_code == "FINISH_TEST_ITEM":
-        stock_entry_ma.items[item.idx-1].concentration = 100
-        stock_entry_ma.items[item.idx-1].packing_size = 25
-        stock_entry_ma.items[item.idx-1].no_of_packages = 0
-        stock_entry_ma.items[item.idx-1].lot_no = "Test/Finish"
-        stock_entry_ma.items[item.idx-1].packaging_material = packaging_material
-        stock_entry_ma.items[item.idx-1].quantity = 100
-        stock_entry_ma.items[item.idx-1].qty = 100
+        item.concentration = 100
+        item.packing_size = 25
+        item.no_of_packages = 0
+        item.lot_no = "Test/Finish"
+        item.packaging_material = packaging_material
+        item.quantity = 100
+        item.qty = 100
+        item.is_finished_item = 1
+        item.bom_no = bom_name
     elif item.item_code == "SECOND_FINISH_TEST_ITEM":
-        stock_entry_ma.items[item.idx-1].concentration = 100
-        stock_entry_ma.items[item.idx-1].packing_size = 25
-        stock_entry_ma.items[item.idx-1].no_of_packages = 0
-        stock_entry_ma.items[item.idx-1].lot_no = "Test/SecondFinish"
-        stock_entry_ma.items[item.idx-1].packaging_material = packaging_material
-        stock_entry_ma.items[item.idx-1].quantity = 50
-        stock_entry_ma.items[item.idx-1].qty = 50
+        item.concentration = 100
+        item.packing_size = 25
+        item.no_of_packages = 0
+        item.lot_no = "Test/SecondFinish"
+        item.packaging_material = packaging_material
+        item.quantity = 50
+        item.qty = 50
+        item.is_finished_item = 1
+        item.bom_no = "BOM-SECOND_FINISH_TEST_ITEM-001"
     elif item.item_code == "AsIs_Finish_item":
-        stock_entry_ma.items[item.idx-1].concentration = 90
-        stock_entry_ma.items[item.idx-1].packing_size = 25
-        stock_entry_ma.items[item.idx-1].no_of_packages = 0
-        stock_entry_ma.items[item.idx-1].lot_no = "Test/AsIs"
-        stock_entry_ma.items[item.idx-1].packaging_material = packaging_material
-        stock_entry_ma.items[item.idx-1].quantity = 50
-        stock_entry_ma.items[item.idx-1].qty = 55.556
-
+        item.concentration = 90
+        item.packing_size = 25
+        item.no_of_packages = 0
+        item.lot_no = "Test/AsIs"
+        item.packaging_material = packaging_material
+        item.quantity = 50
+        item.qty = 55.556
+        item.is_finished_item = 1
+        item.bom_no = "BOM-AsIs_Finish_item-001"
 # stock_entry_ma.append("items",{
 #    "s_warehouse": warehouse,
 #     "item_code": "TEST_ITEM_1",
@@ -1337,7 +1344,7 @@ asis_final_stock_ledger_ma_item = frappe.db.get_value("Stock Ledger Entry",{"vou
 # stock_entry_mi_name = stock_entry_mi.name
 # stock_entry_mi.submit()
 
-# # frappe.db.commit()
+# # 
 
 
 #Purchase Receipt (pr)
@@ -1689,80 +1696,80 @@ assert round(asis_final_ma_item_valuation_rate,2) == round(asis_final_ma_item_am
 # material_issue_delete = frappe.get_doc("Stock Entry",stock_entry_mi_name)
 # material_issue_delete.cancel()
 # material_issue_delete.delete()
-# frappe.db.commit()
+# 
 
 
 # sales_invoice_delete = frappe.get_doc("Sales Invoice",second_si_name)
 # sales_invoice_delete.cancel()
 # sales_invoice_delete.delete()
-# frappe.db.commit()
+# 
 
 
 # frappe.db.set_value("Batch",stock_entry_mr_2_batch_no,"reference_name","")
-# frappe.db.commit()
+# 
 
 # material_receipt_2_delete = frappe.get_doc("Stock Entry",stock_entry_mr_2_name)
 # material_receipt_2_delete.flags.ignore_links = True
 # material_receipt_2_delete.cancel()
 # material_receipt_2_delete.delete()
-# frappe.db.commit()
+# 
 
 # batch_material_receipt_2_delete = frappe.get_doc("Batch",stock_entry_mr_2_batch_no)
 # batch_material_receipt_2_delete.delete()
-# frappe.db.commit()
+# 
 
 frappe.db.set_value("Batch",final_item_batch_no,"reference_name","")
-frappe.db.commit()
+
 
 manufacture_delete = frappe.get_doc("Stock Entry",stock_entry_ma_name)
 manufacture_delete.flags.ignore_links = True
 manufacture_delete.cancel()
 manufacture_delete.delete()
-frappe.db.commit()
+
 
 batch_manufacture_delete = frappe.get_doc("Batch",final_item_batch_no)
 batch_manufacture_delete.delete()
-frappe.db.commit()
+
 
 # frappe.db.set_value("Batch",stock_entry_mr_1_batch_no,"reference_name","")
-# frappe.db.commit()
+# 
 
 # material_receipt_1_delete = frappe.get_doc("Stock Entry",stock_entry_mr_1_name)
 # material_receipt_1_delete.flags.ignore_links = True
 # material_receipt_1_delete.cancel()
 # material_receipt_1_delete.delete()
-# frappe.db.commit()
+# 
 
 # batch_material_receipt_1_delete = frappe.get_doc("Batch",stock_entry_mr_1_batch_no)
 # batch_material_receipt_1_delete.delete()
-# frappe.db.commit()
+# 
 
 material_transfer_delete = frappe.get_doc("Stock Entry",stock_entry_mtm_name)
 material_transfer_delete.flags.ignore_links = True
 material_transfer_delete.cancel()
 material_transfer_delete.delete()
-frappe.db.commit()
+
 
 work_order_delete = frappe.get_doc("Work Order",work_name)
 work_order_delete.flags.ignore_links = True
 work_order_delete.cancel()
 work_order_delete.delete()
-frappe.db.commit()
+
 
 bom_delete = frappe.get_doc("BOM",bom_name)
 bom_delete.cancel()
 bom_delete.delete()
-frappe.db.commit()
+
 
 bom2_delete = frappe.get_doc("BOM",bom2_name)
 bom2_delete.cancel()
 bom2_delete.delete()
-frappe.db.commit()
+
 
 bom3_delete = frappe.get_doc("BOM",bom3_name)
 bom3_delete.cancel()
 bom3_delete.delete()
-frappe.db.commit()
+
 
 fourth_pr = frappe.get_doc("Purchase Receipt",fourth_pr_name)
 third_pr = frappe.get_doc("Purchase Receipt",third_pr_name)
@@ -1784,7 +1791,7 @@ second_pr.delete()
 
 first_pr.cancel()
 first_pr.delete()
-frappe.db.commit()
+
 
 item_delete_1 = frappe.get_doc("Item","TEST_ITEM_1")
 if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"TEST_ITEM_1"},"name"):
@@ -1829,13 +1836,13 @@ if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"AsIs_F
 else:
     frappe.msgprint("test item finish doc is linked with purchase receipt or sales invoice or BIN")
 
-frappe.db.commit()
+
 
 supplier_delete = frappe.get_doc("Supplier","Test_Supplier_1")
 supplier_delete.delete()
 customer_delete = frappe.get_doc("Customer","Test_Customer_1")
 customer_delete.delete() 
-frappe.db.commit()
+
 
 
 
