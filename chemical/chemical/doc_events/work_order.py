@@ -53,7 +53,11 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 				if stock_entry.items[-1].item_code == finish_items.item_code:
 					if stock_entry.items[-1].transfer_qty == work_order.qty:
 						stock_entry.items.remove(stock_entry.items[-1]) 					
-
+				bom = frappe.db.sql(''' select name from tabBOM where item = %s and docstatus=1''',finish_items.item_code)
+				if bom:
+					bom = bom[0][0]
+				else:
+					bom = None
 				stock_entry.append("items",{
 					'item_code': finish_items.item_code,
 					't_warehouse': work_order.fg_warehouse,
@@ -62,7 +66,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 					'stock_uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
 					'conversion_factor': 1 ,
 					'batch_yield':finish_items.batch_yield,
-					'bom_no':work_order.bom_no
+					'bom_no':bom
 				})
 		# if hasattr(work_order, 'second_item'):
 		# 	if work_order.second_item:
