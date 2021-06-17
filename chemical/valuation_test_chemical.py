@@ -560,7 +560,7 @@ work_order_create.qty = 50
 work_order_create.based_on = "TEST_ITEM_1"
 company =  frappe.db.get_value("Company",{},"company_name")
 work_order_create.wip_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
-work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Semi Finished"},"name")
+work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Finished Goods"},"name")
 work_order_create.bom_no = bom_name
 work_order_create.volume = 500.00
 d = datetime.datetime.now() - timedelta(days=1,hours=10)
@@ -700,7 +700,7 @@ from datetime import date,timedelta,datetime
 import datetime
 
 company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Semi Finished"},"name") 
+warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Finished Goods"},"name") 
 cost_center = frappe.db.get_value("Company",company,"cost_center")
 
 second_si = frappe.new_doc("Sales Invoice")
