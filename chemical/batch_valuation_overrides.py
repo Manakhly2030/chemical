@@ -1,6 +1,6 @@
 import frappe, erpnext
 from frappe import msgprint, _
-from frappe.utils import nowdate, flt, cint, cstr,now_datetime
+from frappe.utils import nowdate, flt, cint, cstr,now_datetime,nowtime
 from erpnext.stock.stock_ledger import update_entries_after
 from erpnext.controllers.sales_and_purchase_return import get_return_against_item_fields,get_filters
 from erpnext.stock.utils import get_valuation_method
@@ -89,7 +89,6 @@ def process_sle(self, sle):
 	# Finbyz Changes
 	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
 	if sle.batch_no and batch_wise_cost:
-		print(sle.name)
 		get_batch_values(self,sle)
 		self.wh_data.qty_after_transaction += flt(sle.actual_qty)
 		# if sle.voucher_type == "Stock Reconciliation":

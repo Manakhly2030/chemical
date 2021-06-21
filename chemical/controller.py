@@ -6,10 +6,12 @@ from erpnext.utilities.product import get_price
 from frappe import _
 
 class Controller(Document):
-    def get_spare_price(self, item_code, price_list, customer_group="All Customer Groups", company=None):
-        price = get_spare_price(item_code, price_list, customer_group, company)
-        return price
+	@frappe.whitelist()
+	def get_spare_price(self, item_code, price_list, customer_group="All Customer Groups", company=None):
+		price = get_spare_price(item_code, price_list, customer_group, company)
+		return price
 
+@frappe.whitelist()
 def get_spare_price(item_code, price_list, customer_group="All Customer Groups", company=None):
 	price = get_price(item_code, price_list, customer_group, company)
 	

@@ -75,7 +75,7 @@ class OutwardSample(Controller):
 
 		total_amount = 0.0
 		for row in bm.items:
-			price = get_spare_price(row.item_name, "Standard Buying").price_list_rate
+			price = self.get_spare_price(row.item_name, "Standard Buying").price_list_rate
 
 			if row.batch_yield:
 				bomyield = frappe.db.get_value("BOM",{'item': row.item_name},"batch_yield")
