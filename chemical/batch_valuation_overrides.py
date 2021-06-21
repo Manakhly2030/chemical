@@ -64,7 +64,7 @@ def get_batch_rate(args):
 		conditions += " and company = '{company}' ".format(company=company)
 
 	data = frappe.db.sql("""SELECT incoming_rate FROM `tabStock Ledger Entry` 
-		WHERE actual_qty > 0 and docstatus = 1 {conditions}""".format(conditions=conditions))
+		WHERE actual_qty > 0 and docstatus = 1 {conditions} order by posting_date desc, posting_time desc, creation desc""".format(conditions=conditions))
 	
 	if data:
 		data = flt(data[0][0])
@@ -89,15 +89,14 @@ def process_sle(self, sle):
 	# Finbyz Changes
 	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
 	if sle.batch_no and batch_wise_cost:
-		self.get_batch_values(sle)
-		self.wh_data.qty_after_transaction += flt(sle.actual_qty)
 		print(sle.name)
-		if sle.voucher_type == "Stock Reconciliation":
-			self.wh_data.qty_after_transaction = sle.qty_after_transaction
+		get_batch_values(self,sle)
+		self.wh_data.qty_after_transaction += flt(sle.actual_qty)
+		# if sle.voucher_type == "Stock Reconciliation":
+		# 	self.wh_data.qty_after_transaction = sle.qty_after_transaction
 		self.wh_data.stock_value = flt(self.wh_data.qty_after_transaction) * flt(self.wh_data.valuation_rate)
 
 	elif sle.serial_no:
-		print(sle.voucher_no)
 		self.get_serialized_values(sle)
 		self.wh_data.qty_after_transaction += flt(sle.actual_qty)
 		if sle.voucher_type == "Stock Reconciliation":
@@ -167,10 +166,9 @@ def get_batch_values(self, sle):
 		# In case of delivery/stock issue, get average purchase rate
 		# of serial nos of current entry
 		stock_value_change = actual_qty * flt(frappe.db.sql("""SELECT incoming_rate FROM `tabStock Ledger Entry` 
-	WHERE actual_qty > 0 and docstatus = 1 {conditions}""".format(conditions=conditions))[0][0])
+	WHERE actual_qty > 0 and docstatus = 1 {conditions} order by posting_date desc, posting_time desc, creation desc""".format(conditions=conditions))[0][0])
 
 	new_stock_qty = self.wh_data.qty_after_transaction + actual_qty
-
 	if new_stock_qty > 0:
 		new_stock_value = (self.wh_data.qty_after_transaction * self.wh_data.valuation_rate) + stock_value_change
 		if new_stock_value >= 0:
