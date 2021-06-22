@@ -133,85 +133,90 @@ class BallMillDataSheet(Document):
 						d.qty = flt(d.quantity)
 	
 	def on_submit(self):
-		se = frappe.new_doc("Stock Entry")
-		se.purpose = "Repack"
-		se.company = self.company
-		se.stock_entry_type = "Repack"
-		se.set_posting_time = 1
-		se.posting_date = self.date
-		se.posting_time = self.posting_time
-		se.from_ball_mill = 1
-		cost_center = frappe.db.get_value("Company",self.company,"cost_center")
-		if hasattr(self,'send_to_party'):
-			se.send_to_party = self.send_to_party
-		if hasattr(self,'party_type'):
-			se.party_type = self.party_type
-		if hasattr(self,'party'):
-			se.party = self.party
+		if self.get('create_stock_entry'):
+			create_stock_entry = self.get('create_stock_entry')
+		else: 
+			create_stock_entry = 1
+		if create_stock_entry:
+			se = frappe.new_doc("Stock Entry")
+			se.purpose = "Repack"
+			se.company = self.company
+			se.stock_entry_type = "Repack"
+			se.set_posting_time = 1
+			se.posting_date = self.date
+			se.posting_time = self.posting_time
+			se.from_ball_mill = 1
+			cost_center = frappe.db.get_value("Company",self.company,"cost_center")
+			if hasattr(self,'send_to_party'):
+				se.send_to_party = self.send_to_party
+			if hasattr(self,'party_type'):
+				se.party_type = self.party_type
+			if hasattr(self,'party'):
+				se.party = self.party
 
-		for row in self.items:
-			se.append('items',{
-				'item_code': row.item_name,
-				's_warehouse': row.source_warehouse,
-				'qty': row.qty,
-				'quantity':row.quantity,
-				'basic_rate': row.basic_rate,
-				'price':row.price,
-				'basic_amount': row.basic_amount,
-				'cost_center': cost_center,
-				'batch_no': row.batch_no,
-				'concentration':row.concentration,
-				'packaging_material':row.packaging_material,
-				'packing_size':row.packing_size,
-				'no_of_packages':row.no_of_packages
-			})
+			for row in self.items:
+				se.append('items',{
+					'item_code': row.item_name,
+					's_warehouse': row.source_warehouse,
+					'qty': row.qty,
+					'quantity':row.quantity,
+					'basic_rate': row.basic_rate,
+					'price':row.price,
+					'basic_amount': row.basic_amount,
+					'cost_center': cost_center,
+					'batch_no': row.batch_no,
+					'concentration':row.concentration,
+					'packaging_material':row.packaging_material,
+					'packing_size':row.packing_size,
+					'no_of_packages':row.no_of_packages
+				})
 
-		for d in self.packaging:	
-			se.append('items',{
-				'item_code': self.product_name,
-				't_warehouse': d.warehouse or self.warehouse,
-				'qty': d.qty,
-				'quantity':d.quantity,
-				'packaging_material': d.packaging_material,
-				'packing_size': d.packing_size,
-				'no_of_packages': d.no_of_packages,
-				'lot_no': d.lot_no,
-				'concentration': d.concentration or self.concentration,
-				'basic_rate': self.per_unit_amount,
-				'valuation_rate': self.per_unit_amount,
-				'basic_amount': flt(d.qty * self.per_unit_amount),
-				'cost_center': cost_center
-			})
-		se.save()
-		se.submit()
-		self.db_set('stock_entry',se.name)
-		batch = None
-		for row in self.packaging:
-			batch_name = frappe.db.sql("""
-				SELECT sed.batch_no from `tabStock Entry` se LEFT JOIN `tabStock Entry Detail` sed on (se.name = sed.parent)
-				WHERE 
-					se.name = '{name}'
-					and (sed.t_warehouse != '' or sed.t_warehouse IS NOT NULL) 
-					and sed.qty = {qty}
-					and sed.packaging_material = '{packaging_material}'
-					and sed.packing_size = '{packing_size}'
-					and sed.no_of_packages = {no_of_packages}""".format(
-						name=se.name,
-						qty=row.qty,
-						packaging_material=row.packaging_material,
-						packing_size=row.packing_size,
-						no_of_packages=row.no_of_packages,
-					))
-			if batch_name:
-				batch = batch_name[0][0] or ''
+			for d in self.packaging:	
+				se.append('items',{
+					'item_code': self.product_name,
+					't_warehouse': d.warehouse or self.warehouse,
+					'qty': d.qty,
+					'quantity':d.quantity,
+					'packaging_material': d.packaging_material,
+					'packing_size': d.packing_size,
+					'no_of_packages': d.no_of_packages,
+					'lot_no': d.lot_no,
+					'concentration': d.concentration or self.concentration,
+					'basic_rate': self.per_unit_amount,
+					'valuation_rate': self.per_unit_amount,
+					'basic_amount': flt(d.qty * self.per_unit_amount),
+					'cost_center': cost_center
+				})
+			se.save()
+			se.submit()
+			self.db_set('stock_entry',se.name)
+			batch = None
+			for row in self.packaging:
+				batch_name = frappe.db.sql("""
+					SELECT sed.batch_no from `tabStock Entry` se LEFT JOIN `tabStock Entry Detail` sed on (se.name = sed.parent)
+					WHERE 
+						se.name = '{name}'
+						and (sed.t_warehouse != '' or sed.t_warehouse IS NOT NULL) 
+						and sed.qty = {qty}
+						and sed.packaging_material = '{packaging_material}'
+						and sed.packing_size = '{packing_size}'
+						and sed.no_of_packages = {no_of_packages}""".format(
+							name=se.name,
+							qty=row.qty,
+							packaging_material=row.packaging_material,
+							packing_size=row.packing_size,
+							no_of_packages=row.no_of_packages,
+						))
+				if batch_name:
+					batch = batch_name[0][0] or ''
 
-			if batch:
-				row.db_set('batch_no', batch)
-				if self.customer_name:
-					frappe.db.set_value("Batch",batch,'customer',self.customer_name)
-				if self.lot_no:
-					frappe.db.set_value("Batch",batch,'sample_ref_no',self.lot_no)
-	
+				if batch:
+					row.db_set('batch_no', batch)
+					if self.customer_name:
+						frappe.db.set_value("Batch",batch,'customer',self.customer_name)
+					if self.lot_no:
+						frappe.db.set_value("Batch",batch,'sample_ref_no',self.lot_no)
+		
 	def before_cancel(self):
 		for item in self.packaging:
 			item.db_set('lot_no', None)
@@ -244,10 +249,19 @@ class BallMillDataSheet(Document):
 		if self.actual_qty != total_qty:
 			frappe.throw("Sum of Qty should be match with actual qty")
 
+from erpnext.utilities.product import get_price
+@frappe.whitelist()
+def get_price_list(item_code, price_list, customer_group="All Customer Groups", company=None):
+	price = get_price(item_code, price_list, customer_group, company)
+	
+	if not price:
+		price = frappe._dict({'price_list_rate': 0.0})
+
+	return price
+
 @frappe.whitelist()
 def make_outward_sample(source_name, target_doc=None):
 	def postprocess(source, doc):
-		from chemical.controller import get_spare_price
 
 		doc.link_to = "Customer"
 		customer_name, destination = frappe.db.get_value("Customer", doc.party, ['customer_name', 'territory'])
@@ -256,7 +270,7 @@ def make_outward_sample(source_name, target_doc=None):
 
 		total_amount = 0.0
 		for d in doc.details:
-			price = get_spare_price(d.item_name, "Standard Buying").price_list_rate
+			price = get_price_list(d.item_name, "Standard Buying").price_list_rate
 
 			if d.batch_yield:
 				bomyield = frappe.db.get_value("BOM",{'item': d.item_name},"batch_yield")
