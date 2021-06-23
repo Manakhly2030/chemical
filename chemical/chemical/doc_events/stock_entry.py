@@ -147,35 +147,38 @@ def	update_additional_cost_scrap(self):
 def sum_total_additional_costs(self):
 	self.total_additional_costs = sum(m.amount for m in self.additional_costs)
 
-def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, raise_error_if_no_rate=True):
+def calculate_rate_and_amount(self,reset_outgoing_rate=True, raise_error_if_no_rate=True):
 	if self.purpose in ['Manufacture','Repack']:
 		is_multiple_finish  = 0
+		multi_item_list = []
 		for d in self.items:
 			if d.t_warehouse and d.qty != 0:
 				is_multiple_finish +=1
+				multi_item_list.append(d.item_code)
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
-			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
+			self.set_basic_rate(reset_outgoing_rate=False, raise_error_if_no_rate=True)
 			bom_doc = frappe.get_doc("BOM",self.bom_no)
 			if hasattr(bom_doc,'equal_cost_ratio'):
 				if not bom_doc.equal_cost_ratio:
 					cal_rate_for_finished_item(self)
+				# elif len(list(set(multi_item_list))) == 1 and bom_doc.equal_cost_ratio:
+				# 	calculate_multiple_repack_valuation(self)
 				else:
 					calculate_multiple_repack_valuation(self)
 			else:
 				cal_rate_for_finished_item(self)
 
 		elif is_multiple_finish > 1 and self.purpose == "Repack":
-			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
+			self.set_basic_rate(reset_outgoing_rate=False, raise_error_if_no_rate=True)
 			calculate_multiple_repack_valuation(self)
 		
 		else:
-			self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
+			self.set_basic_rate(reset_outgoing_rate=True, raise_error_if_no_rate=True)
 			self.distribute_additional_costs()
 
 	else:
-		self.set_basic_rate(force, update_finished_item_rate=True, raise_error_if_no_rate=True)
+		self.set_basic_rate(reset_outgoing_rate=True, raise_error_if_no_rate=True)
 		self.distribute_additional_costs()
-
 	self.update_valuation_rate()
 	# Finbyz Changes start: Calculate Valuation Price Based on Valuation Rate and concentration for AS IS Items 
 	update_valuation_price(self)
@@ -296,21 +299,22 @@ def update_po(self):
 					lot.append(row.lot_no)
 					if bom_doc.multiple_finish_item:
 						for bom_fi in bom_doc.multiple_finish_item:
-							po.append("finish_item",{
-								'item_code': row.item_code,
-								'actual_qty': row.qty,
-								'actual_valuation': row.valuation_rate,
-								'lot_no': row.lot_no,
-								'purity': row.concentration,
-								'packing_size': row.packing_size,
-								'no_of_packages': row.no_of_packages,
-								'batch_yield': row.batch_yield,
-								'batch_no': row.batch_no,
-								"bom_cost_ratio":bom_fi.cost_ratio,
-								"bom_qty_ratio":bom_fi.qty_ratio,
-								"bom_qty":po.qty * bom_fi.qty_ratio / 100,
-								"bom_yield":bom_fi.batch_yield
-							})
+							if bom_fi.item_code == row.item_code:
+								po.append("finish_item",{
+									'item_code': row.item_code,
+									'actual_qty': row.qty,
+									'actual_valuation': row.valuation_rate,
+									'lot_no': row.lot_no,
+									'purity': row.concentration,
+									'packing_size': row.packing_size,
+									'no_of_packages': row.no_of_packages,
+									'batch_yield': row.batch_yield,
+									'batch_no': row.batch_no,
+									"bom_cost_ratio":bom_fi.cost_ratio,
+									"bom_qty_ratio":bom_fi.qty_ratio,
+									"bom_qty":po.qty * bom_fi.qty_ratio / 100,
+									"bom_yield":bom_fi.batch_yield
+								})
 					else:
 						po.append("finish_item",{
 							'item_code': row.item_code,
@@ -431,11 +435,16 @@ def cal_rate_for_finished_item(self):
 				if d.t_warehouse:
 					for bom_cost_dict in bom_cost_list:
 						if d.item_code == bom_cost_dict["item_code"]:
-							d.db_set('basic_amount',flt(flt(self.total_outgoing_value*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code])))
-							d.db_set('additional_cost',flt(flt(self.total_additional_costs*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code])))
-							d.db_set('amount',flt(d.basic_amount + d.additional_cost))
-							d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
-							d.db_set('valuation_rate',flt(d.amount/ d.qty))
+							# d.db_set('basic_amount',flt(flt(self.total_outgoing_value*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code])))
+							# d.db_set('additional_cost',flt(flt(self.total_additional_costs*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code])))
+							# d.db_set('amount',flt(d.basic_amount + d.additional_cost))
+							# d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
+							# d.db_set('valuation_rate',flt(d.amount/ d.qty))
+							d.basic_amount = flt(flt(self.total_outgoing_value*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code]))
+							d.additional_cost = flt(flt(self.total_additional_costs*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code]))
+							d.amount = flt(d.basic_amount + d.additional_cost)
+							d.basic_rate = flt(d.basic_amount/ d.qty)
+							d.valuation_rate = flt(d.amount/ d.qty)
 
 							item_yield = 0.0
 							if item_map[self.based_on]['yield_weights'] > 0:
@@ -450,7 +459,7 @@ def cal_rate_for_finished_item(self):
 
 					# total_incoming_amount += flt(d.amount)
 
-			d.db_update()
+			# d.db_update()
 
 					# first_item_ratio = abs(100-self.cost_ratio_of_second_item)
 					# first_item_qty_ratio = abs(100-self.qty_ratio_of_second_item)

@@ -8,7 +8,8 @@ from datetime import date,timedelta,datetime
 import datetime
 from frappe.model.delete_doc import check_if_doc_is_linked
 import math
-from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+# from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+from chemical.chemical.doc_events.work_order import make_stock_entry
 
 # def get_company_and_warehouse():
 #     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
@@ -62,6 +63,7 @@ if not frappe.db.exists("Item","TEST_ITEM_2"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
     item_create.append("item_defaults",{
             "company":company,
             "default_warehouse":default_warehouse
@@ -75,6 +77,7 @@ if not frappe.db.exists("Item","TEST_ITEM_3"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
     item_create.append("item_defaults",{
             "company":company,
             "default_warehouse":default_warehouse
@@ -135,8 +138,9 @@ first_pr.append("items",{
     "warehouse":warehouse,
     "cost_center":cost_center,
     "rate":500.00,
-    "received_qty": math.ceil(flt(25*20*(0.85*100/100))),
-    "qty": math.ceil(flt(25*20*(0.85*100/100))),
+    "price":500.00,
+    "received_qty": math.ceil(flt(25*20)),
+    "qty": math.ceil(flt(25*20)),
     #"manufacturer":"gg",
     #"manufacturer_part_no":"gg"
 })
@@ -152,8 +156,9 @@ first_pr.append("items",{
     "warehouse":warehouse,
     "cost_center":cost_center,
     "rate":250,
-    "received_qty": math.ceil(flt(25*22*(0.95*100/100))),
-    "qty": math.ceil(flt(25*22*(0.95*100/100))),
+    "price":250,
+    "received_qty": math.ceil(flt(25*22)),
+    "qty": math.ceil(flt(25*22)),
     #"manufacturer":"gg",
     #"manufacturer_part_no":"gg"
 })
@@ -169,8 +174,9 @@ first_pr.append("items",{
     "warehouse":warehouse,
     "cost_center":cost_center,
     "rate":80,
-    "received_qty": math.ceil(flt(25*28*(0.90*100/100))),
-    "qty": math.ceil(flt(25*28*(0.90*100/100))),
+    "price":80,
+    "received_qty": math.ceil(flt(25*28)),
+    "qty": math.ceil(flt(25*28)),
     #"manufacturer":"gg",
     #"manufacturer_part_no":"gg"
 })
@@ -202,8 +208,9 @@ second_pr.append("items",{
         "warehouse":warehouse,
         "cost_center":cost_center,
         "rate":530,
-        "received_qty": math.ceil(flt(25*28*(0.95*100/100))),
-        "qty": math.ceil(flt(25*28*(0.95*100/100))),
+        "price":530,
+        "received_qty": math.ceil(flt(25*28)),
+        "qty": math.ceil(flt(25*28)),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
 })
@@ -219,8 +226,9 @@ second_pr.append("items",{
         "warehouse":warehouse,
         "cost_center":cost_center,
         "rate":240,
-        "received_qty": math.ceil(flt(25*30*(0.90*100/100))),
-        "qty": math.ceil(flt(25*30*(0.90*100/100))),
+        "price":240,
+        "received_qty": math.ceil(flt(25*30)),
+        "qty": math.ceil(flt(25*30)),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
 })
@@ -236,8 +244,9 @@ second_pr.append("items",{
         "warehouse":warehouse,
         "cost_center":cost_center,
         "rate":78,
-        "received_qty": math.ceil(flt(25*32*(0.85*100/100))),
-        "qty": math.ceil(flt(25*32*(0.85*100/100))),
+        "price":78,
+        "received_qty": math.ceil(flt(25*32)),
+        "qty": math.ceil(flt(25*32)),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
 })
@@ -270,8 +279,9 @@ third_pr.append("items",{
         "warehouse":warehouse,
         "cost_center":cost_center,
         "rate":510.00,
-        "received_qty": math.ceil(flt(25*36*(0.95*100/100))),
-        "qty": math.ceil(flt(25*36*(0.95*100/100))),
+        "price":510.00,
+        "received_qty": math.ceil(flt(25*36)),
+        "qty": math.ceil(flt(25*36)),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
 })
@@ -287,8 +297,9 @@ third_pr.append("items",{
         "warehouse":warehouse,
         "cost_center":cost_center,
         "rate":275,
-        "received_qty": math.ceil(flt(25*38*(0.85*100/100))),
-        "qty": math.ceil(flt(25*38*(0.85*100/100))),
+        "price":275,
+        "received_qty": math.ceil(flt(25*38)),
+        "qty": math.ceil(flt(25*38)),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
 })
@@ -304,8 +315,9 @@ third_pr.append("items",{
         "warehouse":warehouse,
         "cost_center":cost_center,
         "rate":88,
-        "received_qty": math.ceil(flt(25*40*(0.95*100/100))),
-        "qty": math.ceil(flt(25*40*(0.95*100/100))),
+        "price":88,
+        "received_qty": math.ceil(flt(25*40)),
+        "qty": math.ceil(flt(25*40)),
         #"manufacturer":"gg",
         #"manufacturer_part_no":"gg"
 })
@@ -545,15 +557,15 @@ work_order_create = frappe.new_doc("Work Order")
 work_order_create.naming_series = "Test-WO-.###"
 work_order_create.production_item = "FINISH_TEST_ITEM"
 work_order_create.qty = 50
+work_order_create.based_on = "TEST_ITEM_1"
 company =  frappe.db.get_value("Company",{},"company_name")
 work_order_create.wip_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
-work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Semi Finished"},"name")
+work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Finished Goods"},"name")
 work_order_create.bom_no = bom_name
 work_order_create.volume = 500.00
 d = datetime.datetime.now() - timedelta(days=1,hours=10)
 d.strftime("%d-%m-%Y %H:%M:%S")
 work_order_create.planned_start_date = d
-
 work_order_create.save()
 work_name = work_order_create.name
 work_order_create.submit()
@@ -561,12 +573,14 @@ work_order_create.submit()
 
 # mtm = Material Transfer For Manufacture
 # Create Stock Entry of Material Transfer For Manufacture (mtm)
-from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+# from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+from chemical.chemical.doc_events.work_order import make_stock_entry
 
 stock_entry_mtm = frappe.new_doc("Stock Entry")
 stock_entry_mtm.update(make_stock_entry(work_name,"Material Transfer for Manufacture", qty=50))
 stock_entry_mtm.naming_series = "Test-MTM-.###"
 stock_entry_mtm.set_posting_time = 1
+stock_entry_mtm.based_on = "TEST_ITEM_1"
 stock_entry_mtm.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -1)
 stock_entry_mtm.volume = 500.00
 company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
@@ -617,7 +631,9 @@ stock_entry_mr_1_batch_no = frappe.db.get_value("Batch",{"reference_name": stock
 # Create Stock Entry for Manufacture (ma)
 from datetime import date,timedelta,datetime
 import datetime
-from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+# from erpnext.manufacturing.doctype.work_order.work_order import make_stock_entry
+from chemical.chemical.doc_events.work_order import make_stock_entry
+
 stock_entry_ma = frappe.new_doc("Stock Entry")
 stock_entry_ma.update(make_stock_entry(work_name,"Manufacture", qty=50))
 stock_entry_ma.volume = 500.000
@@ -626,13 +642,23 @@ stock_entry_ma.volume_rate = 6.00
 stock_entry_ma.naming_series = "Test-MA-.###"
 stock_entry_ma.set_posting_time = 1
 stock_entry_ma.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), 0)
-stock_entry_ma.items[0].batch_no = first_pr_batch_no
-stock_entry_ma.items[1].batch_no = second_pr_batch_no
-stock_entry_ma.items[2].batch_no = third_pr_batch_no
-stock_entry_ma.items[3].concentration = 90
-stock_entry_ma.items[3].packing_size = 25
-stock_entry_ma.items[3].no_of_packages = 0
-stock_entry_ma.items[3].packaging_material = packaging_material
+stock_entry_ma.based_on = "TEST_ITEM_1"
+for item in stock_entry_ma.items:
+    if item.item_code == "TEST_ITEM_1":
+        item.batch_no = first_pr_batch_no
+        item.lot_no = "test1"
+    elif item.item_code == "TEST_ITEM_2":
+        item.batch_no = second_pr_batch_no
+        item.lot_no = "test2"
+    elif item.item_code == "TEST_ITEM_3":
+        item.batch_no = third_pr_batch_no
+        item.lot_no = "test2"
+    elif item.item_code == "FINISH_TEST_ITEM":
+        item.lot_no = "testfinal"
+        item.concentration = 90
+        item.packing_size = 25
+        item.no_of_packages = 0
+        item.packaging_material = packaging_material
 
 stock_entry_ma.save()
 stock_entry_ma_name = stock_entry_ma.name
@@ -674,7 +700,7 @@ from datetime import date,timedelta,datetime
 import datetime
 
 company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Semi Finished"},"name") 
+warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Finished Goods"},"name") 
 cost_center = frappe.db.get_value("Company",company,"cost_center")
 
 second_si = frappe.new_doc("Sales Invoice")
@@ -728,8 +754,7 @@ stock_entry_mi.save()
 stock_entry_mi_name = stock_entry_mi.name
 stock_entry_mi.submit()
 
-frappe.db.commit()
-
+# 
 
 #Purchase Receipt (pr)
 first_pr_rate = frappe.db.get_value("Purchase Receipt Item",{"parent":first_pr_name,"item_code":"TEST_ITEM_1"},"rate")
@@ -743,9 +768,9 @@ third_pr_qty = frappe.db.get_value("Purchase Receipt Item",{"parent":third_pr_na
 second_pr_third_item_rate = frappe.db.get_value("Purchase Receipt Item",{"parent":second_pr_name,"item_code":"TEST_ITEM_3"},"rate")
 
 #Stock Ledger Entry for Manufacturing (sl_ma)
-volume_mtm = frappe.db.get_value("Stock Entry",stock_entry_ma_name,"volume")
-volume_rate_mtm = frappe.db.get_value("Stock Entry",stock_entry_ma_name,"volume_rate")
-volume_cost_mtm = frappe.db.get_value("Stock Entry",stock_entry_ma_name,"volume_cost")
+# volume_mtm = frappe.db.get_value("Stock Entry",stock_entry_ma_name,"volume")
+# volume_rate_mtm = frappe.db.get_value("Stock Entry",stock_entry_ma_name,"volume_rate")
+# volume_cost_mtm = frappe.db.get_value("Stock Entry",stock_entry_ma_name,"volume_cost")
 
 first_sl_ma_batch_no = frappe.db.get_value("Stock Ledger Entry",first_stock_ledger_ma_item,"batch_no")
 second_sl_ma_batch_no = frappe.db.get_value("Stock Ledger Entry",second_stock_ledger_ma_item,"batch_no")
@@ -764,7 +789,7 @@ third_sl_ma_stock_val_diff = frappe.db.get_value("Stock Ledger Entry",third_stoc
 #Manufacturing (ma)
 ma_value_diff = frappe.db.get_value("Stock Entry",stock_entry_ma_name,"value_difference")
 ma_total_additional_cost = frappe.db.get_value("Stock Entry",stock_entry_ma_name,"total_additional_costs") 
-ma_description = frappe.db.get_value("Landed Cost Taxes and Charges",{"parent":stock_entry_ma_name,"amount":volume_cost_mtm},"description")
+# ma_description = frappe.db.get_value("Landed Cost Taxes and Charges",{"parent":stock_entry_ma_name,"amount":volume_cost_mtm},"description")
 # if len(ma_doc.additional_costs) == 1:
 #     ma_additional_cost = frappe.db.get_value("Landed Cost Taxes and Charges",{"parent":stock_entry_ma_name},"amount")
 # elif  > 1:
@@ -878,9 +903,9 @@ msg="MA: Total Value difference doesn't Match"
 assert ma_total_additional_cost == ma_value_diff,msg
 #self.assertEqual(ma_total_additional_cost,ma_value_diff,msg="MA: Total Value difference doesn't Match")
 
-msg="MA: Description doesn't Match"
-assert ma_description == "Spray drying cost",msg
-#self.assertEqual(ma_description,"Spray drying cost",msg="MA: Description doesn't Match")
+# msg="MA: Description doesn't Match"
+# assert ma_description == "Spray drying cost",msg
+# #self.assertEqual(ma_description,"Spray drying cost",msg="MA: Description doesn't Match")
 
 msg="MA1: Batch No doesn't Match"
 assert first_sl_ma_batch_no == first_pr_batch_no,msg
@@ -937,70 +962,56 @@ assert sl_valuation_rate == ma_valuation_rate,msg
 material_issue_delete = frappe.get_doc("Stock Entry",stock_entry_mi_name)
 material_issue_delete.cancel()
 material_issue_delete.delete()
-frappe.db.commit()
 
 
 sales_invoice_delete = frappe.get_doc("Sales Invoice",second_si_name)
 sales_invoice_delete.cancel()
 sales_invoice_delete.delete()
-frappe.db.commit()
 
 
 frappe.db.set_value("Batch",stock_entry_mr_2_batch_no,"reference_name","")
-frappe.db.commit()
 
 material_receipt_2_delete = frappe.get_doc("Stock Entry",stock_entry_mr_2_name)
 material_receipt_2_delete.flags.ignore_links = True
 material_receipt_2_delete.cancel()
 material_receipt_2_delete.delete()
-frappe.db.commit()
 
 batch_material_receipt_2_delete = frappe.get_doc("Batch",stock_entry_mr_2_batch_no)
 batch_material_receipt_2_delete.delete()
-frappe.db.commit()
 
 frappe.db.set_value("Batch",final_item_batch_no,"reference_name","")
-frappe.db.commit()
 
 manufacture_delete = frappe.get_doc("Stock Entry",stock_entry_ma_name)
 manufacture_delete.flags.ignore_links = True
 manufacture_delete.cancel()
 manufacture_delete.delete()
-frappe.db.commit()
 
 batch_manufacture_delete = frappe.get_doc("Batch",final_item_batch_no)
 batch_manufacture_delete.delete()
-frappe.db.commit()
 
 frappe.db.set_value("Batch",stock_entry_mr_1_batch_no,"reference_name","")
-frappe.db.commit()
 
 material_receipt_1_delete = frappe.get_doc("Stock Entry",stock_entry_mr_1_name)
 material_receipt_1_delete.flags.ignore_links = True
 material_receipt_1_delete.cancel()
 material_receipt_1_delete.delete()
-frappe.db.commit()
 
 batch_material_receipt_1_delete = frappe.get_doc("Batch",stock_entry_mr_1_batch_no)
 batch_material_receipt_1_delete.delete()
-frappe.db.commit()
 
 material_transfer_delete = frappe.get_doc("Stock Entry",stock_entry_mtm_name)
 material_transfer_delete.flags.ignore_links = True
 material_transfer_delete.cancel()
 material_transfer_delete.delete()
-frappe.db.commit()
 
 work_order_delete = frappe.get_doc("Work Order",work_name)
 work_order_delete.flags.ignore_links = True
 work_order_delete.cancel()
 work_order_delete.delete()
-frappe.db.commit()
 
 bom_delete = frappe.get_doc("BOM",bom_name)
 bom_delete.cancel()
 bom_delete.delete()
-frappe.db.commit()
 
 third_pr = frappe.get_doc("Purchase Receipt",third_pr_name)
 second_pr = frappe.get_doc("Purchase Receipt",second_pr_name)
@@ -1016,7 +1027,6 @@ second_pr.delete()
 
 first_pr.cancel()
 first_pr.delete()
-frappe.db.commit()
 
 item_delete_1 = frappe.get_doc("Item","TEST_ITEM_1")
 if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"TEST_ITEM_1"},"name"):
@@ -1042,13 +1052,11 @@ if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"FINISH
 else:
     frappe.msgprint("test item finish doc is linked with purchase receipt or sales invoice or BIN")
 
-frappe.db.commit()
 
 supplier_delete = frappe.get_doc("Supplier","Test_Supplier_1")
 supplier_delete.delete()
 customer_delete = frappe.get_doc("Customer","Test_Customer_1")
 customer_delete.delete() 
-frappe.db.commit()
 
 
 
