@@ -191,22 +191,21 @@ def update_cost():
 		bom_obj.db_set('per_unit_operational_cost',flt(flt(bom_obj.total_operational_cost)/bom_obj.quantity))
 		bom_obj.db_set('per_unit_scrap_cost',flt(flt(bom_obj.total_scrap_cost)/bom_obj.quantity))
 		bom_obj.db_update()
-		# if bom_obj.per_unit_price != per_unit_price:
-			# bom_obj.db_set('per_unit_price', per_unit_price)
-		if frappe.db.exists("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list}):
-			name = frappe.db.get_value("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list},'name')
-			# frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
-			item_doc = frappe.get_doc("Item Price",name)
-			item_doc.db_set("price_list_rate",per_unit_price)
-			item_doc.db_update()
-		else:
-			item_price = frappe.new_doc("Item Price")
-			item_price.price_list = bom_obj.buying_price_list
-			item_price.item_code = bom_obj.item
-			item_price.price_list_rate = per_unit_price
+		
+		if bom_obj.is_default:
+			if frappe.db.exists("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list}):
+				name = frappe.db.get_value("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list},'name')
+				item_doc = frappe.get_doc("Item Price",name)
+				item_doc.db_set("price_list_rate",per_unit_price)
+				item_doc.db_update()
+			else:
+				item_price = frappe.new_doc("Item Price")
+				item_price.price_list = bom_obj.buying_price_list
+				item_price.item_code = bom_obj.item
+				item_price.price_list_rate = per_unit_price
 			
 			item_price.save()
-		#frappe.db.commit()
+	
 
 # update price in BOM
 # call it in bom.js
@@ -251,21 +250,24 @@ def upadte_item_price(docname,item, price_list, per_unit_price):
 	doc.db_set('per_unit_operational_cost',flt(flt(doc.total_operational_cost)/doc.quantity))
 	doc.db_set('per_unit_scrap_cost',flt(flt(doc.total_scrap_cost)/doc.quantity))
 	doc.db_update()
-	if frappe.db.exists("Item Price",{"item_code":item,"price_list":price_list}):
-		name = frappe.db.get_value("Item Price",{"item_code":item,"price_list":price_list},'name')
-		# frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
-		item_doc = frappe.get_doc("Item Price",name)
-		item_doc.db_set("price_list_rate",per_unit_price)
-		item_doc.db_update()
-	else:
-		item_price = frappe.new_doc("Item Price")
-		item_price.price_list = price_list
-		item_price.item_code = item
-		item_price.price_list_rate = per_unit_price
+
+
+	if doc.is_default:
+		if frappe.db.exists("Item Price",{"item_code":item,"price_list":price_list}):
+			name = frappe.db.get_value("Item Price",{"item_code":item,"price_list":price_list},'name')
+			# frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
+			item_doc = frappe.get_doc("Item Price",name)
+			item_doc.db_set("price_list_rate",per_unit_price)
+			item_doc.db_update()
+		else:
+			item_price = frappe.new_doc("Item Price")
+			item_price.price_list = price_list
+			item_price.item_code = item
+			item_price.price_list_rate = per_unit_price
+			
+			item_price.save()
 		
-		item_price.save()
-		
-	return "Item Price Updated!"
+		return "Item Price Updated!"
 
 
 # Daily price update on hooks
@@ -329,7 +331,7 @@ def _update_bom_cost(self,update_parent=False, from_child_bom=False, save=False)
 		self.calculate_cost()
 	if save:
 		self.db_update()
-	self.update_exploded_items()
+	# self.update_exploded_items()
 
 	# update parent BOMs
 	if self.total_cost != existing_bom_cost and update_parent:
