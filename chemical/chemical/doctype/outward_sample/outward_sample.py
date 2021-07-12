@@ -28,9 +28,10 @@ class OutwardSample(Document):
 		total_amount = 0
 
 		for row in self.details:
-			if row.item_name:
+			if row.item_code:
 				if row.bom_no:
 					rate = frappe.db.get_value("BOM",row.bom_no,'per_unit_price')
+					
 				else:
 					price = self.get_price_list(item_code=row.item_code, price_list=self.price_list or "Standard Buying", company=self.company)
 					rate = price.price_list_rate
