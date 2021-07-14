@@ -331,11 +331,7 @@ def _update_bom_cost(self,update_parent=False, from_child_bom=False, save=False)
 		self.calculate_cost()
 	if save:
 		self.db_update()
-<<<<<<< HEAD
-	#self.update_exploded_items()
-=======
 	# self.update_exploded_items()
->>>>>>> b1e97bf59e2eebdff94a3e35f2e04ff4e9b2dc35
 
 	# update parent BOMs
 	if self.total_cost != existing_bom_cost and update_parent:

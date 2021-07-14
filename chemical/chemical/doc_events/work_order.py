@@ -6,6 +6,14 @@ from frappe.utils import nowdate, flt, cint, cstr
 from six import itervalues
 from erpnext.manufacturing.doctype.work_order.work_order import StockOverProductionError
 
+
+def validate(self,method):
+	set_batch_serial_check_box(self)
+
+def set_batch_serial_check_box(self):
+	self.has_batch_no = 0
+	self.has_serial_no = 0
+
 def before_submit(self, method):
 	validate_multiple_item_bom(self)
 	# validate_finish_item_table(self)
@@ -85,7 +93,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 		# 		else:
 		# 			frappe.throw(_('Please create BOM for item {}'.format(work_order.second_item)))
 	return stock_entry.as_dict()
-
+@frappe.whitelist()
 def get_items(self):
 	self.set('items', [])
 	self.validate_work_order()

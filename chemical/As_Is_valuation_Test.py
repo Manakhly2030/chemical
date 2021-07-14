@@ -998,7 +998,7 @@ work_order_create.batch_yield = 10
 work_order_create.is_multiple_item = 1
 company =  frappe.db.get_value("Company",{},"company_name")
 work_order_create.wip_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
-work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Finished Goods"},"name")
+work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Finished Products"},"name")
 work_order_create.bom_no = "BOM-FINISH_TEST_ITEM-001"
 work_order_create.concentration = 0
 work_order_create.use_multi_level_bom = 1
@@ -1093,7 +1093,7 @@ fourth_stock_ledger_mtm_item_name = frappe.db.get_value("Stock Ledger Entry",{"v
 # stock_entry_mr.set_posting_time = 1
 # stock_entry_mr.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -1)
 # company = frappe.db.get_value("Company",{},"company_name") 
-# warehouse = frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Finished Goods"},"name")
+# warehouse = frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Finished Products"},"name")
 # packaging_material = frappe.db.get_value("Packaging Material",{},"name")
 # stock_entry_mr.to_warehouse = warehouse
 # stock_entry_mr.append("items",{
@@ -1130,7 +1130,7 @@ stock_entry_ma.based_on = "TEST_ITEM_1"
 stock_entry_ma.fg_completed_quantity = 200
 stock_entry_ma.fg_completed_qty = 205.556
 stock_entry_ma.from_warehouse = warehouse
-target_warehouse =  frappe.db.get_value("Warehouse",{'company': company, 'warehouse_name': 'Finished Goods'},"name") #it will Fetch the warehouse of the given Company
+target_warehouse =  frappe.db.get_value("Warehouse",{'company': company, 'warehouse_name': 'Finished Products'},"name") #it will Fetch the warehouse of the given Company
 stock_entry_ma.to_warehouse = target_warehouse
 # stock_entry_ma.items[3].concentration = 85
 for item in stock_entry_ma.items:
@@ -1305,7 +1305,7 @@ asis_final_stock_ledger_ma_item = frappe.db.get_value("Stock Ledger Entry",{"vou
 # import datetime
 
 # company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-# warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Finished Goods"},"name") 
+# warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Finished Products"},"name") 
 # cost_center = frappe.db.get_value("Company",company,"cost_center")
 
 # second_si = frappe.new_doc("Sales Invoice")
