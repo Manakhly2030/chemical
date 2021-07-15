@@ -399,7 +399,7 @@ def get_status(self, status=None):
 				under_production = flt(frappe.db.get_single_value("Manufacturing Settings", "under_production_allowance_percentage"))
 				allowed_qty = flt(self.qty) * (100 - under_production) / 100.0
 
-				if flt(produced_qty) >= flt(allowed_qty):
+				if flt(produced_qty) >= abs(flt(allowed_qty)):
 					status = "Completed"
 	else:
 		status = 'Cancelled'

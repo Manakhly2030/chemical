@@ -94,6 +94,13 @@ frappe.ui.form.on("Work Order", {
 		if (frm.doc.based_on && frm.doc.based_on != "") {
 			cur_frm.set_df_property('based_on_qty', 'label', "Required "+ cstr(frm.doc.based_on) + " Qty");
 		}
+		if(frm.doc.status == "In Process" && frm.doc.produced_qty < frm.doc.qty){
+
+			frm.add_custom_button(__('Complete'), function() {
+				frm.set_value("status","Completed")
+	
+			}, __("Status"));
+		}
 		frm.trigger('set_source_warehouse')
 	},
 	set_source_warehouse: function(frm){
