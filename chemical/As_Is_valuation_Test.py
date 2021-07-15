@@ -39,7 +39,7 @@ if not frappe.db.exists("Supplier","Test_Supplier_1"):
 
 #Create New Item
 company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Raw Material"},"name") #it will Fetch the warehouse of the given Company
+warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
     
 if not frappe.db.exists("Item","TEST_ITEM_1"):
     item_create = frappe.new_doc("Item")
@@ -50,11 +50,13 @@ if not frappe.db.exists("Item","TEST_ITEM_1"):
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-    warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Raw Material"},"name") #it will Fetch the warehouse of the given Company
-    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Raw Material"},"name")
+    warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
+    default_expense_account = frappe.db.get_value("Account",{"company":company,"account_name":"Sales Expenses"})
     item_create.append("item_defaults",{
             "company":company,
-            "default_warehouse":default_warehouse
+            "default_warehouse":default_warehouse,
+            "expense_account":default_expense_account
     })
     item_create.save()
 
@@ -66,10 +68,11 @@ if not frappe.db.exists("Item","TEST_ITEM_2"):
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
-    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Raw Material"},"name")
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
-            "default_warehouse":default_warehouse
+            "default_warehouse":default_warehouse,
+            "expense_account":default_expense_account
     })
     item_create.save()
 
@@ -81,10 +84,11 @@ if not frappe.db.exists("Item","TEST_ITEM_3"):
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
-    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Raw Material"},"name")
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
-            "default_warehouse":default_warehouse
+            "default_warehouse":default_warehouse,
+            "expense_account":default_expense_account
     })
     item_create.save()
 
@@ -98,11 +102,12 @@ if not frappe.db.exists("Item","TEST_ITEM_4"):
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-    warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Raw Material"},"name") #it will Fetch the warehouse of the given Company
-    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Raw Material"},"name")
+    warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
-            "default_warehouse":default_warehouse
+            "default_warehouse":default_warehouse,
+            "expense_account":default_expense_account
     })
     item_create.save()
 
@@ -115,10 +120,11 @@ if not frappe.db.exists("Item","FINISH_TEST_ITEM"):
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
-    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Raw Material"},"name")
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
-            "default_warehouse":default_warehouse
+            "default_warehouse":default_warehouse,
+            "expense_account":default_expense_account
     })
     item_create.save()
 
@@ -131,10 +137,11 @@ if not frappe.db.exists("Item","SECOND_FINISH_TEST_ITEM"):
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
-    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Raw Material"},"name")
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
-            "default_warehouse":default_warehouse
+            "default_warehouse":default_warehouse,
+            "expense_account":default_expense_account
     })
     item_create.save()
 
@@ -149,11 +156,12 @@ if not frappe.db.exists("Item","AsIs_Finish_item"):
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-    warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Raw Material"},"name") #it will Fetch the warehouse of the given Company
-    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Raw Material"},"name")
+    warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
+    default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
-            "default_warehouse":default_warehouse
+            "default_warehouse":default_warehouse,
+            "expense_account":default_expense_account
     })
     item_create.save()
 
@@ -170,7 +178,7 @@ from frappe.utils import flt
 import math
 
 company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Raw Material"},"name") #it will Fetch the warehouse of the given Company
+warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
 
 cost_center = frappe.db.get_value("Company",company,"cost_center")
 
@@ -998,7 +1006,7 @@ work_order_create.batch_yield = 10
 work_order_create.is_multiple_item = 1
 company =  frappe.db.get_value("Company",{},"company_name")
 work_order_create.wip_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
-work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Finished Products"},"name")
+work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"FINISHED GOODS(CRUDE)"},"name")
 work_order_create.bom_no = "BOM-FINISH_TEST_ITEM-001"
 work_order_create.concentration = 0
 work_order_create.use_multi_level_bom = 1
@@ -1006,7 +1014,7 @@ work_order_create.based_on = "TEST_ITEM_1"
 d = datetime.datetime.now() - timedelta(days=1,hours=10)
 d.strftime("%d-%m-%Y %H:%M:%S")
 work_order_create.planned_start_date = d
-work_order_store_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Raw Material"},"name")
+work_order_store_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
 
 # work_order_create.append("finish_item",{
 #     "item_code": "FINISH_TEST_ITEM",
@@ -1051,7 +1059,7 @@ stock_entry_mtm.from_bom = 1
 stock_entry_mtm.use_multi_level_bom = 1
 stock_entry_mtm.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -1)
 company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Raw Material"},"name") #it will Fetch the warehouse of the given Company
+warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
 stock_entry_mtm.from_warehouse = warehouse
 stock_entry_mtm.items[0].quantity = 80
 stock_entry_mtm.items[1].quantity = 80
@@ -1093,7 +1101,7 @@ fourth_stock_ledger_mtm_item_name = frappe.db.get_value("Stock Ledger Entry",{"v
 # stock_entry_mr.set_posting_time = 1
 # stock_entry_mr.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -1)
 # company = frappe.db.get_value("Company",{},"company_name") 
-# warehouse = frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Finished Products"},"name")
+# warehouse = frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"FINISHED GOODS(CRUDE)"},"name")
 # packaging_material = frappe.db.get_value("Packaging Material",{},"name")
 # stock_entry_mr.to_warehouse = warehouse
 # stock_entry_mr.append("items",{
@@ -1130,7 +1138,7 @@ stock_entry_ma.based_on = "TEST_ITEM_1"
 stock_entry_ma.fg_completed_quantity = 200
 stock_entry_ma.fg_completed_qty = 205.556
 stock_entry_ma.from_warehouse = warehouse
-target_warehouse =  frappe.db.get_value("Warehouse",{'company': company, 'warehouse_name': 'Finished Products'},"name") #it will Fetch the warehouse of the given Company
+target_warehouse =  frappe.db.get_value("Warehouse",{'company': company, 'warehouse_name': 'FINISHED GOODS(CRUDE)'},"name") #it will Fetch the warehouse of the given Company
 stock_entry_ma.to_warehouse = target_warehouse
 # stock_entry_ma.items[3].concentration = 85
 for item in stock_entry_ma.items:
@@ -1282,7 +1290,7 @@ asis_final_stock_ledger_ma_item = frappe.db.get_value("Stock Ledger Entry",{"vou
 # stock_entry_mr.set_posting_time = 1
 # stock_entry_mr.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), 1)
 # company =  frappe.db.get_value("Company",{},"company_name") 
-# warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Raw Material"},"name")
+# warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name")
 # stock_entry_mr.to_warehouse = warehouse
 # stock_entry_mr.append("items",{
 #     "t_warehouse": warehouse,
@@ -1305,7 +1313,7 @@ asis_final_stock_ledger_ma_item = frappe.db.get_value("Stock Ledger Entry",{"vou
 # import datetime
 
 # company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-# warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Finished Products"},"name") 
+# warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"FINISHED GOODS(CRUDE)"},"name") 
 # cost_center = frappe.db.get_value("Company",company,"cost_center")
 
 # second_si = frappe.new_doc("Sales Invoice")
@@ -1348,7 +1356,7 @@ asis_final_stock_ledger_ma_item = frappe.db.get_value("Stock Ledger Entry",{"vou
 # stock_entry_mi.set_posting_time = 1
 # stock_entry_mi.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), 2)
 # company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-# warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Raw Material"},"name") 
+# warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") 
 # stock_entry_mi.from_warehouse = warehouse
 # stock_entry_mi.append("items",{
 #     "item_code": "TEST_ITEM_3",
@@ -1663,13 +1671,13 @@ assert ma_total_incoming_value == ma_total_outgoing_value + ma_value_diff,msg
 # assert ma_valuation_rate == final_ma_item_valuation_rate,msg
 
 msg = "MAFinal: Basic Amount doesn't Match"
-assert final_ma_item_basic_amount == flt(ma_total_outgoing_value * final_wo_bom_cost_ratio / 100),msg
+assert round(final_ma_item_basic_amount,1) == round(flt(ma_total_outgoing_value * final_wo_bom_cost_ratio / 100),1),msg
 
 msg = "MAFinal: Additional Cost doesn't Match"
 assert final_ma_item_additional_cost == flt(ma_total_additional_cost * final_wo_bom_cost_ratio / 100),msg
 
 msg = "MAFinal: Amount doesn't Match"
-assert final_ma_item_amount == final_ma_item_basic_amount + final_ma_item_additional_cost,msg
+assert round(final_ma_item_amount,1) == round(final_ma_item_basic_amount + final_ma_item_additional_cost,1),msg
 
 msg = "MAFinal: Basic Rate doesn't Match"
 assert round(final_ma_item_basic_rate,2) == round(flt(final_ma_item_basic_amount/ final_ma_item_qty),2),msg
@@ -1678,13 +1686,13 @@ msg = "MAFinal: Valuation Rate doesn't Match"
 assert round(final_ma_item_valuation_rate,2) == round(flt(final_ma_item_amount/ final_ma_item_qty),2),msg
 
 msg = "MASecondFinal: Basic Amount doesn't Match"
-assert second_final_ma_item_basic_amount == flt(ma_total_outgoing_value * second_final_wo_bom_cost_ratio / 100),msg
+assert round(second_final_ma_item_basic_amount,1) == round(flt(ma_total_outgoing_value * second_final_wo_bom_cost_ratio / 100),1),msg
 
 msg = "MASecondFinal: Additional Cost doesn't Match"
-assert second_final_ma_item_additional_cost == flt(ma_total_additional_cost * second_final_wo_bom_cost_ratio / 100),msg
+assert round(second_final_ma_item_additional_cost,1) == round(flt(ma_total_additional_cost * second_final_wo_bom_cost_ratio / 100),1),msg
 
 msg = "MASecondFinal: Amount doesn't Match"
-assert second_final_ma_item_amount == second_final_ma_item_basic_amount + second_final_ma_item_additional_cost,msg
+assert round(second_final_ma_item_amount,1) == round(second_final_ma_item_basic_amount + second_final_ma_item_additional_cost,1),msg
 
 msg = "MASecondFinal: Basic Rate doesn't Match"
 assert round(second_final_ma_item_basic_rate,2) == round(flt(second_final_ma_item_basic_amount/ second_final_ma_item_qty),2),msg
@@ -1693,13 +1701,13 @@ msg = "MASecondFinal: Valuation Rate doesn't Match"
 assert round(second_final_ma_item_valuation_rate,2) == round(flt(second_final_ma_item_amount/ second_final_ma_item_qty),2),msg
 
 msg = "MAAsIsFInal: Basic Amount doesn't Match"
-assert asis_final_ma_item_basic_amount == flt(ma_total_outgoing_value * asis_final_wo_bom_cost_ratio / 100),msg
+assert round(asis_final_ma_item_basic_amount,1) == round(flt(ma_total_outgoing_value * asis_final_wo_bom_cost_ratio / 100),1),msg
 
 msg = "MAAsIsFInal: Additional Cost doesn't Match"
-assert asis_final_ma_item_additional_cost == flt(ma_total_additional_cost * asis_final_wo_bom_cost_ratio / 100),msg
+assert round(asis_final_ma_item_additional_cost,1) == round(flt(ma_total_additional_cost * asis_final_wo_bom_cost_ratio / 100),1),msg
 
 msg = "MAAsIsFinal: Amount doesn't Match"
-assert asis_final_ma_item_amount == asis_final_ma_item_basic_amount + asis_final_ma_item_additional_cost,msg
+assert round(asis_final_ma_item_amount,1) == round(asis_final_ma_item_basic_amount + asis_final_ma_item_additional_cost,1),msg
 
 msg = "MAAsIsFinal: Basic Rate doesn't Match"
 assert round(asis_final_ma_item_basic_rate,2) == round(asis_final_ma_item_basic_amount/ asis_final_ma_item_qty,2),msg
