@@ -489,9 +489,9 @@ def update_valuation_price(self):
 		maintain_as_is_stock = frappe.db.get_value('Item', item.item_code, 'maintain_as_is_stock')
 		concentration = item.concentration or 100
 		if maintain_as_is_stock:
-			item.valuation_price = item.valuation_rate * 100 / concentration
+			item.valuation_price = flt(item.valuation_rate) * 100 / flt(concentration)
 		else:
-			item.valuation_price = item.valuation_rate
+			item.valuation_price = flt(item.valuation_rate)
 
 def update_additional_cost(self):
 	if self.purpose == "Manufacture" and self.bom_no:

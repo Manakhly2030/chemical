@@ -11,8 +11,9 @@ def validate(self,method):
 	set_batch_serial_check_box(self)
 
 def set_batch_serial_check_box(self):
-	self.has_batch_no = 0
-	self.has_serial_no = 0
+	if self.get('has_batch_no'):
+		self.has_batch_no = 0
+		self.has_serial_no = 0
 
 def before_submit(self, method):
 	validate_multiple_item_bom(self)
@@ -398,7 +399,7 @@ def get_status(self, status=None):
 				under_production = flt(frappe.db.get_single_value("Manufacturing Settings", "under_production_allowance_percentage"))
 				allowed_qty = flt(self.qty) * (100 - under_production) / 100.0
 
-				if flt(produced_qty) >= flt(allowed_qty):
+				if flt(produced_qty) >= abs(flt(allowed_qty)):
 					status = "Completed"
 	else:
 		status = 'Cancelled'
