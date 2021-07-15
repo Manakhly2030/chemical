@@ -11,8 +11,9 @@ def validate(self,method):
 	set_batch_serial_check_box(self)
 
 def set_batch_serial_check_box(self):
-	self.has_batch_no = 0
-	self.has_serial_no = 0
+	if self.get('has_batch_no'):
+		self.has_batch_no = 0
+		self.has_serial_no = 0
 
 def before_submit(self, method):
 	validate_multiple_item_bom(self)
