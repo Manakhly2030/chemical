@@ -1,10 +1,11 @@
 import frappe, erpnext
 from frappe import msgprint, _
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime,nowtime
-from erpnext.stock.stock_ledger import update_entries_after
+from erpnext.stock.stock_ledger import update_entries_after,get_valuation_rate
 from erpnext.controllers.sales_and_purchase_return import get_return_against_item_fields,get_filters
-from erpnext.stock.utils import get_valuation_method
+from erpnext.stock.utils import get_valuation_method,get_fifo_rate
 from six import string_types
+
 import json
 
 # Utils Overrides
