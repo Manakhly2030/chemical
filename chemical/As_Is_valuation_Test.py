@@ -266,6 +266,7 @@ first_pr.save()
 first_pr_name = first_pr.name
 first_pr.submit()
 first_pr_batch_no = frappe.db.get_value("Purchase Receipt Item",{"parent" : first_pr_name,"item_code":"TEST_ITEM_1"}, "batch_no")
+first_pr_concentration = frappe.db.get_value("Purchase Receipt Item",{"parent" : first_pr_name,"item_code":"TEST_ITEM_1"}, "concentration")
 first_stock_ledger_pr_name = frappe.db.get_value("Stock Ledger Entry",{"voucher_no":first_pr_name,"item_code":"TEST_ITEM_1"},"name")
 
 #Second Purchase Receipt
@@ -359,6 +360,7 @@ second_pr.save()
 second_pr_name = second_pr.name
 second_pr.submit()
 second_pr_batch_no = frappe.db.get_value("Purchase Receipt Item",{"parent" : second_pr_name,"item_code":"TEST_ITEM_2"}, "batch_no")
+second_pr_concentration = frappe.db.get_value("Purchase Receipt Item",{"parent" : second_pr_name,"item_code":"TEST_ITEM_2"}, "concentration")
 second_pr_third_item_batch_no = frappe.db.get_value("Purchase Receipt Item",{"parent" : second_pr_name,"item_code":"TEST_ITEM_3"}, "batch_no")
 second_stock_ledger_pr_name = frappe.db.get_value("Stock Ledger Entry",{"voucher_no":second_pr_name,"item_code":"TEST_ITEM_2"},"name")
 
@@ -455,6 +457,7 @@ third_pr.save()
 third_pr_name = third_pr.name
 third_pr.submit()
 third_pr_batch_no = frappe.db.get_value("Purchase Receipt Item",{"parent" : third_pr_name,"item_code":"TEST_ITEM_3"}, "batch_no")
+third_pr_concentration = frappe.db.get_value("Purchase Receipt Item",{"parent" : third_pr_name,"item_code":"TEST_ITEM_3"}, "concentration")
 third_stock_ledger_pr_name = frappe.db.get_value("Stock Ledger Entry",{"voucher_no":third_pr_name,"item_code":"TEST_ITEM_3"},"name")
 
 #fourth purchase receipt for test_item_4
@@ -492,6 +495,7 @@ fourth_pr.save()
 fourth_pr_name = fourth_pr.name
 fourth_pr.submit()
 fourth_pr_batch_no = frappe.db.get_value("Purchase Receipt Item",{"parent" : fourth_pr_name,"item_code":"TEST_ITEM_4"}, "batch_no")
+fourth_pr_concentration = frappe.db.get_value("Purchase Receipt Item",{"parent" : fourth_pr_name,"item_code":"TEST_ITEM_4"}, "concentration")
 fourth_stock_ledger_pr_name = frappe.db.get_value("Stock Ledger Entry",{"voucher_no":fourth_pr_name,"item_code":"TEST_ITEM_4"},"name")
 
 # from datetime import date,timedelta,datetime
@@ -994,7 +998,7 @@ work_order_create.batch_yield = 10
 work_order_create.is_multiple_item = 1
 company =  frappe.db.get_value("Company",{},"company_name")
 work_order_create.wip_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
-work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Finished Goods"},"name")
+work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Finished Products"},"name")
 work_order_create.bom_no = "BOM-FINISH_TEST_ITEM-001"
 work_order_create.concentration = 0
 work_order_create.use_multi_level_bom = 1
@@ -1066,6 +1070,12 @@ stock_entry_mtm.items[1].batch_no = second_pr_batch_no
 stock_entry_mtm.items[2].batch_no = third_pr_batch_no
 stock_entry_mtm.items[3].batch_no = fourth_pr_batch_no
 
+stock_entry_mtm.items[0].concentration = first_pr_concentration
+stock_entry_mtm.items[1].concentration = second_pr_concentration
+stock_entry_mtm.items[2].concentration = third_pr_concentration
+stock_entry_mtm.items[3].concentration = fourth_pr_concentration
+
+
 stock_entry_mtm.save()
 stock_entry_mtm_name = stock_entry_mtm.name
 stock_entry_mtm.submit()
@@ -1083,7 +1093,7 @@ fourth_stock_ledger_mtm_item_name = frappe.db.get_value("Stock Ledger Entry",{"v
 # stock_entry_mr.set_posting_time = 1
 # stock_entry_mr.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -1)
 # company = frappe.db.get_value("Company",{},"company_name") 
-# warehouse = frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Finished Goods"},"name")
+# warehouse = frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"Finished Products"},"name")
 # packaging_material = frappe.db.get_value("Packaging Material",{},"name")
 # stock_entry_mr.to_warehouse = warehouse
 # stock_entry_mr.append("items",{
@@ -1120,24 +1130,28 @@ stock_entry_ma.based_on = "TEST_ITEM_1"
 stock_entry_ma.fg_completed_quantity = 200
 stock_entry_ma.fg_completed_qty = 205.556
 stock_entry_ma.from_warehouse = warehouse
-target_warehouse =  frappe.db.get_value("Warehouse",{'company': company, 'warehouse_name': 'Finished Goods'},"name") #it will Fetch the warehouse of the given Company
+target_warehouse =  frappe.db.get_value("Warehouse",{'company': company, 'warehouse_name': 'Finished Products'},"name") #it will Fetch the warehouse of the given Company
 stock_entry_ma.to_warehouse = target_warehouse
 # stock_entry_ma.items[3].concentration = 85
 for item in stock_entry_ma.items:
     if item.item_code == "TEST_ITEM_1":
         item.batch_no = first_pr_batch_no
+        item.concentration = first_pr_concentration
         item.quantity = 80
         item.qty = 80
     elif item.item_code == "TEST_ITEM_2":
         item.batch_no = second_pr_batch_no
+        item.concentration = second_pr_concentration
         item.quantity = 80
         item.qty = 80
     elif item.item_code == "TEST_ITEM_3":
         item.batch_no = third_pr_batch_no
+        item.concentration = third_pr_concentration
         item.quantity = 80
         item.qty = 80
     elif item.item_code == "TEST_ITEM_4":
         item.batch_no = fourth_pr_batch_no
+        item.concentration = fourth_pr_concentration
         item.quantity = 80
         item.qty = 88.889
     elif item.item_code == "FINISH_TEST_ITEM":
@@ -1291,7 +1305,7 @@ asis_final_stock_ledger_ma_item = frappe.db.get_value("Stock Ledger Entry",{"vou
 # import datetime
 
 # company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
-# warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Finished Goods"},"name") 
+# warehouse =  frappe.db.get_value("Warehouse",{'company':company, "warehouse_name":"Finished Products"},"name") 
 # cost_center = frappe.db.get_value("Company",company,"cost_center")
 
 # second_si = frappe.new_doc("Sales Invoice")

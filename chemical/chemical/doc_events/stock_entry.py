@@ -622,3 +622,101 @@ def delete_auto_created_batches(self):
 	pass
 
 
+def on_update_after_submit(self,method):
+	pass
+	# update_yield(self)
+
+def update_yield(self):
+	cal_yield = 0
+	cons = 0
+	tot_quan = 0
+	item_arr = list()
+	item_map = dict()
+	flag = 0
+	if self.purpose == "Manufacture" and self.based_on:
+		for d in self.items:
+			if d.t_warehouse and not frappe.db.get_value("Item",d.item_code,"maintain_as_is_stock"):
+				if d.t_warehouse:
+					flag+=1		
+				
+				if d.item_code not in item_arr:
+						item_map.setdefault(d.item_code, {'quantity':0, 'qty':0, 'yield_weights':0})
+					
+				item_map[d.item_code]['quantity'] += flt(d.quantity)
+				item_map[d.item_code]['qty'] += flt(d.qty)
+				item_map[d.item_code]['yield_weights'] += flt(d.batch_yield)*flt(d.quantity)
+			frappe.msgprint(str(item_map))
+			if flag == 1:
+				# Last row object
+				last_row = self.items[-1]
+
+				# Last row batch_yield
+				batch_yield = last_row.batch_yield
+
+				# List of item_code from items table
+				items_list = [row.item_code for row in self.items]
+
+				# Check if items list has frm.doc.based_on value
+				if self.based_on in items_list:
+					# item_yield = 0.0
+					# if item_map[self.based_on]['yield_weights'] > 0:
+					# 	item_yield = item_map[self.based_on]['yield_weights'] / item_map[self.based_on]['quantity']
+
+					# 	if item_yield:
+					# 		cal_yield = flt(item_yield) * flt(last_row.qty / item_map[self.based_on]['quantity']) # Last row qty / sum of items of based_on item from map variable
+					# 	else:
+					cal_yield =  flt(last_row.qty / item_map[self.based_on]['quantity'])
+				last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)		
+				batch_doc = frappe.get_doc("Batch",row.batch_no)
+				batch_doc.db_set('batch_yield',last_row.batch_yield)
+				batch_doc.db_set('concentration',last_row.concentration)
+
+		# update finised item detail
+
+		count = 0
+		batch_yield = 0.0
+		concentration = 0.0
+
+		po = frappe.get_doc("Work Order", self.work_order)
+		po.finish_item = []
+		if po.bom_no:
+			bom_doc = frappe.get_doc("BOM",po.bom_no)
+		# po.append("finish_item",finished_item_list)							
+		for row in self.items:
+			if row.t_warehouse and not frappe.db.get_value("Item",row.item_code,"maintain_as_is_stock"):
+				count += 1
+				batch_yield += row.batch_yield
+				concentration += row.concentration
+				if bom_doc.multiple_finish_item:
+					for bom_fi in bom_doc.multiple_finish_item:
+						po.append("finish_item",{
+							'item_code': row.item_code,
+							'actual_qty': row.qty,
+							'actual_valuation': row.valuation_rate,
+							'lot_no': row.lot_no,
+							'purity': row.concentration,
+							'packing_size': row.packing_size,
+							'no_of_packages': row.no_of_packages,
+							'batch_yield': row.batch_yield,
+							'batch_no': row.batch_no,
+							"bom_cost_ratio":bom_fi.cost_ratio,
+							"bom_qty_ratio":bom_fi.qty_ratio,
+							"bom_qty":po.qty * bom_fi.qty_ratio / 100,
+							"bom_yield":bom_fi.batch_yield
+						})
+				else:
+					po.append("finish_item",{
+						'item_code': row.item_code,
+						'purity': row.concentration,	
+						'batch_yield': row.batch_yield,
+						'batch_no': row.batch_no,
+						"bom_yield": bom_doc.batch_yield
+					})
+				
+		
+		for child in po.finish_item:
+			child.db_update()
+		po.db_set("batch_yield", flt(batch_yield/count))
+		po.db_set("concentration", flt(concentration/count))
+		
+			
