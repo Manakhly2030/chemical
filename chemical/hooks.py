@@ -224,6 +224,7 @@ doc_events = {
 		"validate": "chemical.chemical.doc_events.item.item_validate",
 	},
 	"Work Order":{
+		"validate":"chemical.chemical.doc_events.work_order.validate",
 		"before_submit": "chemical.chemical.doc_events.work_order.before_submit",
 	},
 	"Stock Entry": {
@@ -254,6 +255,9 @@ doc_events = {
 			"chemical.chemical.doc_events.stock_entry.on_cancel",
 			"chemical.batch_valuation.stock_entry_on_cancel",
 		],
+		"on_update_after_submit": [
+			"chemical.chemical.doc_events.stock_entry.on_update_after_submit",
+		]
 	},
 	"Batch": {
 		'before_naming': "chemical.batch_valuation.override_batch_autoname",
@@ -338,10 +342,45 @@ scheduler_events = {
 
 override_doctype_dashboards = {
 	"Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
-	"Customer": "chemical.chemical.dashboard.customer.get_data"
+	"Customer": "chemical.chemical.dashboard.customer.get_data",
+	"Quotation": "chemical.chemical.dashboard.quotation.get_data"
 }
 
 #Work Order Summary Report Override From Finbyz Dashboard For Chart
 # from chemical.chemical.report.work_order_summary import execute as wos_execute
 # from finbyz_dashboard.finbyz_dashboard.report.work_order_summary import work_order_summary
 # work_order_summary.execute = wos_execute
+
+
+# Chemical Overrides
+
+from chemical.batch_valuation_overrides import get_supplied_items_cost,set_incoming_rate_buying,set_incoming_rate_selling,get_rate_for_return,get_incoming_rate,process_sle,get_args_for_incoming_rate
+
+# Buying controllers
+from erpnext.controllers.buying_controller import BuyingController
+BuyingController.get_supplied_items_cost = get_supplied_items_cost
+BuyingController.set_incoming_rate = set_incoming_rate_buying
+
+# Selling controllers
+from erpnext.controllers.selling_controller import SellingController
+SellingController.set_incoming_rate = set_incoming_rate_selling
+
+# sales and purchase return
+from erpnext.controllers import sales_and_purchase_return
+sales_and_purchase_return.get_rate_for_return =  get_rate_for_return
+
+# utils
+
+# from erpnext.stock import utils
+# utils.get_incoming_rate =  get_incoming_rate
+
+import erpnext
+erpnext.stock.utils.get_incoming_rate = get_incoming_rate
+
+# stock_ledger
+from erpnext.stock.stock_ledger import update_entries_after
+update_entries_after.process_sle =  process_sle
+
+# stock entry
+from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+StockEntry.get_args_for_incoming_rate = get_args_for_incoming_rate

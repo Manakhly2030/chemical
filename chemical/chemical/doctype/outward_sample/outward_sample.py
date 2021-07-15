@@ -5,15 +5,16 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _, db
-from chemical.controller import Controller
+from frappe.model.document import Document
 from chemical.api import get_party_details
 from frappe.model.mapper import get_mapped_doc
 from frappe.desk.reportview import get_match_cond, get_filters_cond
+from erpnext.utilities.product import get_price
 from frappe.utils import nowdate,flt
 
 from finbyzerp.api import before_naming as naming_series
 
-class OutwardSample(Controller):
+class OutwardSample(Document):
 	def before_save(self):
 		party_detail = get_party_details(party = self.party,party_type = self.link_to)
 		self.party_name = party_detail.party_name
@@ -27,10 +28,15 @@ class OutwardSample(Controller):
 		total_amount = 0
 
 		for row in self.details:
-			if row.item_name:
-				price = self.get_spare_price(item_code=row.item_code, price_list=self.price_list or "Standard Buying", company=self.company)
-				row.db_set('rate', price.price_list_rate)
-				row.db_set('price_list_rate', price.price_list_rate)
+			if row.item_code:
+				if row.bom_no:
+					rate = frappe.db.get_value("BOM",row.bom_no,'per_unit_price')
+					
+				else:
+					price = self.get_price_list(item_code=row.item_code, price_list=self.price_list or "Standard Buying", company=self.company)
+					rate = price.price_list_rate
+				row.db_set('rate', rate)
+				row.db_set('price_list_rate', rate)
 
 			if row.batch_yield:
 				bomyield = frappe.db.get_value("BOM",{'item': row.item_name},"batch_yield")
@@ -75,7 +81,7 @@ class OutwardSample(Controller):
 
 		total_amount = 0.0
 		for row in bm.items:
-			price = get_spare_price(row.item_name, "Standard Buying").price_list_rate
+			price = self.get_price_list(row.item_name, "Standard Buying").price_list_rate
 
 			if row.batch_yield:
 				bomyield = frappe.db.get_value("BOM",{'item': row.item_name},"batch_yield")
@@ -125,6 +131,15 @@ class OutwardSample(Controller):
 		
 	def before_naming(self):
 		naming_series(self, 'save')
+
+	@frappe.whitelist()
+	def get_price_list(self,item_code, price_list, customer_group="All Customer Groups", company=None):
+		price = get_price(item_code, price_list, customer_group, company)
+		
+		if not price:
+			price = frappe._dict({'price_list_rate': 0.0})
+
+		return price
 
 @frappe.whitelist()
 def make_quotation(source_name, target_doc=None):

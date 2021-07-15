@@ -37,6 +37,7 @@ class ManufacturingConsumption(Document):
 				se_doc.from_warehouse = self.source_warehouse
 				se_doc.from_bom = 1
 				se_doc.fg_completed_qty = work_order[1]
+				se_doc.fg_completed_quantity = work_order[1]
 				for v in value:
 					se_doc.append("items",{
 						'item_code': v['item_code'],

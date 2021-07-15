@@ -3,7 +3,7 @@ from frappe import msgprint, _
 from frappe.utils import flt
 from frappe.utils.background_jobs import enqueue
 from erpnext.stock.get_item_details import get_price_list_rate
-#from erpnext.manufacturing.doctype.bom import BOM
+from erpnext.manufacturing.doctype.bom.bom import get_valuation_rate
 
 def bom_validate(self, method):
 	item_list = [item.item_code for item in self.items]
@@ -191,22 +191,21 @@ def update_cost():
 		bom_obj.db_set('per_unit_operational_cost',flt(flt(bom_obj.total_operational_cost)/bom_obj.quantity))
 		bom_obj.db_set('per_unit_scrap_cost',flt(flt(bom_obj.total_scrap_cost)/bom_obj.quantity))
 		bom_obj.db_update()
-		# if bom_obj.per_unit_price != per_unit_price:
-			# bom_obj.db_set('per_unit_price', per_unit_price)
-		if frappe.db.exists("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list}):
-			name = frappe.db.get_value("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list},'name')
-			# frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
-			item_doc = frappe.get_doc("Item Price",name)
-			item_doc.db_set("price_list_rate",per_unit_price)
-			item_doc.db_update()
-		else:
-			item_price = frappe.new_doc("Item Price")
-			item_price.price_list = bom_obj.buying_price_list
-			item_price.item_code = bom_obj.item
-			item_price.price_list_rate = per_unit_price
+		
+		if bom_obj.is_default:
+			if frappe.db.exists("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list}):
+				name = frappe.db.get_value("Item Price",{"item_code":bom_obj.item,"price_list":bom_obj.buying_price_list},'name')
+				item_doc = frappe.get_doc("Item Price",name)
+				item_doc.db_set("price_list_rate",per_unit_price)
+				item_doc.db_update()
+			else:
+				item_price = frappe.new_doc("Item Price")
+				item_price.price_list = bom_obj.buying_price_list
+				item_price.item_code = bom_obj.item
+				item_price.price_list_rate = per_unit_price
 			
 			item_price.save()
-		#frappe.db.commit()
+	
 
 # update price in BOM
 # call it in bom.js
@@ -251,21 +250,24 @@ def upadte_item_price(docname,item, price_list, per_unit_price):
 	doc.db_set('per_unit_operational_cost',flt(flt(doc.total_operational_cost)/doc.quantity))
 	doc.db_set('per_unit_scrap_cost',flt(flt(doc.total_scrap_cost)/doc.quantity))
 	doc.db_update()
-	if frappe.db.exists("Item Price",{"item_code":item,"price_list":price_list}):
-		name = frappe.db.get_value("Item Price",{"item_code":item,"price_list":price_list},'name')
-		# frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
-		item_doc = frappe.get_doc("Item Price",name)
-		item_doc.db_set("price_list_rate",per_unit_price)
-		item_doc.db_update()
-	else:
-		item_price = frappe.new_doc("Item Price")
-		item_price.price_list = price_list
-		item_price.item_code = item
-		item_price.price_list_rate = per_unit_price
+
+
+	if doc.is_default:
+		if frappe.db.exists("Item Price",{"item_code":item,"price_list":price_list}):
+			name = frappe.db.get_value("Item Price",{"item_code":item,"price_list":price_list},'name')
+			# frappe.db.set_value("Item Price",name,"price_list_rate", per_unit_price)
+			item_doc = frappe.get_doc("Item Price",name)
+			item_doc.db_set("price_list_rate",per_unit_price)
+			item_doc.db_update()
+		else:
+			item_price = frappe.new_doc("Item Price")
+			item_price.price_list = price_list
+			item_price.item_code = item
+			item_price.price_list_rate = per_unit_price
+			
+			item_price.save()
 		
-		item_price.save()
-		
-	return "Item Price Updated!"
+		return "Item Price Updated!"
 
 
 # Daily price update on hooks
@@ -329,7 +331,7 @@ def _update_bom_cost(self,update_parent=False, from_child_bom=False, save=False)
 		self.calculate_cost()
 	if save:
 		self.db_update()
-	self.update_exploded_items()
+	# self.update_exploded_items()
 
 	# update parent BOMs
 	if self.total_cost != existing_bom_cost and update_parent:
@@ -351,14 +353,14 @@ def get_rm_rate(self, arg):
 	last_purchase_rate = 0
 
 	if arg.get('scrap_items'):
-		valuation_rate = self.get_valuation_rate(arg)
+		valuation_rate = get_valuation_rate(arg)
 	elif arg:
 		#Customer Provided parts will have zero rate
 		if not frappe.db.get_value('Item', arg["item_code"], 'is_customer_provided_item'):
 			if arg.get('bom_no') and self.set_rate_of_sub_assembly_item_based_on_bom:
 				rate = flt(self.get_bom_unitcost(arg['bom_no'])) * (arg.get("conversion_factor") or 1)
 			else:
-				valuation_rate = self.get_valuation_rate(arg) * (arg.get("conversion_factor") or 1)
+				valuation_rate = get_valuation_rate(arg) * (arg.get("conversion_factor") or 1)
 				
 				last_purchase_rate = flt(arg.get('last_purchase_rate') \
 					or frappe.db.get_value("Item", arg['item_code'], "last_purchase_rate")) \
