@@ -40,6 +40,8 @@
   "price",
   "amended_from",
   "section_break_27",
+  "ball_mill_additional_cost",
+  "section_break_35_section",
   "packaging",
   "section_break_34",
   "total_packing_qty",
@@ -344,6 +346,16 @@
   {
    "fieldname": "column_break_36",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ball_mill_additional_cost",
+   "fieldtype": "Table",
+   "label": "Ball Mill Additional Cost",
+   "options": "Ball Mill Additional Cost"
+  },
+  {
+   "fieldname": "section_break_35_section",
+   "fieldtype": "Section Break"
   }
  ],
  "is_submittable": 1,

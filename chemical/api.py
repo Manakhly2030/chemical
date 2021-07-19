@@ -398,8 +398,8 @@ def se_repack_cal_rate_qty(self):
 					d.quantity = flt(d.accepted_quantity) or flt(d.receive_quantity)	
 				else:
 					d.quantity = flt(d.qty) 
-
-				d.basic_rate= flt(d.price)
+				if d.price and not d.set_basic_rate_manually:
+					d.basic_rate= flt(d.price)
 						
 
 			if hasattr(doc_items,'short_quantity'):
@@ -423,11 +423,11 @@ def se_repack_cal_rate_qty(self):
 				d.qty = (d.packing_size * d.no_of_packages)
 				if maintain_as_is_stock:
 					d.quantity = d.qty * concentration / 100
-					if d.price:
+					if d.price and not d.set_basic_rate_manually:
 						d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 				else:
 					d.quantity = d.qty
-					if d.price:
+					if d.price and not d.set_basic_rate_manually:
 						d.basic_rate = d.price
 			else:
 				if maintain_as_is_stock:
@@ -437,7 +437,7 @@ def se_repack_cal_rate_qty(self):
 					if d.qty and not d.quantity:
 						d.quantity = d.qty * concentration / 100.0
 
-					if d.price:
+					if d.price and not d.set_basic_rate_manually:
 						d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 				else:
 					if d.quantity:
@@ -446,7 +446,7 @@ def se_repack_cal_rate_qty(self):
 					if d.qty and not d.quantity:
 						d.quantity = d.qty
 
-					if d.price:
+					if d.price and not d.set_basic_rate_manually:
 						d.basic_rate = d.price
 			
 
@@ -466,11 +466,11 @@ def se_cal_rate_qty(self):
 			d.qty = (d.packing_size * d.no_of_packages)
 			if maintain_as_is_stock:
 				d.quantity = flt(d.qty) * flt(concentration) / 100
-				if d.price:
+				if d.price and not d.set_basic_rate_manually:
 					d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 			else:
 				d.quantity = d.qty
-				if d.price:
+				if d.price and not d.set_basic_rate_manually:
 					d.basic_rate = d.price
 		else:
 			if maintain_as_is_stock:
@@ -480,7 +480,7 @@ def se_cal_rate_qty(self):
 				if d.qty and not d.quantity:
 					d.quantity = d.qty * concentration / 100.0
 
-				if d.price:
+				if d.price and not d.set_basic_rate_manually:
 					d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 			else:
 				if d.quantity:
@@ -489,7 +489,7 @@ def se_cal_rate_qty(self):
 				if d.qty and not d.quantity:
 					d.quantity = d.qty
 
-				if d.price:
+				if d.price and not d.set_basic_rate_manually:
 					d.basic_rate = d.price
 
 def cal_actual_valuations(self):
