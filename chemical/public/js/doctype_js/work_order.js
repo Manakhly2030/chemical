@@ -139,7 +139,7 @@ frappe.ui.form.on("Work Order", {
 		// frm.trigger("add_finish_item")
 	},
 	bom_no: function (frm) {
-		frm.refresh_field("finish_item");
+		// frm.refresh_field("finish_item");
 		frappe.run_serially([
 			() => frappe.db.get_value("BOM", frm.doc.bom_no, ["based_on", "batch_yield","is_multiple_item"], function (r) {
 				if (r) {
@@ -151,41 +151,41 @@ frappe.ui.form.on("Work Order", {
 			//() => frm.trigger("add_finish_item"),
 		]);
 	},
-	add_finish_item: function(frm){
-		console.log(frm.doc.finish_item)
-	if (!frm.doc.finish_item || frm.doc.finish_item==undefined || frm.doc.finish_item.length==0)
-	{
-		console.log('called')
-		if(frm.doc.bom_no){
-			if(frm.doc.is_multiple_item){
-				frappe.model.with_doc("BOM", frm.doc.bom_no, function(){
-					let tabletransfer = frappe.get_doc("BOM", frm.doc.bom_no)
-					$.each(tabletransfer.multiple_finish_item, function(index, row){
-						let d = cur_frm.add_child("finish_item");
-						d.item_code = row.item_code;
-						d.bom_cost_ratio = row.cost_ratio;
-						d.bom_qty_ratio = row.qty_ratio;
-						d.bom_qty = cur_frm.doc.qty * d.bom_qty_ratio / 100 ;
-						d.bom_yield = row.batch_yield
-						frm.refresh_field("finish_item");
-					});
-				});
-			}
-			else{
-				frappe.model.with_doc("BOM", frm.doc.bom_no, function(){
-				let tabletransfer = frappe.get_doc("BOM", frm.doc.bom_no)
-				let d = cur_frm.add_child("finish_item");
-				d.item_code = tabletransfer.item
-				d.bom_cost_ratio = 100
-				d.bom_qty_ratio = 100
-				d.bom_qty = frm.doc.qty
-				d.bom_yield = tabletransfer.batch_yield
-				frm.refresh_field("finish_item");
-			});
-			}
-		}
-	}
-	},
+	// add_finish_item: function(frm){
+	// 	console.log(frm.doc.finish_item)
+	// if (!frm.doc.finish_item || frm.doc.finish_item==undefined || frm.doc.finish_item.length==0)
+	// {
+	// 	console.log('called')
+	// 	if(frm.doc.bom_no){
+	// 		if(frm.doc.is_multiple_item){
+	// 			frappe.model.with_doc("BOM", frm.doc.bom_no, function(){
+	// 				let tabletransfer = frappe.get_doc("BOM", frm.doc.bom_no)
+	// 				$.each(tabletransfer.multiple_finish_item, function(index, row){
+	// 					let d = cur_frm.add_child("finish_item");
+	// 					d.item_code = row.item_code;
+	// 					d.bom_cost_ratio = row.cost_ratio;
+	// 					d.bom_qty_ratio = row.qty_ratio;
+	// 					d.bom_qty = cur_frm.doc.qty * d.bom_qty_ratio / 100 ;
+	// 					d.bom_yield = row.batch_yield
+	// 					frm.refresh_field("finish_item");
+	// 				});
+	// 			});
+	// 		}
+	// 		else{
+	// 			frappe.model.with_doc("BOM", frm.doc.bom_no, function(){
+	// 			let tabletransfer = frappe.get_doc("BOM", frm.doc.bom_no)
+	// 			let d = cur_frm.add_child("finish_item");
+	// 			d.item_code = tabletransfer.item
+	// 			d.bom_cost_ratio = 100
+	// 			d.bom_qty_ratio = 100
+	// 			d.bom_qty = frm.doc.qty
+	// 			d.bom_yield = tabletransfer.batch_yield
+	// 			frm.refresh_field("finish_item");
+	// 		});
+	// 		}
+	// 	}
+	// }
+	// },
 	based_on: function (frm) {
 		if (frm.doc.based_on) {
 			cur_frm.set_df_property('based_on_qty', 'label',"Required " +cstr(frm.doc.based_on) + " Qty");

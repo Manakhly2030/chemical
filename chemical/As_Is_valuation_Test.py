@@ -1712,17 +1712,17 @@ assert round(asis_final_ma_item_valuation_rate,2) == round(asis_final_ma_item_am
 # frappe.db.commit()
 
 frappe.db.set_value("Batch",final_item_batch_no,"reference_name","")
-frappe.db.commit()
+#frappe.db.commit()
 
 manufacture_delete = frappe.get_doc("Stock Entry",stock_entry_ma_name)
 manufacture_delete.flags.ignore_links = True
 manufacture_delete.cancel()
 manufacture_delete.delete()
-frappe.db.commit()
+#frappe.db.commit()
 
 batch_manufacture_delete = frappe.get_doc("Batch",final_item_batch_no)
 batch_manufacture_delete.delete()
-frappe.db.commit()
+#frappe.db.commit()
 
 # frappe.db.set_value("Batch",stock_entry_mr_1_batch_no,"reference_name","")
 # frappe.db.commit()
@@ -1741,28 +1741,28 @@ material_transfer_delete = frappe.get_doc("Stock Entry",stock_entry_mtm_name)
 material_transfer_delete.flags.ignore_links = True
 material_transfer_delete.cancel()
 material_transfer_delete.delete()
-frappe.db.commit()
+#frappe.db.commit()
 
 work_order_delete = frappe.get_doc("Work Order",work_name)
 work_order_delete.flags.ignore_links = True
 work_order_delete.cancel()
 work_order_delete.delete()
-frappe.db.commit()
+#frappe.db.commit()
 
 bom_delete = frappe.get_doc("BOM",bom_name)
 bom_delete.cancel()
 bom_delete.delete()
-frappe.db.commit()
+#frappe.db.commit()
 
 bom2_delete = frappe.get_doc("BOM",bom2_name)
 bom2_delete.cancel()
 bom2_delete.delete()
-frappe.db.commit()
+#frappe.db.commit()
 
 bom3_delete = frappe.get_doc("BOM",bom3_name)
 bom3_delete.cancel()
 bom3_delete.delete()
-frappe.db.commit()
+#frappe.db.commit()
 
 fourth_pr = frappe.get_doc("Purchase Receipt",fourth_pr_name)
 third_pr = frappe.get_doc("Purchase Receipt",third_pr_name)
@@ -1784,7 +1784,7 @@ second_pr.delete()
 
 first_pr.cancel()
 first_pr.delete()
-frappe.db.commit()
+#frappe.db.commit()
 
 item_delete_1 = frappe.get_doc("Item","TEST_ITEM_1")
 if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"TEST_ITEM_1"},"name"):
@@ -1829,13 +1829,13 @@ if frappe.db.get_value("Bin",{"actual_qty":0,"stock_value":0,"item_code":"AsIs_F
 else:
     frappe.msgprint("test item finish doc is linked with purchase receipt or sales invoice or BIN")
 
-frappe.db.commit()
+#frappe.db.commit()
 
 supplier_delete = frappe.get_doc("Supplier","Test_Supplier_1")
 supplier_delete.delete()
 customer_delete = frappe.get_doc("Customer","Test_Customer_1")
 customer_delete.delete() 
-frappe.db.commit()
+#frappe.db.commit()
 
 
 

@@ -182,6 +182,13 @@ class BallMillDataSheet(Document):
 				'basic_amount': flt(d.qty * self.per_unit_amount),
 				'cost_center': cost_center
 			})
+
+		for d in self.ball_mill_additional_cost:	
+			se.append('additional_costs',{
+				'expense_account': d.expense_account,
+				'amount': d.amount,
+				'description': d.description
+			})
 		se.save()
 		se.submit()
 		self.db_set('stock_entry',se.name)

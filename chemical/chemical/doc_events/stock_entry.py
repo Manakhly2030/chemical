@@ -150,15 +150,19 @@ def sum_total_additional_costs(self):
 def calculate_rate_and_amount(self,force=False,update_finished_item_rate=True, raise_error_if_no_rate=True):
 	if self.purpose in ['Manufacture','Repack']:
 		is_multiple_finish  = 0
+		multi_item_list = []
 		for d in self.items:
 			if d.t_warehouse and d.qty != 0:
 				is_multiple_finish +=1
+				multi_item_list.append(d.item_code)
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
 			self.set_basic_rate(force, update_finished_item_rate=False, raise_error_if_no_rate=True)
 			bom_doc = frappe.get_doc("BOM",self.bom_no)
 			if hasattr(bom_doc,'equal_cost_ratio'):
 				if not bom_doc.equal_cost_ratio:
 					cal_rate_for_finished_item(self)
+				# elif len(list(set(multi_item_list))) == 1 and bom_doc.equal_cost_ratio:
+				# 	calculate_multiple_repack_valuation(self)
 				else:
 					calculate_multiple_repack_valuation(self)
 			else:
@@ -296,21 +300,22 @@ def update_po(self):
 					lot.append(row.lot_no)
 					if bom_doc.multiple_finish_item:
 						for bom_fi in bom_doc.multiple_finish_item:
-							po.append("finish_item",{
-								'item_code': row.item_code,
-								'actual_qty': row.qty,
-								'actual_valuation': row.valuation_rate,
-								'lot_no': row.lot_no,
-								'purity': row.concentration,
-								'packing_size': row.packing_size,
-								'no_of_packages': row.no_of_packages,
-								'batch_yield': row.batch_yield,
-								'batch_no': row.batch_no,
-								"bom_cost_ratio":bom_fi.cost_ratio,
-								"bom_qty_ratio":bom_fi.qty_ratio,
-								"bom_qty":po.qty * bom_fi.qty_ratio / 100,
-								"bom_yield":bom_fi.batch_yield
-							})
+							if bom_fi.item_code == row.item_code:
+								po.append("finish_item",{
+									'item_code': row.item_code,
+									'actual_qty': row.qty,
+									'actual_valuation': row.valuation_rate,
+									'lot_no': row.lot_no,
+									'purity': row.concentration,
+									'packing_size': row.packing_size,
+									'no_of_packages': row.no_of_packages,
+									'batch_yield': row.batch_yield,
+									'batch_no': row.batch_no,
+									"bom_cost_ratio":bom_fi.cost_ratio,
+									"bom_qty_ratio":bom_fi.qty_ratio,
+									"bom_qty":po.qty * bom_fi.qty_ratio / 100,
+									"bom_yield":bom_fi.batch_yield
+								})
 					else:
 						po.append("finish_item",{
 							'item_code': row.item_code,

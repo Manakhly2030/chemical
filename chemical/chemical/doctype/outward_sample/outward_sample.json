@@ -112,8 +112,7 @@
    "fieldname": "item_name",
    "fieldtype": "Data",
    "label": "Item Name",
-   "options": "Item",
-   "read_only": 1
+   "options": "Item"
   },
   {
    "fieldname": "company",
@@ -370,7 +369,7 @@
   }
  ],
  "is_submittable": 1,
- "modified": "2021-04-03 18:03:20.408045",
+ "modified": "2021-04-28 16:36:46.630868",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",
