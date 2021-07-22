@@ -11,6 +11,14 @@ frappe.query_reports["Batch Wise Balance Chemical"] = {
 					frappe.query_report.get_filter('show_party').toggle(false)
 				}
 			}
+		}),
+		frappe.call({
+			method:"chemical.chemical.report.batch_wise_balance_chemical.batch_wise_balance_chemical.show_jobwork_warehouse_hidden",
+			callback: function(r){
+				if (r.message==0){
+					frappe.query_report.get_filter('remove_jobwork_warehouses').toggle(false)
+				}
+			}
 		})
 	},
 	"filters": [
@@ -47,6 +55,12 @@ frappe.query_reports["Batch Wise Balance Chemical"] = {
 			"fieldname": "show_party",
 			"label": __("Show party"),
 			"fieldtype": "Check",
+		},
+		{
+			"fieldname": "remove_jobwork_warehouses",
+			"label": __("Remove Jobwork Warehouses"),
+			"fieldtype": "Check",
+			"default":1
 		}
 		
 	]

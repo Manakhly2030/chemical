@@ -475,19 +475,19 @@ def se_cal_rate_qty(self):
 		else:
 			if maintain_as_is_stock:
 				if d.quantity:
-					d.qty = flt((d.quantity * 100.0) / concentration)
+					d.qty = flt((flt(d.quantity) * 100.0) / concentration)
 
 				if d.qty and not d.quantity:
-					d.quantity = d.qty * concentration / 100.0
+					d.quantity = flt(d.qty) * concentration / 100.0
 
 				if d.price:
 					d.basic_rate =  flt(d.quantity) * flt(d.price) / flt(d.qty)
 			else:
 				if d.quantity:
-					d.qty = d.quantity
+					d.qty = flt(d.quantity)
 
 				if d.qty and not d.quantity:
-					d.quantity = d.qty
+					d.quantity = flt(d.qty)
 
 				if d.price:
 					d.basic_rate = d.price
