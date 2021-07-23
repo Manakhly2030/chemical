@@ -32,6 +32,8 @@ def validate(self,method):
 	calculate_rate_and_amount(self)
 	get_based_on(self)
 	cal_target_yield_cons(self)
+	if self.additional_costs:
+		self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
 
 def stock_entry_validate(self, method):
 	if self.purpose == "Material Receipt":
