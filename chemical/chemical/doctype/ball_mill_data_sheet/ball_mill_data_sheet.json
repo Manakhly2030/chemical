@@ -361,11 +361,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
-<<<<<<< HEAD
- "modified": "2021-07-01 14:48:50.229656",
-=======
  "modified": "2021-06-22 17:57:46.686074",
->>>>>>> 953e9c1a48d3c6c4f25c2e18b18597743601e953
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
