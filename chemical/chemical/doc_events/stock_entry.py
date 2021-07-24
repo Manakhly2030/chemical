@@ -32,8 +32,8 @@ def validate(self,method):
 	calculate_rate_and_amount(self)
 	get_based_on(self)
 	cal_target_yield_cons(self)
-	if self.additional_costs:
-		self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
+	# if self.additional_costs:
+	# 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
 
 def stock_entry_validate(self, method):
 	if self.purpose == "Material Receipt":
@@ -135,7 +135,8 @@ def	update_additional_cost_scrap(self):
 						'description': d.item_code,
 						'qty': flt(flt(se_qty * d.stock_qty)/ bom_qty),
 						'rate': abs(d.rate),
-						'amount':  abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty)
+						'amount':  abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty),
+						'base_amount':abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty)
 					})
 			else:
 				for d in bom.scrap_items:
@@ -143,7 +144,8 @@ def	update_additional_cost_scrap(self):
 						if i.description == d.item_code:
 							i.qty = flt(flt(se_qty * d.stock_qty)/ row.qty)
 							i.rate = abs(d.rate)
-							i.amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty)    
+							i.amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty)  
+							i.base_amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty) 
 							break
 
 def sum_total_additional_costs(self):
@@ -246,6 +248,7 @@ def cal_validate_additional_cost_qty(self):
 			if addi_cost.uom == "FG QTY":
 				addi_cost.qty = self.fg_completed_quantity
 				addi_cost.amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
+				addi_cost.base_amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
 
 def fg_completed_quantity_to_fg_completed_qty(self):
 	if self.fg_completed_qty == 0:
@@ -508,7 +511,8 @@ def update_additional_cost(self):
 						'description': d.description,
 						'qty': flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity),
 						'rate': abs(d.rate),
-						'amount':  abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
+						'amount':  abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity),
+						'base_amount':  abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
 					})
 		else:
 			for row in self.additional_costs:
@@ -518,6 +522,7 @@ def update_additional_cost(self):
 							row.rate = abs(d.rate)
 							row.qty = flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
 							row.amount = abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
+							row.base_amount = abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
 		self.db_set('total_additional_costs',sum([row.amount for row in self.additional_costs]))
 
 def validate_lot(self):
