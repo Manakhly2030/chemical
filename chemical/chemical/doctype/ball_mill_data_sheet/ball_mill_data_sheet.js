@@ -26,6 +26,7 @@ cur_frm.fields_dict.items.grid.get_field("source_warehouse").get_query = functio
 		}
 	};
 };
+
 // cur_frm.fields_dict.sample_no.get_query = function(doc) {
 // 	return {
 // 		filters: {
@@ -86,6 +87,15 @@ this.frm.cscript.onload = function(frm) {
 							'product_name':doc.product_name,
 						}
 			}
+	});
+	this.frm.set_query("expense_account", "ball_mill_additional_cost", function(doc) {
+		return {
+			query: "erpnext.controllers.queries.tax_account_query",
+			filters: {
+				"account_type": ["Tax", "Chargeable", "Income Account", "Expenses Included In Valuation", "Expenses Included In Asset Valuation"],
+				"company": doc.company
+			}
+		};
 	});
 }
 function get_qty(frm) {

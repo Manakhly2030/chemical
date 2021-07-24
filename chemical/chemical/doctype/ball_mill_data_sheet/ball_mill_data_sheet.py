@@ -133,9 +133,9 @@ class BallMillDataSheet(Document):
 						d.qty = flt(d.quantity)
 	
 	def on_submit(self):
-		if self.get('create_stock_entry'):
-			create_stock_entry = self.get('create_stock_entry')
-		else: 
+		if self.get('create_stock_entry') == 0:
+			create_stock_entry = 0
+		else:
 			create_stock_entry = 1
 		if create_stock_entry:
 			se = frappe.new_doc("Stock Entry")
@@ -239,7 +239,8 @@ class BallMillDataSheet(Document):
 		self.actual_quantity = sum([flt(item.quantity) for item in self.packaging])
 		self.total_packing_qty = sum([flt(item.qty) for item in self.packaging])
 		self.total_packing_quantity = sum([flt(item.quantity) for item in self.packaging])
-		self.price = self.amount/ flt(self.actual_quantity)
+		if self.actual_quantity:
+			self.price = flt(self.amount)/ flt(self.actual_quantity)
 
 	def before_save(self):
 		self.handling_loss = flt(self.total_qty) - flt(self.actual_qty)

@@ -224,6 +224,7 @@ doc_events = {
 		"validate": "chemical.chemical.doc_events.item.item_validate",
 	},
 	"Work Order":{
+		"validate":"chemical.chemical.doc_events.work_order.validate",
 		"before_submit": "chemical.chemical.doc_events.work_order.before_submit",
 	},
 	"Stock Entry": {
@@ -341,7 +342,8 @@ scheduler_events = {
 
 override_doctype_dashboards = {
 	"Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
-	"Customer": "chemical.chemical.dashboard.customer.get_data"
+	"Customer": "chemical.chemical.dashboard.customer.get_data",
+	"Quotation": "chemical.chemical.dashboard.quotation.get_data"
 }
 
 #Work Order Summary Report Override From Finbyz Dashboard For Chart

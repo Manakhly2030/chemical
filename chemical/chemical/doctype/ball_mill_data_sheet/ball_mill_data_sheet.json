@@ -40,6 +40,8 @@
   "price",
   "amended_from",
   "section_break_27",
+  "ball_mill_additional_cost",
+  "section_break_35_section",
   "packaging",
   "section_break_34",
   "total_packing_qty",
@@ -344,12 +346,26 @@
   {
    "fieldname": "column_break_36",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ball_mill_additional_cost",
+   "fieldtype": "Table",
+   "label": "Ball Mill Additional Cost",
+   "options": "Ball Mill Additional Cost"
+  },
+  {
+   "fieldname": "section_break_35_section",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
+<<<<<<< HEAD
  "modified": "2021-07-01 14:48:50.229656",
+=======
+ "modified": "2021-06-22 17:57:46.686074",
+>>>>>>> 953e9c1a48d3c6c4f25c2e18b18597743601e953
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
