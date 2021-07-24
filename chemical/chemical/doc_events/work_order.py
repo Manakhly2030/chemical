@@ -187,6 +187,7 @@ def add_additional_cost(stock_entry,self,qty=None):
 				'qty': stock_entry.fg_completed_quantity,
 				'rate': additional_cost.rate,
 				'amount': flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
+				'base_amount':flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
 				'uom':"FG QTY"
 			})
 		else:
@@ -195,7 +196,8 @@ def add_additional_cost(stock_entry,self,qty=None):
 				'description': additional_cost.description,
 				'qty': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity))),
 				'rate': additional_cost.rate,
-				'amount': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate)
+				'amount': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate),
+				'base_amount':(flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate)
 			})
 
 def get_transfered_raw_materials(self):
