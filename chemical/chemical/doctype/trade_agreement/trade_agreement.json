@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "autoname": "field:agreement_code",
  "creation": "2020-06-03 17:16:04.499205",
  "doctype": "DocType",
@@ -36,7 +37,9 @@
    "options": "Country"
   }
  ],
- "modified": "2020-06-03 17:16:16.990198",
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2021-07-24 11:21:54.082966",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Trade Agreement",
@@ -51,6 +54,30 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Sales User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts User",
    "share": 1,
    "write": 1
   }
