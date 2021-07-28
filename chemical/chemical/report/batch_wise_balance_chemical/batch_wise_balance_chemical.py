@@ -234,6 +234,9 @@ def get_conditions(filters):
 	if filters.get("item_code"):
 		conditions += " and sle.item_code = '%s'" % filters["item_code"]
 
+	if filters.get('remove_jobwork_warehouses'):
+		jobwork_out_warehouses = tuple([i.job_work_out_warehouse for i in frappe.db.get_list("Company",{},"job_work_out_warehouse")])
+		conditions += " and sle.warehouse NOT IN {}".format(jobwork_out_warehouses)
 	return conditions
 
 #get all details
@@ -320,3 +323,11 @@ def get_item_details(filters):
 		item_map.setdefault(d.name, d)
 
 	return item_map
+
+@frappe.whitelist()
+def show_jobwork_warehouse_hidden():
+	doc = frappe.get_doc({"doctype":"Company"})
+	if hasattr(doc,'job_work_out_warehouse'):
+		return 1
+	else:
+		return 0

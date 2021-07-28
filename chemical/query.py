@@ -265,12 +265,12 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 	else:
 		return frappe.db.sql("""select name, lot_no, concentration, expiry_date from `tabBatch` batch
 			where item = %(item_code)s
-			and name like %(txt)s
+			and (name like %(txt)s or {searchfields})
 			and docstatus < 2
 			{0}
 			{match_conditions}
 			order by expiry_date, name desc
-			limit %(start)s, %(page_len)s""".format(cond, match_conditions=get_match_cond(doctype)), args)
+			limit %(start)s, %(page_len)s""".format(cond, match_conditions=get_match_cond(doctype),searchfields=searchfields), args)
 
 
 @frappe.whitelist()

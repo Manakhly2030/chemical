@@ -214,6 +214,10 @@ def get_conditions(filters):
 		conditions += " and exists (select name from `tabWarehouse` wh \
 			where wh.warehouse_type = '%s' and sle.warehouse = wh.name)"%(filters.get("warehouse_type"))
 
+	if filters.get('remove_jobwork_warehouses'):
+		jobwork_out_warehouses = tuple([i.job_work_out_warehouse for i in frappe.db.get_list("Company",{},"job_work_out_warehouse")])
+		conditions += " and sle.warehouse NOT IN {}".format(jobwork_out_warehouses)
+
 	return conditions
 
 def get_stock_ledger_entries(filters, items):

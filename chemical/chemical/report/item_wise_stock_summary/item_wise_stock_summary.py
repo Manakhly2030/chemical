@@ -81,7 +81,7 @@ def get_sle_data(filters,columns):
 			else:
 				work_order_dict[wo.production_item] += flt(wo.consumed_qty)
 		columns += [
-				{"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},
+				# {"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},
 				{"label": _("Closing Stock"), "fieldname": "closing_stock", "fieldtype": "Float", "width": 120},			
 		]
 	sle_details = []
@@ -228,7 +228,7 @@ def get_columns(filters):
 	else:
 		columns += [
 				{"label": _("Captive Consumption"), "fieldname": "captive_consumption", "fieldtype": "Float", "width": 100},
-				{"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},
+				# {"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},
 				{"label": _("Closing Stock"), "fieldname": "closing_stock", "fieldtype": "Float", "width": 120},
 		]
 		return columns
