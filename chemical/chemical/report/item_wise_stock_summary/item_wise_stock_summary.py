@@ -9,14 +9,14 @@ from frappe.utils import flt
 def execute(filters=None):
 	columns, data = [], []
 	columns = get_columns(filters)
-	data = get_data(filters)
+	columns, data = get_data(filters,columns)
 	return columns, data
 
-def get_data(filters):
+def get_data(filters,columns):
 	opening_data, closing_data = get_opening_closing_data(filters)
-	sle_data = get_sle_data(filters)
-	data = get_item_details(sle_data, opening_data, closing_data)
-	return data
+	sle_data,columns,work_order_map,columns_list = get_sle_data(filters,columns)
+	data = get_item_details(filters,sle_data, opening_data, closing_data,work_order_map,columns_list)
+	return columns, data
 
 def get_opening_closing_data(filters):
 	conditions = get_sle_conditions(filters)
@@ -40,21 +40,57 @@ def get_opening_closing_data(filters):
 
 	return opening_data,closing_data
 
-def get_sle_data(filters):
+def get_sle_data(filters,columns):
 	conditions = get_sle_conditions(filters)
 	sle_data = frappe.db.sql("""
 		select sle.item_code, sle.actual_qty, sle.voucher_type, sle.voucher_no, i.item_group,
-			i.maintain_as_is_stock, bt.concentration, se.stock_entry_type, se.name
+			i.maintain_as_is_stock, bt.concentration, se.stock_entry_type, se.name, se.work_order
 		from `tabStock Ledger Entry` as sle
 		LEFT JOIN `tabItem` as i ON sle.item_code = i.name
 		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no
 		LEFT JOIN `tabStock Entry` as se ON se.name = sle.voucher_no
 		where sle.posting_date BETWEEN '{}' and '{}' {}
 	""".format(filters.from_date,filters.to_date, conditions),as_dict=1)
-	
+
+	columns_list = []
+	work_order_map = {}
+
+	if filters.get('show_production_items'):
+		wo_conditions = get_work_order_conditions(filters)
+		work_order_data = frappe.db.sql("""
+			select woi.item_code, woi.consumed_qty, wo.production_item
+			from `tabWork Order` as wo
+			JOIN `tabWork Order Item` as woi on woi.parent = wo.name
+			JOIN `tabStock Entry` as se on se.work_order = wo.name
+			where wo.docstatus = 1 and se.posting_date BETWEEN '{}' and '{}'
+			and se.docstatus = 1 and se.purpose = 'Manufacture' {}
+		""".format(filters.from_date,filters.to_date,wo_conditions),as_dict=1)
+
+		for wo in work_order_data:
+			if wo.production_item not in columns_list:
+				columns_list.append(wo.production_item)
+				columns += [{"label": _(wo.production_item), "fieldname": wo.production_item, "fieldtype": "Data", "width": 120},]
+
+			work_order_map.setdefault(wo.item_code, frappe._dict({
+					wo.production_item: 0.0,
+				}))
+			work_order_dict = work_order_map[wo.item_code]
+
+			if not work_order_dict.get(wo.production_item):
+				work_order_dict[wo.production_item] = flt(wo.consumed_qty)
+			else:
+				work_order_dict[wo.production_item] += flt(wo.consumed_qty)
+		columns += [
+				# {"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},
+				{"label": _("Closing Stock"), "fieldname": "closing_stock", "fieldtype": "Float", "width": 120},			
+		]
 	sle_details = []
 	sle_map = {}
 	for sle in sle_data:
+		# if filters.get('show_production_items'):
+		# 	work_order_dict = work_order_map.get(sle.item_code)
+		# 	if work_order_dict:
+		# 		sle[list(work_order_dict.keys())[0]] = work_order_dict.get(list(work_order_dict.keys())[0])
 		if sle.maintain_as_is_stock and sle.concentration:
 			sle.actual_qty = flt(sle.actual_qty * sle.concentration / 100)
 		if sle.voucher_type in ["Purchase Receipt", "Purchase Invoice"] and sle.actual_qty >0:
@@ -65,23 +101,21 @@ def get_sle_data(filters):
 			sle.production = sle.actual_qty
 		if sle.voucher_type == "Stock Entry" and sle.actual_qty < 0 and sle.stock_entry_type in ["Manufacture","Repack"]:
 			sle.captive_consumption = abs(sle.actual_qty)
-		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Receive Jobwork Return" and sle.actual_qty > 0 and sle.name.find('RTN') > 0:
+		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Receive Jobwork Return" and sle.actual_qty > 0 and not sle.name.find('HJF') > 0:
 			sle.unprocessed_return = abs(sle.actual_qty)
-		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Receive Jobwork Return" and sle.actual_qty > 0 and (sle.name.find('HJF') > 0 or sle.name.find('RJF') > 0):
+		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Receive Jobwork Return" and sle.actual_qty > 0 and sle.name.find('HJF') > 0:
 			sle.processed_return = abs(sle.actual_qty)
 		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Send to Jobwork" and sle.actual_qty < 0:
 			sle.sent_to_job_work = abs(sle.actual_qty)
 		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Material Receipt" and sle.actual_qty > 0:
 			sle.receipt = sle.actual_qty
-		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Material Issue" and sle.actual_qty < 0:
-			sle.issue = abs(sle.actual_qty)
 		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Send Jobwork Finish" and sle.actual_qty < 0:
 			sle.send_jobwork_finish = abs(sle.actual_qty)
 		if sle.voucher_type == "Stock Entry" and sle.stock_entry_type == "Receive Jobwork Raw Material" and sle.actual_qty > 0:
 			sle.receive_jobwork_raw_material = abs(sle.actual_qty)
-	return sle_data
+	return sle_data,columns,work_order_map,columns_list
 
-def get_item_details(sle_data,opening_data,closing_data):
+def get_item_details(filters,sle_data,opening_data,closing_data,work_order_map,columns_list):
 	item_map = {}
 	opening_map = {}
 	closing_map = {}
@@ -89,13 +123,12 @@ def get_item_details(sle_data,opening_data,closing_data):
 	qty_dict = {}
 	for sle in sle_data:
 		item_map.setdefault(sle.item_code,frappe._dict({
-			"received":0.0 , "receipt":0.0, "issue":0.0 ,"sales":0.0,"production":0.0, "captive_consumption":0.0,\
+			"received":0.0 , "receipt":0.0, "sales":0.0,"production":0.0, "captive_consumption":0.0,\
 			"unprocessed_return":0.0, "processed_return":0.0,\
 			"sent_to_job_work":0.0, "send_jobwork_finish":0.0, "receive_jobwork_raw_material":0.0
 		}))
 		item_map[sle.item_code].received += flt(sle.received)
 		item_map[sle.item_code].receipt += flt(sle.receipt)
-		item_map[sle.item_code].issue += flt(sle.issue)
 		item_map[sle.item_code].sales += flt(sle.sales)
 		item_map[sle.item_code].production += flt(sle.production)
 		item_map[sle.item_code].captive_consumption += flt(sle.captive_consumption)
@@ -131,11 +164,10 @@ def get_item_details(sle_data,opening_data,closing_data):
 		except KeyError:
 			closing_stock = 0.0
 
-		data.append({
+		dict_work_order = {
 			"item_code":item,
 			"received":flt(value.received,2),
 			"receipt":flt(value.receipt,2),
-			"issue":flt(value.issue,2),
 			"sales":flt(value.sales,2),
 			"production":flt(value.production,2),
 			"captive_consumption":flt(value.captive_consumption,2),
@@ -146,7 +178,15 @@ def get_item_details(sle_data,opening_data,closing_data):
 			"receive_jobwork_raw_material":flt(value.receive_jobwork_raw_material,2),
 			"opening_stock":flt(opening_stock,2),
 			"closing_stock":flt(closing_stock,2),
-		})
+		}
+
+		if filters.get('show_production_items'):
+			pro_value = 0
+			work_order_dict = work_order_map.get(item)
+			if work_order_dict:
+				for col in columns_list:
+					dict_work_order.update({col:flt(work_order_dict.get(col),2)})
+		data.append(dict_work_order)
 	
 	
 	return data
@@ -161,23 +201,34 @@ def get_sle_conditions(filters):
 		conditions += " AND i.item_group = '{}'".format(filters.item_group)
 	return conditions
 	
+def get_work_order_conditions(filters):
+	conditions = ''
+	if filters.get('company'):
+		conditions += " AND wo.company = '{}'".format(filters.company)
+	if filters.get('item_code'):
+		conditions += " AND woi.item_code = '{}'".format(filters.item_code)
+	return conditions
 
 def get_columns(filters):
 	columns = [
 			{"label": _("Item Code"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 230},
 			{"label": _("Opening Stock"), "fieldname": "opening_stock", "fieldtype": "Float", "width": 120},
 			{"label": _("Purchase"), "fieldname": "received", "fieldtype": "Float", "width": 100},
-			{"label": _("Material Receipt"), "fieldname": "receipt", "fieldtype": "Float", "width": 100},
-			{"label": _("Material Issue"), "fieldname": "issue", "fieldtype": "Float", "width": 100},
+			{"label": _("Receipt"), "fieldname": "receipt", "fieldtype": "Float", "width": 100},
 			{"label": _("Production"), "fieldname": "production", "fieldtype": "Float", "width": 100},
 			{"label": _("Unprocessed Return"), "fieldname": "unprocessed_return", "fieldtype": "Float", "width": 100},
 			{"label": _("Processed Return"), "fieldname": "processed_return", "fieldtype": "Float", "width": 100},
 			{"label": _("Sent to Job Work"), "fieldname": "sent_to_job_work", "fieldtype": "Float", "width": 100},
 			{"label": _("Send Jobwork Finish"), "fieldname": "send_jobwork_finish", "fieldtype": "Float", "width": 100},
 			{"label": _("Receive Jobwork Raw material"), "fieldname": "receive_jobwork_raw_material", "fieldtype": "Float", "width": 100},
-			{"label": _("Sales"), "fieldname": "sales", "fieldtype": "Float", "width": 100},
-			{"label": _("Captive Consumption"), "fieldname": "captive_consumption", "fieldtype": "Float", "width": 100},
-			{"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},
-			{"label": _("Closing Stock"), "fieldname": "closing_stock", "fieldtype": "Float", "width": 120},
+			{"label": _("Sales"), "fieldname": "sales", "fieldtype": "Float", "width": 100}
 	]
-	return columns
+	if filters.get('show_production_items'):
+		return columns
+	else:
+		columns += [
+				{"label": _("Captive Consumption"), "fieldname": "captive_consumption", "fieldtype": "Float", "width": 100},
+				# {"label": _("Total outward"), "fieldname": "total_outward", "fieldtype": "Float", "width": 100},
+				{"label": _("Closing Stock"), "fieldname": "closing_stock", "fieldtype": "Float", "width": 120},
+		]
+		return columns

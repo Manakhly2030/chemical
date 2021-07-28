@@ -40,5 +40,10 @@ frappe.query_reports["Item Wise Stock Summary"] = {
 				"options": "Item Group",
 				"width": "80",
 			},
+			{
+				"fieldname": "show_production_items",
+				"label": __("Show Production Items"),
+				"fieldtype": "Check",
+			},
 	]
 };
