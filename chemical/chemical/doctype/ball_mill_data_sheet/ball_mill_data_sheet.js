@@ -336,12 +336,12 @@ frappe.ui.form.on('Ball Mill Data Sheet Item', {
 });
 
 frappe.ui.form.on('Ball Mill Packaging', {
-	quantity: function(frm,cdt,cdn){
-		frm.events.packaging_calculation(frm, cdt, cdn)
-	},
-	qty: function(frm,cdt,cdn){
-		frm.events.packaging_calculation(frm, cdt, cdn)
-	},
+	// quantity: function(frm,cdt,cdn){
+	// 	frm.events.packaging_calculation(frm, cdt, cdn)
+	// },
+	// qty: function(frm,cdt,cdn){
+	// 	frm.events.packaging_calculation(frm, cdt, cdn)
+	// },
 	no_of_packages: function(frm,cdt,cdn){
 		frm.events.repack_calculation(frm, cdt, cdn)
 	},

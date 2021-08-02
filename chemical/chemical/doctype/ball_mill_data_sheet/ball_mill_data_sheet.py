@@ -109,7 +109,7 @@ class BallMillDataSheet(Document):
 		for d in self.packaging:
 			maintain_as_is_stock = frappe.db.get_value("Item",self.product_name,'maintain_as_is_stock')
 			if d.get('packing_size') and d.get('no_of_packages'):
-				d.qty = d.packing_size * d.no_of_packages
+				#d.qty = d.packing_size * d.no_of_packages
 				if maintain_as_is_stock:
 					if d.qty:
 						d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
