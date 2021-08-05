@@ -183,7 +183,7 @@ def get_stock_ledger_entries(filters, items):
 		LEFT JOIN `tabSales Invoice` as si on si.name = sle.voucher_no
 		LEFT JOIN `tabStock Entry` as se on se.name = sle.voucher_no{show_sales_lot_no_join}
 		where
-			is_cancelled = 0 and sle.posting_date between %(from_date)s and %(to_date)s
+			sle.is_cancelled = 0 and sle.posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
 			order by sle.posting_date asc, sle.posting_time asc, sle.creation asc"""\
