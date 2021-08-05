@@ -125,7 +125,7 @@ frappe.ui.form.on('Outward Tracking', {
 		let total_qty = 0.0;
 		let total_amount = 0.0;
 		
-		if (frm.doc.has_sample) { 
+		if (frm.doc.has_sample && frm.doc.sample_items) { 
 			frm.doc.sample_items.forEach(function (d) {
 				total_qty += flt(d.quantity);
 				total_amount += flt(d.amount);

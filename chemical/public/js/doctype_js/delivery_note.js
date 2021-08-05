@@ -208,6 +208,7 @@ frappe.ui.form.on("Delivery Note Item", {
     quantity: function(frm,cdt,cdn){
         frm.events.cal_rate_qty(frm,cdt,cdn)
     },
+    
     price:function(frm,cdt,cdn){
         frm.events.cal_rate_qty(frm,cdt,cdn)
     },
