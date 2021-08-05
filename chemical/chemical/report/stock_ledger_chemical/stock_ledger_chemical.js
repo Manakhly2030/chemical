@@ -90,6 +90,11 @@ frappe.query_reports["Stock Ledger Chemical"] = {
 			"fieldname": "show_party",
 			"label": __("Show party"),
 			"fieldtype": "Check",
+		},
+		{
+			"fieldname": "show_as_is",
+			"label": __("Show As Is"),
+			"fieldtype": "Check",
 		}
 	]
 };
