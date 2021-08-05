@@ -87,7 +87,7 @@ def get_stock_ledger_entries(filters, items):
 			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
 			stock_value, stock_value_difference, voucher_type, voucher_no, voucher_detail_no, batch_no, serial_no, company
 		from `tabStock Ledger Entry` sle
-		where company = %(company)s and
+		where is_cancelled = 0 and company = %(company)s and
 			posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}

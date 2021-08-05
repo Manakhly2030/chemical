@@ -247,7 +247,7 @@ def get_stock_ledger_entries(filters):
 	return frappe.db.sql("""
 		select sle.item_code, sle.batch_no, sle.warehouse, sle.posting_date,sle.company, sum(sle.actual_qty) as actual_qty
 		from `tabStock Ledger Entry` as sle
-		where sle.docstatus < 2 and ifnull(sle.batch_no, '') != '' %s
+		where sle.docstatus < 2 and sle.is_cancelled = 0 and ifnull(sle.batch_no, '') != '' %s
 		group by sle.batch_no, sle.item_code, sle.warehouse
 		having sum(sle.actual_qty) != 0
 		order by sle.item_code, sle.warehouse, sle.batch_no""" %
@@ -292,7 +292,7 @@ def get_stock_ledger_entries_without_group(filters):
 	return frappe.db.sql("""
 		select sle.item_code, sle.batch_no, sle.warehouse, sle.posting_date,sle.company, sle.actual_qty, sle.voucher_type,sle.voucher_no %s
 		from `tabStock Ledger Entry` as sle %s
-		where sle.docstatus < 2 and ifnull(sle.batch_no, '') != '' and sle.actual_qty > 0 %s
+		where sle.docstatus < 2 and sle.is_cancelled = 0 and ifnull(sle.batch_no, '') != '' and sle.actual_qty > 0 %s
 		order by sle.item_code, sle.warehouse,sle.batch_no""" %
 		(show_party_select, show_party_join,conditions), as_dict=1)
 

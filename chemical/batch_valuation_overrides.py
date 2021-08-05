@@ -65,7 +65,7 @@ def get_batch_rate(args):
 		conditions += " and company = '{company}' ".format(company=company)
 
 	data = frappe.db.sql("""SELECT incoming_rate FROM `tabStock Ledger Entry` 
-		WHERE actual_qty > 0 and docstatus = 1 {conditions} order by posting_date desc, posting_time desc, creation desc""".format(conditions=conditions))
+		WHERE actual_qty > 0 and docstatus = 1 and is_cancelled = 0 {conditions} order by posting_date desc, posting_time desc, creation desc""".format(conditions=conditions))
 	
 	if data:
 		data = flt(data[0][0])
