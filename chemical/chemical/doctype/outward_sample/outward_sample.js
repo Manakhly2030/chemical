@@ -12,6 +12,16 @@ cur_frm.add_fetch("item_code", "item_name", "item_name");
 cur_frm.add_fetch("item_code", "stock_uom", "uom");
 cur_frm.add_fetch("item_code", "item_group", "item_group");
 
+cur_frm.fields_dict.details.grid.get_field("bom_no").get_query = function(doc) {
+	return {
+		filters: {
+			"item": doc.item_code,
+			"docstatus": 1,
+			"is_active":1
+		}
+	}
+};
+
 // Add searchfield to customer  and Supplier and item query
 this.frm.cscript.onload = function (frm) {
 	// this.frm.set_query("product_name", function () {
@@ -295,7 +305,7 @@ frappe.ui.form.on("Outward Sample Detail", {
 		var m = locals[cdt][cdn];
 		if (m.item_code) {
 			frm.call({
-				method: "get_spare_price",
+				method: "get_price_list",
 				doc: frm.doc,
 				args: {
 					item_code: m.item_code,
@@ -311,5 +321,14 @@ frappe.ui.form.on("Outward Sample Detail", {
 		}
 		
 	},
+	bom_no: function(frm, cdt, cdn){
+		let d = locals[cdt][cdn]
+		if(d.bom_no){
+			frappe.db.get_value("BOM",d.bom_no,'per_unit_price',function(r){
+				frappe.model.set_value(d.doctype, d.name, 'rate', r.per_unit_price);
+				frappe.model.set_value(d.doctype, d.name, 'price_list_rate', r.per_unit_price);
+			})
+		}
+	}
 });
 

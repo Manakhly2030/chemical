@@ -2,18 +2,22 @@
 # License: GNU General Public License v3. See license.txt
 
 from __future__ import unicode_literals
+
 import frappe
+from frappe.utils import cint, flt
+from erpnext.stock.utils import update_included_uom_in_report, is_reposting_item_valuation_in_progress
 from frappe import _
-from frappe.utils import flt
-from erpnext.stock.utils import update_included_uom_in_report
+from erpnext.stock.doctype.serial_no.serial_no import get_serial_nos
 
 def execute(filters=None):
+	is_reposting_item_valuation_in_progress()
 	include_uom = filters.get("include_uom")
 	columns = get_columns(filters)
 	items = get_items(filters)
 	sl_entries = get_stock_ledger_entries(filters, items)
 	item_details = get_item_details(items, sl_entries, include_uom)
 	opening_row = get_opening_balance(filters, columns)
+	precision = cint(frappe.db.get_single_value("System Settings", "float_precision"))
 
 	data = []
 	conversion_factors = []
@@ -22,9 +26,12 @@ def execute(filters=None):
 
 	actual_qty = stock_value = 0
 
+	available_serial_nos = {}
 	for sle in sl_entries:
 		item_detail = item_details[sle.item_code]
+
 		sle.update(item_detail)
+
 
 		concentration = sle.concentration or 100
 		
@@ -46,20 +53,29 @@ def execute(filters=None):
 				'as_is_balance_qty': flt(sle.qty_after_transaction)
 			})
 
-		#frappe.msgprint(str(sle))
 		if filters.get("batch_no") or (filters.get("item_code") and filters.get("warehouse")):
 			actual_qty += sle.actual_qty
 			stock_value += sle.stock_value_difference
 
-			if sle.voucher_type == 'Stock Reconciliation':
+			if sle.voucher_type == 'Stock Reconciliation' and not sle.actual_qty:
 				actual_qty = sle.qty_after_transaction
 				stock_value = sle.stock_value
-			
+
 			sle.update({
 				"qty_after_transaction": actual_qty,
 				"stock_value": stock_value
 			})
-		#frappe.msgprint(str(sle))
+
+		sle.update({
+			"in_qty": max(sle.actual_qty, 0),
+			"out_qty": min(sle.actual_qty, 0),
+			"as_is_in_qty":max(sle.as_is_qty, 0),
+			"as_is_out_qty":min(sle.as_is_qty, 0),
+		})
+
+		if sle.serial_no:
+			update_available_serial_nos(available_serial_nos, sle)
+
 		data.append(sle)
 
 		if include_uom:
@@ -68,12 +84,34 @@ def execute(filters=None):
 	update_included_uom_in_report(columns, data, include_uom, conversion_factors)
 	return columns, data
 
+def update_available_serial_nos(available_serial_nos, sle):
+	serial_nos = get_serial_nos(sle.serial_no)
+	key = (sle.item_code, sle.warehouse)
+	if key not in available_serial_nos:
+		available_serial_nos.setdefault(key, [])
+
+	existing_serial_no = available_serial_nos[key]
+	for sn in serial_nos:
+		if sle.actual_qty > 0:
+			if sn in existing_serial_no:
+				existing_serial_no.remove(sn)
+			else:
+				existing_serial_no.append(sn)
+		else:
+			if sn in existing_serial_no:
+				existing_serial_no.remove(sn)
+			else:
+				existing_serial_no.append(sn)
+
+	sle.balance_serial_no = '\n'.join(existing_serial_no)
+
 def get_columns(filters):
 	columns = [
 		{"label": _("Date"), "fieldname": "date", "fieldtype": "Datetime", "width": 95},
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 130},	
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},	
-		{"label": _("Qty"), "fieldname": "actual_qty", "fieldtype": "Float", "width": 70, "convertible": "qty"},
+		{"label": _("In Qty"), "fieldname": "in_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+		{"label": _("Out Qty"), "fieldname": "out_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("Balance Qty"), "fieldname": "qty_after_transaction", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Incoming Rate"), "fieldname": "incoming_rate", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency", "convertible": "rate"},
@@ -81,7 +119,7 @@ def get_columns(filters):
 			"options": "Company:company:default_currency", "convertible": "rate"},
 		{"label": _("Balance Value"), "fieldname": "stock_value", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency"},
-		{"label": _("Batch"), "fieldname": "batch_no", "fieldtype": "Link", "options": "Batch", "width": 100},
+		{"label": _("Batch"), "fieldname": "batch_no", "fieldtype": "Link", "options": "Batch", "width": 120},
 		{"label": _("Lot No"), "fieldname": "lot_no", "fieldtype": "Data","width": 100},
 	]
 	if filters.get('sales_lot_no'):
@@ -90,8 +128,15 @@ def get_columns(filters):
 		] 
 	columns += [
 		{"label": _("Concentration"), "fieldname": "concentration", "fieldtype": "Percent","width": 100},
-		{"label": _("As Is Qty"), "fieldname": "as_is_qty", "fieldtype": "Float","width": 100},
-		{"label": _("As Is Balance Qty"), "fieldname": "as_is_balance_qty", "fieldtype": "Float","width": 100},
+		]
+	if filters.get('show_as_is'):
+		columns += [
+			{"label": _("As Is In Qty"), "fieldname": "as_is_in_qty", "fieldtype": "Float","width": 100},
+			{"label": _("As Is Out Qty"), "fieldname": "as_is_out_qty", "fieldtype": "Float","width": 100},
+			{"label": _("As Is Balance Qty"), "fieldname": "as_is_balance_qty", "fieldtype": "Float","width": 100},
+		]
+	columns += [
+		{"label": _("Particular"), "fieldname": "particular", "fieldtype": "Data","width": 150},
 		{"label": _("Voucher Type"), "fieldname": "voucher_type", "width": 110},
 		{"label": _("Voucher #"), "fieldname": "voucher_no", "fieldtype": "Dynamic Link", "options": "voucher_type", "width": 100},
 	]
@@ -117,7 +162,7 @@ def get_stock_ledger_entries(filters, items):
 	
 	show_party_select = show_party_join = ''
 	if filters.get('show_party'):
-		show_party_join += " Left JOIN `tabStock Entry` as se on se.name = sle.voucher_no"
+		#show_party_join += " Left JOIN `tabStock Entry` as se on se.name = sle.voucher_no"
 		show_party_select += ", se.party_type, se.party"
 
 	show_sales_lot_no = show_sales_lot_no_join = ''
@@ -128,17 +173,23 @@ def get_stock_ledger_entries(filters, items):
 	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date,
 			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
 			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, sle.stock_value_difference,
-			b.lot_no, b.concentration{show_party_select}{show_sales_lot_no}
-		from `tabStock Ledger Entry` sle left join `tabBatch` as b on sle.batch_no = b.name{show_party_join}{show_sales_lot_no_join}
+			b.lot_no, b.concentration,IFNULL(pr.supplier, IFNULL(pi.supplier,IFNULL(dn.customer,IFNULL(si.customer,se.stock_entry_type)))) as particular
+			{show_party_select}{show_sales_lot_no}
+		from `tabStock Ledger Entry` sle 
+		left join `tabBatch` as b on sle.batch_no = b.name
+		LEFT JOIN `tabPurchase Receipt` as pr on pr.name = sle.voucher_no
+		LEFT JOIN `tabPurchase Invoice` as pi on pi.name = sle.voucher_no
+		LEFT JOIN `tabDelivery Note` as dn on dn.name = sle.voucher_no
+		LEFT JOIN `tabSales Invoice` as si on si.name = sle.voucher_no
+		LEFT JOIN `tabStock Entry` as se on se.name = sle.voucher_no{show_sales_lot_no_join}
 		where
-			sle.posting_date between %(from_date)s and %(to_date)s
+			sle.is_cancelled = 0 and sle.posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			{item_conditions_sql}
 			order by sle.posting_date asc, sle.posting_time asc, sle.creation asc"""\
 		.format(
 			show_party_select = show_party_select,
 			show_sales_lot_no = show_sales_lot_no,
-			show_party_join = show_party_join,
 			show_sales_lot_no_join = show_sales_lot_no_join,
 			sle_conditions=get_sle_conditions(filters),
 			item_conditions_sql = item_conditions_sql
@@ -229,10 +280,12 @@ def get_opening_balance(filters, columns):
 	# 		item_conditions_sql = item_conditions_sql
 	# 	), filters, as_dict=1)		
 	# """)
-	row = {}
-	row["item_code"] = _("'Opening'")
-	for dummy, v in ((4, 'qty_after_transaction'), (6, 'valuation_rate'), (7, 'stock_value')):
-			row[v] = last_entry.get(v, 0)
+	row = {
+		"item_code": _("'Opening'"),
+		"qty_after_transaction": last_entry.get("qty_after_transaction", 0),
+		"valuation_rate": last_entry.get("valuation_rate", 0),
+		"stock_value": last_entry.get("stock_value", 0)
+	}
 
 	return row
 

@@ -104,6 +104,7 @@ def make_invoices(self):
 
 	return names
 
+@frappe.whitelist()
 def get_invoice_dict(self, row=None):
 	def get_item_dict():
 		default_uom = frappe.db.get_single_value("Stock Settings", "stock_uom") or _("Nos")

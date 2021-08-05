@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_import": 1,
  "allow_rename": 1,
  "autoname": "naming_series:",
@@ -39,6 +40,8 @@
   "price",
   "amended_from",
   "section_break_27",
+  "ball_mill_additional_cost",
+  "section_break_35_section",
   "packaging",
   "section_break_34",
   "total_packing_qty",
@@ -81,7 +84,6 @@
    "reqd": 1
   },
   {
-   "default": "Finished Products - CI",
    "fieldname": "warehouse",
    "fieldtype": "Link",
    "label": "Target Warehouse",
@@ -344,10 +346,22 @@
   {
    "fieldname": "column_break_36",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ball_mill_additional_cost",
+   "fieldtype": "Table",
+   "label": "Ball Mill Additional Cost",
+   "options": "Ball Mill Additional Cost"
+  },
+  {
+   "fieldname": "section_break_35_section",
+   "fieldtype": "Section Break"
   }
  ],
+ "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "modified": "2021-01-11 17:51:54.372311",
+ "links": [],
+ "modified": "2021-06-22 17:57:46.686074",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",

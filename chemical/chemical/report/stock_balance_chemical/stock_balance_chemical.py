@@ -233,7 +233,7 @@ def get_stock_ledger_entries(filters, items):
 			`tabStock Ledger Entry` sle force index (posting_sort_index) 
 		JOIN `tabItem` as i ON i.name = sle.item_code
 		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no 
-		where sle.docstatus < 2 %s %s
+		where sle.is_cancelled = 0 and sle.docstatus < 2 %s %s
 		order by sle.posting_date, sle.posting_time, sle.creation, sle.actual_qty""" % #nosec
 		(item_conditions_sql, conditions), as_dict=1)
 	sle_data = []

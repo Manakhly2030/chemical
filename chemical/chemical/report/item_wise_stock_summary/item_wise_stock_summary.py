@@ -25,7 +25,7 @@ def get_opening_closing_data(filters):
 		from `tabStock Ledger Entry` as sle
 		LEFT JOIN `tabItem` as i ON sle.item_code = i.name
 		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no
-		where sle.posting_date < '{}' and sle.docstatus = 1 and sle.warehouse NOT LIKE '%Jobwork Out%' {}
+		where sle.is_cancelled = 0 and sle.posting_date < '{}' and sle.docstatus = 1 and sle.warehouse NOT LIKE '%Jobwork Out%' {}
 		group by sle.item_code
 	""".format(filters.from_date,conditions),as_dict=1)
 
@@ -34,7 +34,7 @@ def get_opening_closing_data(filters):
 		from `tabStock Ledger Entry` as sle
 		LEFT JOIN `tabItem` as i ON sle.item_code = i.name
 		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no
-		where sle.posting_date <= '{}' and sle.docstatus = 1 and sle.warehouse NOT LIKE '%Jobwork Out%' {}
+		where sle.is_cancelled = 0 and sle.posting_date <= '{}' and sle.docstatus = 1 and sle.warehouse NOT LIKE '%Jobwork Out%' {}
 		group by sle.item_code
 	""".format(filters.to_date, conditions),as_dict=1)
 
@@ -49,7 +49,7 @@ def get_sle_data(filters):
 		LEFT JOIN `tabItem` as i ON sle.item_code = i.name
 		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no
 		LEFT JOIN `tabStock Entry` as se ON se.name = sle.voucher_no
-		where sle.posting_date BETWEEN '{}' and '{}' {}
+		where sle.is_cancelled = 0 and sle.posting_date BETWEEN '{}' and '{}' {}
 	""".format(filters.from_date,filters.to_date, conditions),as_dict=1)
 	
 	sle_details = []

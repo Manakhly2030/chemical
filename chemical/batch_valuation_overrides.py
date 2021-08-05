@@ -1,10 +1,11 @@
 import frappe, erpnext
 from frappe import msgprint, _
-from frappe.utils import nowdate, flt, cint, cstr,now_datetime
-from erpnext.stock.stock_ledger import update_entries_after
+from frappe.utils import nowdate, flt, cint, cstr,now_datetime,nowtime
+from erpnext.stock.stock_ledger import update_entries_after,get_valuation_rate
 from erpnext.controllers.sales_and_purchase_return import get_return_against_item_fields,get_filters
-from erpnext.stock.utils import get_valuation_method
+from erpnext.stock.utils import get_valuation_method,get_fifo_rate
 from six import string_types
+
 import json
 
 # Utils Overrides
@@ -64,7 +65,7 @@ def get_batch_rate(args):
 		conditions += " and company = '{company}' ".format(company=company)
 
 	data = frappe.db.sql("""SELECT incoming_rate FROM `tabStock Ledger Entry` 
-		WHERE actual_qty > 0 and docstatus = 1 {conditions}""".format(conditions=conditions))
+		WHERE actual_qty > 0 and docstatus = 1 and is_cancelled = 0 {conditions} order by posting_date desc, posting_time desc, creation desc""".format(conditions=conditions))
 	
 	if data:
 		data = flt(data[0][0])
@@ -91,8 +92,8 @@ def process_sle(self, sle):
 	if sle.batch_no and batch_wise_cost:
 		get_batch_values(self,sle)
 		self.wh_data.qty_after_transaction += flt(sle.actual_qty)
-		if sle.voucher_type == "Stock Reconciliation":
-			self.wh_data.qty_after_transaction = sle.qty_after_transaction
+		# if sle.voucher_type == "Stock Reconciliation":
+		# 	self.wh_data.qty_after_transaction = sle.qty_after_transaction
 		self.wh_data.stock_value = flt(self.wh_data.qty_after_transaction) * flt(self.wh_data.valuation_rate)
 
 	elif sle.serial_no:
@@ -165,10 +166,9 @@ def get_batch_values(self, sle):
 		# In case of delivery/stock issue, get average purchase rate
 		# of serial nos of current entry
 		stock_value_change = actual_qty * flt(frappe.db.sql("""SELECT incoming_rate FROM `tabStock Ledger Entry` 
-	WHERE actual_qty > 0 and docstatus = 1 {conditions}""".format(conditions=conditions))[0][0])
+	WHERE actual_qty > 0 and docstatus = 1 {conditions} order by posting_date desc, posting_time desc, creation desc""".format(conditions=conditions))[0][0])
 
 	new_stock_qty = self.wh_data.qty_after_transaction + actual_qty
-
 	if new_stock_qty > 0:
 		new_stock_value = (self.wh_data.qty_after_transaction * self.wh_data.valuation_rate) + stock_value_change
 		if new_stock_value >= 0:

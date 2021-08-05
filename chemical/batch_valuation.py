@@ -44,8 +44,9 @@ def stock_entry_validate(self, method):
 
 def validate_additional_cost(self,method):
 	if self.purpose in ['Material Transfer','Material Transfer for Manufacture','Repack','Manufacture'] and self._action == "submit":
-		if abs(round(flt(self.value_difference,1))) != abs(round(flt(self.total_additional_costs,1))):
-			frappe.throw("ValuationError: Value difference between incoming and outgoing amount is higher than additional cost")
+		diff = abs(round(flt(self.value_difference,1)) - (round(flt(self.total_additional_costs,1))))
+		if diff > 3:
+			frappe.throw(f"ValuationError: Value difference {diff} between incoming and outgoing amount is higher than additional cost")
 
 @frappe.whitelist()
 def stock_entry_on_submit(self, method):
@@ -64,7 +65,7 @@ def make_transfer_batches(self):
 		has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
 		if has_batch_no:
 			if row.batch_no:
-				if row.valuation_rate == frappe.db.get_value("Stock Ledger Entry", {'company':self.company,'warehouse':row.get('t_warehouse'),'batch_no':row.batch_no,'incoming_rate':('!=', 0)},"incoming_rate"):
+				if row.valuation_rate == frappe.db.get_value("Stock Ledger Entry", {'is_cancelled':0,'company':self.company,'warehouse':row.get('t_warehouse'),'batch_no':row.batch_no,'incoming_rate':('!=', 0)},"incoming_rate"):
 					if hasattr(self, 'send_to_party') and hasattr(row, 'party_concentration'):
 						if not self.send_to_party:
 							continue
@@ -133,6 +134,7 @@ def update_stock_ledger_batch(self):
 			'voucher_no': self.name,
 			'voucher_detail_no': row.name,
 			'warehouse': row.t_warehouse,
+			'is_cancelled':0,
 		})
 
 		if sle:
@@ -157,7 +159,7 @@ def make_batches(self, warehouse_field):
 
 			has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
 			if has_batch_no:
-				if row.batch_no and not frappe.db.exists("Stock Ledger Entry", {'company':self.company,'warehouse':row.get(warehouse_field),'batch_no':row.batch_no}):
+				if row.batch_no and not frappe.db.exists("Stock Ledger Entry", {'is_cancelled':0,'company':self.company,'warehouse':row.get(warehouse_field),'batch_no':row.batch_no}):
 					continue
 
 				if row.batch_no and self.doctype == "Stock Entry":
@@ -270,6 +272,7 @@ def get_batch_no(doctype, txt, searchfield, start, page_len, filters):
 				from `tabStock Ledger Entry` sle
 				    INNER JOIN `tabBatch` batch on sle.batch_no = batch.name
 				where
+					sle.is_cancelled = 0 and
 					sle.item_code = %(item_code)s
 					and sle.warehouse = %(warehouse)s
 					and batch.docstatus < 2
@@ -362,6 +365,7 @@ def get_batch(doctype, txt, searchfield, start, page_len, filters):
 				from `tabStock Ledger Entry` sle
 				    INNER JOIN `tabBatch` batch on sle.batch_no = batch.name
 				where
+					sle.is_cancelled = 0 and
 					sle.item_code = %(item_code)s
 					and sle.warehouse = %(warehouse)s
 					and batch.docstatus < 2
