@@ -121,11 +121,13 @@ def get_item_details(filters,sle_data,opening_data,closing_data,work_order_map,c
 	closing_map = {}
 	data = []
 	qty_dict = {}
+	sle_list = []
 	for sle in sle_data:
 		item_map.setdefault(sle.item_code,frappe._dict({
 			"received":0.0 , "receipt":0.0, "sales":0.0,"production":0.0, "captive_consumption":0.0,\
 			"unprocessed_return":0.0, "processed_return":0.0,\
-			"sent_to_job_work":0.0, "send_jobwork_finish":0.0, "receive_jobwork_raw_material":0.0
+			"sent_to_job_work":0.0, "send_jobwork_finish":0.0, "receive_jobwork_raw_material":0.0,\
+			"opening_stock":0.0,"closing_stock":0.0
 		}))
 		item_map[sle.item_code].received += flt(sle.received)
 		item_map[sle.item_code].receipt += flt(sle.receipt)
@@ -144,14 +146,28 @@ def get_item_details(filters,sle_data,opening_data,closing_data,work_order_map,c
 		}))
 		opening_dict = opening_map[opening.item_code]
 		opening_dict.opening_stock += flt(opening.opening_stock)
-	
+
+		if opening.item_code not in item_map:
+			item_map[opening.item_code] = frappe._dict({
+			"received":0.0 , "receipt":0.0, "sales":0.0,"production":0.0, "captive_consumption":0.0,\
+			"unprocessed_return":0.0, "processed_return":0.0,\
+			"sent_to_job_work":0.0, "send_jobwork_finish":0.0, "receive_jobwork_raw_material":0.0,\
+			"opening_stock":0.0,"closing_stock":0.0
+		})
 	for closing in closing_data:
 		closing_map.setdefault(closing.item_code,frappe._dict({
 			"closing_stock":0.0
 		}))
 		closing_dict = closing_map[closing.item_code]
 		closing_dict.closing_stock += flt(closing.closing_stock)
-
+		
+		if closing.item_code not in item_map:
+			item_map[closing.item_code] = frappe._dict({
+			"received":0.0 , "receipt":0.0, "sales":0.0,"production":0.0, "captive_consumption":0.0,\
+			"unprocessed_return":0.0, "processed_return":0.0,\
+			"sent_to_job_work":0.0, "send_jobwork_finish":0.0, "receive_jobwork_raw_material":0.0,\
+			"opening_stock":0.0,"closing_stock":0.0
+		})
 	for item,value in item_map.items():
 		try:
 			opening_dict = opening_map[item]
