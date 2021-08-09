@@ -165,9 +165,12 @@ def get_batch_values(self, sle):
 	elif actual_qty < 0:
 		# In case of delivery/stock issue, get average purchase rate
 		# of serial nos of current entry
-		stock_value_change = actual_qty * flt(frappe.db.sql("""SELECT incoming_rate FROM `tabStock Ledger Entry` 
-	WHERE actual_qty > 0 and docstatus = 1 and is_cancelled = 0 {conditions} order by posting_date desc, posting_time desc, creation desc""".format(conditions=conditions))[0][0])
-
+		if not sle.is_cancelled:
+			stock_value_change = actual_qty * flt(frappe.db.sql("""SELECT incoming_rate FROM `tabStock Ledger Entry` 
+		WHERE actual_qty > 0 and docstatus = 1 and is_cancelled = 0 {conditions} order by posting_date desc, posting_time desc, creation desc""".format(conditions=conditions))[0][0])
+		else:
+			stock_value_change = actual_qty * sle.outgoing_rate
+			
 	new_stock_qty = self.wh_data.qty_after_transaction + actual_qty
 	if new_stock_qty > 0:
 		new_stock_value = (self.wh_data.qty_after_transaction * self.wh_data.valuation_rate) + stock_value_change
