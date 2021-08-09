@@ -244,7 +244,8 @@ def cal_target_yield_cons(self):
 def cal_validate_additional_cost_qty(self):
 	if self.additional_costs:
 		for addi_cost in self.additional_costs:
-			addi_cost.amount = flt(addi_cost.qty) * flt(addi_cost.rate)
+			if addi_cost.qty and addi_cost.rate:
+				addi_cost.amount = flt(addi_cost.qty) * flt(addi_cost.rate)
 			if addi_cost.uom == "FG QTY":
 				addi_cost.qty = self.fg_completed_quantity
 				addi_cost.amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
@@ -521,8 +522,9 @@ def update_additional_cost(self):
 						if row.description == d.description:
 							row.rate = abs(d.rate)
 							row.qty = flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
-							row.amount = abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
-							row.base_amount = abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
+							if row.rate and row.qty:
+								row.amount = abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
+								row.base_amount = abs(d.rate)* flt(flt(self.fg_completed_quantity * bom.quantity)/ bom.quantity)
 		self.db_set('total_additional_costs',sum([row.amount for row in self.additional_costs]))
 
 def validate_lot(self):
