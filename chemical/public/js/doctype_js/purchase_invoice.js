@@ -366,10 +366,14 @@ frappe.ui.form.on("Purchase Invoice", {
 });
 frappe.ui.form.on("Purchase Invoice Item", {
     quantity: function (frm, cdt, cdn) {
+        let d = locals[cdt][cdn]
         frm.events.cal_rate_qty(frm, cdt, cdn)
+        frappe.model.set_value(d.doctype,d.name,'qty',d.quantity)   
     },
 	price: function (frm, cdt, cdn) {
+        let d = locals[cdt][cdn]
         frm.events.cal_rate_qty(frm, cdt, cdn)
+        frappe.model.set_value(d.doctype,d.name,'rate',d.price)   
     },
     receive_packing_size: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)

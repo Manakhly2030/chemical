@@ -9,7 +9,7 @@ def batch_qty_validation_with_date_time(self):
 	if self.batch_no and not self.get("allow_negative_stock"):
 		batch_bal_after_transaction = flt(frappe.db.sql("""select sum(actual_qty)
 			from `tabStock Ledger Entry`
-			where warehouse=%s and item_code=%s and batch_no=%s and timestamp(posting_date, posting_time) <= timestamp(%s, %s)""",
+			where is_cancelled = 0 and warehouse=%s and item_code=%s and batch_no=%s and timestamp(posting_date, posting_time) <= timestamp(%s, %s)""",
 			(self.warehouse, self.item_code, self.batch_no, self.posting_date, self.posting_time))[0][0])
 		
 		if flt(batch_bal_after_transaction) < 0:

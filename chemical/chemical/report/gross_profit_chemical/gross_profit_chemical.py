@@ -387,7 +387,7 @@ class GrossProfitGenerator(object):
 		res = frappe.db.sql("""select item_code, voucher_type, voucher_no,
 				voucher_detail_no, stock_value, warehouse, actual_qty as qty
 			from `tabStock Ledger Entry`
-			where company=%(company)s
+			where is_cancelled = 0 and company=%(company)s
 			order by
 				item_code desc, warehouse desc, posting_date desc,
 				posting_time desc, name desc""", self.filters, as_dict=True)
