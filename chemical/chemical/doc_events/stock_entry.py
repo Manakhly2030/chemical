@@ -404,7 +404,9 @@ def cal_rate_for_finished_item(self):
 
 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
 	work_order = frappe.get_doc("Work Order",self.work_order)
+	work_order.ignore_permissions = True
 	bom_doc = frappe.get_doc("BOM",self.bom_no)
+	bom_doc.ignore_permissions = True
 	is_multiple_finish = 0
 	for d in self.items:
 		if d.t_warehouse:
@@ -446,8 +448,8 @@ def cal_rate_for_finished_item(self):
 							# d.db_set('amount',flt(d.basic_amount + d.additional_cost))
 							# d.db_set('basic_rate',flt(d.basic_amount/ d.qty))
 							# d.db_set('valuation_rate',flt(d.amount/ d.qty))
-							d.basic_amount = flt(flt(self.total_outgoing_value*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code]))
-							d.additional_cost = flt(flt(self.total_additional_costs*bom_cost_dict["cost_ratio"]*d.quantity)/flt(100*result[d.item_code]))
+							d.basic_amount = flt(flt(flt(self.total_outgoing_value)*flt(bom_cost_dict["cost_ratio"])*flt(d.quantity))/flt(100*flt(result[d.item_code])))
+							d.additional_cost = flt(flt(flt(self.total_additional_costs)*flt(bom_cost_dict["cost_ratio"])*flt(d.quantity))/flt(100*flt(result[d.item_code])))
 							d.amount = flt(d.basic_amount + d.additional_cost)
 							d.basic_rate = flt(d.basic_amount/ d.qty)
 							d.valuation_rate = flt(d.amount/ d.qty)
