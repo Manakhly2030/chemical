@@ -123,20 +123,20 @@ frappe.ui.form.on('Outward Tracking', {
 	},
 	before_save: function (frm) {
 		let total_qty = 0.0;
-		let total_amount = 0.0;
+		// let total_amount = 0.0;
 		
 		if (frm.doc.has_sample && frm.doc.sample_items) { 
 			frm.doc.sample_items.forEach(function (d) {
 				total_qty += flt(d.quantity);
-				total_amount += flt(d.amount);
+				// total_amount += flt(d.amount);
 			});
 		}
 		frm.set_value("total_qty", total_qty);
-		frm.set_value("total_amount", total_amount);
+		// frm.set_value("total_amount", total_amount);
 	},
 	onload: function (frm) {
 		var company_name = "";
 		company_name = frappe.defaults.get_user_default("Company");
-		frm.set_value("company", company_name);
+		// frm.set_value("company", company_name);
 	}
 });
