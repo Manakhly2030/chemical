@@ -25,7 +25,6 @@ frappe.query_reports["Work Order Status"] = {
 			"label": __("Item"),
 			"fieldtype": "Link",
 			"options": "Item",
-			"default": "AMINO C ACID",
 			"reqd": 1
 		},
 		{

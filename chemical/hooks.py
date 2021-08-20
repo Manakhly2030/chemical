@@ -58,7 +58,6 @@ app_license = "GPL 3.0"
 # include js, css files in header of desk.html
 # app_include_css = "/assets/chemical/css/chemical.css"
 # app_include_js = "/assets/chemical/js/chemical.js"
-app_include_js = "/assets/chemical/js/item_price_list_rate.js"
 
 # app_include_js = [
 # 	"assets/js/summernote.min.js",

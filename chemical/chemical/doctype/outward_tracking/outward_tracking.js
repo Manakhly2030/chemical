@@ -4,7 +4,7 @@
 cur_frm.add_fetch("sample_ref", "product_name", "item");
 cur_frm.add_fetch("sample_ref", "total_qty", "quantity");
 cur_frm.add_fetch("sample_ref", "ref_no", "ref_no");
-cur_frm.add_fetch("sample_ref", "batch_size", "pss_qty");
+// cur_frm.add_fetch("sample_ref", "batch_size", "pss_qty");
 cur_frm.add_fetch("sample_ref", "po_no", "po_no");
 cur_frm.add_fetch("sample_ref", "supply_site", "supply_site");
 
