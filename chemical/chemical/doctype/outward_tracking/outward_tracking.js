@@ -4,7 +4,7 @@
 cur_frm.add_fetch("sample_ref", "product_name", "item");
 cur_frm.add_fetch("sample_ref", "total_qty", "quantity");
 cur_frm.add_fetch("sample_ref", "ref_no", "ref_no");
-cur_frm.add_fetch("sample_ref", "batch_size", "pss_qty");
+// cur_frm.add_fetch("sample_ref", "batch_size", "pss_qty");
 cur_frm.add_fetch("sample_ref", "po_no", "po_no");
 cur_frm.add_fetch("sample_ref", "supply_site", "supply_site");
 
@@ -123,20 +123,20 @@ frappe.ui.form.on('Outward Tracking', {
 	},
 	before_save: function (frm) {
 		let total_qty = 0.0;
-		let total_amount = 0.0;
+		// let total_amount = 0.0;
 		
 		if (frm.doc.has_sample && frm.doc.sample_items) { 
 			frm.doc.sample_items.forEach(function (d) {
 				total_qty += flt(d.quantity);
-				total_amount += flt(d.amount);
+				// total_amount += flt(d.amount);
 			});
 		}
 		frm.set_value("total_qty", total_qty);
-		frm.set_value("total_amount", total_amount);
+		// frm.set_value("total_amount", total_amount);
 	},
 	onload: function (frm) {
 		var company_name = "";
 		company_name = frappe.defaults.get_user_default("Company");
-		frm.set_value("company", company_name);
+		// frm.set_value("company", company_name);
 	}
 });
