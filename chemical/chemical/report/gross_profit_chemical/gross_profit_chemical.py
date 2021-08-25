@@ -360,16 +360,16 @@ class GrossProfitGenerator(object):
 				`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return,
 				`tabSales Invoice Item`.cost_center,
-				`tabSales Invoice Item`.concentration,IFNULL(dni.batch_no,`tabSales Invoice Item`.batch_no) as batch_no,
+				`tabSales Invoice Item`.concentration,IF(dni.docstatus = 1,IFNULL(dni.batch_no,`tabSales Invoice Item`.batch_no),`tabSales Invoice Item`.batch_no) as batch_no,
 				dni.name as dn_detail, dni.parent as delivery_note
 				{sales_person_cols}
 			from
 				`tabSales Invoice` inner join `tabSales Invoice Item`
 					on `tabSales Invoice Item`.parent = `tabSales Invoice`.name
-				LEFT JOIN `tabDelivery Note Item` as dni on dni.si_detail = `tabSales Invoice Item`.name
+				LEFT JOIN `tabDelivery Note Item` as dni on dni.si_detail = `tabSales Invoice Item`.name and dni.docstatus = 1
 				{sales_team_table}
 			where
-				`tabSales Invoice`.docstatus=1 and dni.docstatus=1 and `tabSales Invoice`.is_opening!='Yes' {conditions} {match_cond}
+				`tabSales Invoice`.docstatus=1 and `tabSales Invoice`.is_opening!='Yes' {conditions} {match_cond}
 			order by
 				`tabSales Invoice`.posting_date desc, `tabSales Invoice`.posting_time desc"""
 			.format(conditions=conditions, sales_person_cols=sales_person_cols,
