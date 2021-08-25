@@ -360,7 +360,7 @@ class GrossProfitGenerator(object):
 				`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return,
 				`tabSales Invoice Item`.cost_center,
-				`tabSales Invoice Item`.concentration,IF(dni.docstatus = 1,IFNULL(dni.batch_no,`tabSales Invoice Item`.batch_no),`tabSales Invoice Item`.batch_no) as batch_no,
+				`tabSales Invoice Item`.concentration,IFNULL(dni.batch_no,`tabSales Invoice Item`.batch_no) as batch_no,
 				dni.name as dn_detail, dni.parent as delivery_note
 				{sales_person_cols}
 			from
