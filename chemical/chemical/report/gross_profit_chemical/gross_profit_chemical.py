@@ -175,7 +175,7 @@ class GrossProfitGenerator(object):
 
 			# get buying rate
 			if row.qty:
-				row.buying_rate = flt(row.buying_amount / row.qty, self.float_precision)
+				row.buying_rate = round(row.buying_amount / row.qty, self.float_precision)
 				row.base_rate = flt(row.base_amount / row.qty, self.float_precision)
 			else:
 				row.buying_rate, row.base_rate = 0.0, 0.0
@@ -223,7 +223,7 @@ class GrossProfitGenerator(object):
 		new_row.gross_profit = flt(new_row.base_amount - new_row.buying_amount, self.currency_precision)
 		new_row.gross_profit_percent = flt(((new_row.gross_profit / new_row.base_amount) * 100.0), self.currency_precision) \
 			if new_row.base_amount else 0
-		new_row.buying_rate = flt(new_row.buying_amount / new_row.qty, self.float_precision) if new_row.qty else 0
+		new_row.buying_rate = round(new_row.buying_amount / new_row.qty, self.float_precision) if new_row.qty else 0
 		new_row.base_rate = flt(new_row.base_amount / new_row.qty, self.float_precision) if new_row.qty else 0
 
 		return new_row
@@ -356,19 +356,20 @@ class GrossProfitGenerator(object):
 				`tabSales Invoice`.territory, `tabSales Invoice Item`.item_code,
 				`tabSales Invoice Item`.item_name, `tabSales Invoice Item`.description,
 				`tabSales Invoice Item`.warehouse, `tabSales Invoice Item`.item_group,
-				`tabSales Invoice Item`.brand, `tabSales Invoice Item`.dn_detail,
-				`tabSales Invoice Item`.delivery_note, `tabSales Invoice Item`.stock_qty as qty,
+				`tabSales Invoice Item`.brand, `tabSales Invoice Item`.stock_qty as qty,
 				`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return,
 				`tabSales Invoice Item`.cost_center,
-				`tabSales Invoice Item`.concentration,`tabSales Invoice Item`.batch_no
+				`tabSales Invoice Item`.concentration,IFNULL(dni.batch_no,`tabSales Invoice Item`.batch_no) as batch_no,
+				dni.name as dn_detail, dni.parent as delivery_note
 				{sales_person_cols}
 			from
 				`tabSales Invoice` inner join `tabSales Invoice Item`
 					on `tabSales Invoice Item`.parent = `tabSales Invoice`.name
+				LEFT JOIN `tabDelivery Note Item` as dni on dni.si_detail = `tabSales Invoice Item`.name
 				{sales_team_table}
 			where
-				`tabSales Invoice`.docstatus=1 and `tabSales Invoice`.is_opening!='Yes' {conditions} {match_cond}
+				`tabSales Invoice`.docstatus=1 and dni.docstatus=1 and `tabSales Invoice`.is_opening!='Yes' {conditions} {match_cond}
 			order by
 				`tabSales Invoice`.posting_date desc, `tabSales Invoice`.posting_time desc"""
 			.format(conditions=conditions, sales_person_cols=sales_person_cols,
