@@ -22,7 +22,8 @@ class OutwardSample(Document):
 		self.get_master_sample()
 		self.get_latest_ball_mill()
 		self.get_latest_sample()
-		
+	
+	@frappe.whitelist()
 	def update_outward_sample(self):
 		total_qty = 0
 		total_amount = 0
