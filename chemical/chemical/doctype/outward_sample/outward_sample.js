@@ -88,7 +88,7 @@ frappe.ui.form.on('Outward Sample', {
 	before_save: function (frm) {
 		frm.trigger("cal_total_qty");
 		frm.trigger("cal_yield");
-		frm.trigger("cal_rate");
+		//frm.trigger("cal_rate");
 		frm.trigger("cal_amount");
 		frm.trigger("cal_per_unit_price");
 		if (frm.doc.link_to == 'Customer') {
@@ -200,23 +200,23 @@ frappe.ui.form.on('Outward Sample', {
 	},
 	cal_rate: function (frm) {
 		let rate = 0;
-		let yield_1 = 0;
 		frm.doc.details.forEach(function (d) {
-			if (d.batch_yield) {
-				frappe.db.get_value("BOM", { 'item': d.item_code }, 'batch_yield', function (r) {
-					if (r.batch_yield != 0) {
-						rate = ((d.price_list_rate * r.batch_yield) / d.batch_yield);
-					}
-					else {
-						yield_1 = 2.2;
-						rate = ((d.price_list_rate * 2.2) / d.batch_yield);
-					}
-					frappe.model.set_value(d.doctype, d.name, 'rate', rate);
-				});
-			}
-			else {
-				frappe.model.set_value(d.doctype, d.name, 'rate', d.price_list_rate);
-			}
+				let concentration = d.concentration || 100;
+				if(d.bom_no){
+					frappe.db.get_value("BOM", d.bom_no, 'concentration', function (r) {
+						if (r.concentration) {
+							frappe.model.set_value(d.doctype, d.name, 'rate', ((d.price_list_rate * concentration) / r.concentration));
+						}	
+					});
+				}
+				else{
+					frappe.db.get_value("BOM", { 'item': d.item_code,'is_default':1,'docstatus':1 }, 'concentration', function (m) {
+						if (m.concentration) {
+							
+							frappe.model.set_value(d.doctype, d.name, 'rate', ((d.price_list_rate * concentration) / m.concentration));
+						}	
+					});
+				}
 		});
 	},
 	cal_amount: function (frm) {
@@ -294,6 +294,7 @@ frappe.ui.form.on("Outward Sample Detail", {
 	},
 	concentration: function (frm, cdt, cdn) {
 		frm.events.cal_yield(frm);
+		frm.events.cal_rate(frm);
 	},
 	rate: function (frm, cdt, cdn) {
 		frm.events.cal_amount(frm);
