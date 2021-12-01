@@ -41,7 +41,7 @@ class OutwardSample(Document):
 				else:
 					price = self.get_price_list(item_code=row.item_code, price_list=self.price_list or "Standard Buying", company=self.company)
 					if frappe.db.get_value("BOM",{'item':row.item_code,'is_default':1,'docstatus':1},'concentration'):
-						rate = price.price_list_rate * concentration / frappe.db.get_value("BOM",{'item':row.item_code,'is_default':1,'docstatus':1},'concentration')
+						rate = price.price_list_rate * concentration / (frappe.db.get_value("BOM",{'item':row.item_code,'is_default':1,'docstatus':1},'concentration') or 100)
 						row.db_set('rate', rate)
 						row.db_set('price_list_rate', rate)
 				

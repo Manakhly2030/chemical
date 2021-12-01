@@ -206,14 +206,20 @@ frappe.ui.form.on('Outward Sample', {
 					frappe.db.get_value("BOM", d.bom_no, 'concentration', function (r) {
 						if (r.concentration) {
 							frappe.model.set_value(d.doctype, d.name, 'rate', ((d.price_list_rate * concentration) / r.concentration));
-						}	
+						}
+						else{
+							frappe.model.set_value(d.doctype, d.name, 'rate', (d.price_list_rate * concentration) / 100);
+						}
+							
 					});
 				}
 				else{
 					frappe.db.get_value("BOM", { 'item': d.item_code,'is_default':1,'docstatus':1 }, 'concentration', function (m) {
 						if (m.concentration) {
-							
 							frappe.model.set_value(d.doctype, d.name, 'rate', ((d.price_list_rate * concentration) / m.concentration));
+						}
+						else{
+							frappe.model.set_value(d.doctype, d.name, 'rate', (d.price_list_rate * concentration) / 100);
 						}	
 					});
 				}
