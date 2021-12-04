@@ -72,7 +72,44 @@ def execute(filters=None):
 			"as_is_in_qty":max(sle.as_is_qty, 0),
 			"as_is_out_qty":min(sle.as_is_qty, 0),
 		})
+		if item_detail.maintain_as_is_stock:
+			if sle.get('out_qty'):
+				sle.update({
+					"outgoing_rate":flt(flt(sle.get('stock_value_difference')) / flt(sle.get('out_qty')) * 100) / flt(concentration) if sle.get('stock_value_difference') else 0
+				})
+			else:
+				sle.update({
+					"outgoing_rate":0
+				})
 
+			if sle.get('as_is_out_qty'):
+				sle.update({
+					"as_is_outgoing_rate":flt(sle.get('stock_value_difference')) / flt(sle.get('as_is_out_qty')) if sle.get('stock_value_difference') else 0
+				})
+			else:
+				sle.update({
+					"as_is_outgoing_rate":0
+				})
+
+		else:
+			if sle.get('out_qty'):
+				sle.update({
+					"outgoing_rate":flt(sle.get('stock_value_difference')) / flt(sle.get('out_qty')) if sle.get('stock_value_difference') else 0
+				})
+			else:
+				sle.update({
+					"outgoing_rate":0
+				})
+
+			if sle.get('as_is_out_qty'):
+				sle.update({
+					"as_is_outgoing_rate":flt(sle.get('stock_value_difference')) / flt(sle.get('as_is_out_qty')) if sle.get('stock_value_difference') else 0
+				})
+			else:
+				sle.update({
+					"as_is_outgoing_rate":0
+				})
+				
 		if sle.serial_no:
 			update_available_serial_nos(available_serial_nos, sle)
 
@@ -115,6 +152,8 @@ def get_columns(filters):
 		{"label": _("Balance Qty"), "fieldname": "qty_after_transaction", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Incoming Rate"), "fieldname": "incoming_rate", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency", "convertible": "rate"},
+		{"label": _("Outgoing Rate"), "fieldname": "outgoing_rate", "fieldtype": "Currency", "width": 110,
+			"options": "Company:company:default_currency", "convertible": "rate"},
 		{"label": _("Valuation Rate"), "fieldname": "valuation_rate", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency", "convertible": "rate"},
 		{"label": _("Balance Value"), "fieldname": "stock_value", "fieldtype": "Currency", "width": 110,
@@ -133,6 +172,8 @@ def get_columns(filters):
 		columns += [
 			{"label": _("As Is In Qty"), "fieldname": "as_is_in_qty", "fieldtype": "Float","width": 100},
 			{"label": _("As Is Out Qty"), "fieldname": "as_is_out_qty", "fieldtype": "Float","width": 100},
+		{"label": _("As Is Outgoing Rate"), "fieldname": "as_is_outgoing_rate", "fieldtype": "Currency", "width": 110,
+			"options": "Company:company:default_currency", "convertible": "rate"},
 			{"label": _("As Is Balance Qty"), "fieldname": "as_is_balance_qty", "fieldtype": "Float","width": 100},
 		]
 	columns += [

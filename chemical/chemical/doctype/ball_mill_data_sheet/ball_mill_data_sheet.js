@@ -127,6 +127,13 @@ function get_qty(frm) {
 }
 
 frappe.ui.form.on('Ball Mill Data Sheet', {
+	// validate:function(frm){	
+	// 	frm.doc.items.forEach(function(d) {
+	// 		if(!d.work_order){
+	// 			console.log(d)
+	// 		}
+	// 	});
+	// },
 	onload: (frm) => {
 		if (frm.doc.__islocal){
 		frm.trigger('naming_series');
@@ -339,9 +346,9 @@ frappe.ui.form.on('Ball Mill Packaging', {
 	// quantity: function(frm,cdt,cdn){
 	// 	frm.events.packaging_calculation(frm, cdt, cdn)
 	// },
-	// qty: function(frm,cdt,cdn){
-	// 	frm.events.packaging_calculation(frm, cdt, cdn)
-	// },
+	qty: function(frm,cdt,cdn){
+		frm.events.packaging_calculation(frm, cdt, cdn)
+	},
 	no_of_packages: function(frm,cdt,cdn){
 		frm.events.repack_calculation(frm, cdt, cdn)
 	},

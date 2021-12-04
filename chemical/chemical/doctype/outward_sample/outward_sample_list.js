@@ -10,6 +10,17 @@ frappe.listview_settings['Outward Sample'] = {
         else if(doc.status === "Fail"){
             return [__("Fail"), "red", "status,=,Fail"];
         }
-		
+        else if(doc.status === "Rejected"){
+            return [__("Rejected"), "red", "status,=,Rejected"];
+        }
+		else if(doc.status === "Delivered"){
+            return [__("Delivered"), "green", "status,=,Delivered"];
+        }
+        else if(doc.status === "Dispatch"){
+            return [__("Dispatch"), "green", "status,=,Dispatch"];
+        }
+        else if(doc.status === "Under Process"){
+            return [__("Under Process"), "orange", "status,=,Under Process"];
+        }
     }
 }

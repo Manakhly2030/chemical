@@ -22,28 +22,39 @@ class OutwardSample(Document):
 		self.get_master_sample()
 		self.get_latest_ball_mill()
 		self.get_latest_sample()
-		
+	
+	@frappe.whitelist()
 	def update_outward_sample(self):
 		total_qty = 0
 		total_amount = 0
 
 		for row in self.details:
 			if row.item_code:
-				if row.bom_no:
-					rate = frappe.db.get_value("BOM",row.bom_no,'per_unit_price')
+				concentration = row.concentration or 100
+				
+				if row.get('bom_no'):
+					bom_concentration = frappe.db.get_value("BOM",row.bom_no,'concentration') or 100
+					rate = ((row.price_list_rate * concentration) / bom_concentration)
+					row.db_set('rate', rate)
+					row.db_set('price_list_rate', rate)
 					
 				else:
 					price = self.get_price_list(item_code=row.item_code, price_list=self.price_list or "Standard Buying", company=self.company)
-					rate = price.price_list_rate
-				row.db_set('rate', rate)
-				row.db_set('price_list_rate', rate)
+					if frappe.db.get_value("BOM",{'item':row.item_code,'is_default':1,'docstatus':1},'concentration'):
+						rate = price.price_list_rate * concentration / (frappe.db.get_value("BOM",{'item':row.item_code,'is_default':1,'docstatus':1},'concentration') or 100)
+						row.db_set('rate', rate)
+						row.db_set('price_list_rate', rate)
+				
 
-			if row.batch_yield:
-				bomyield = frappe.db.get_value("BOM",{'item': row.item_name},"batch_yield")
-				if bomyield != 0:
-					row.db_set('rate',(flt(row.price_list_rate)) * flt(bomyield) / row.batch_yield)
-				else:
-					row.db_set('rate',(flt(row.price_list_rate) * 2.2) / row.batch_yield)
+
+			# commented bcz we are calculation rate on concentration
+
+			# if row.batch_yield:
+			# 	bomyield = frappe.db.get_value("BOM",{'item': row.item_name},"batch_yield")
+			# 	if bomyield != 0:
+			# 		row.db_set('rate',(flt(row.price_list_rate)) * flt(bomyield) / row.batch_yield)
+			# 	else:
+			# 		row.db_set('rate',(flt(row.price_list_rate) * 2.2) / row.batch_yield)
 
 			row.db_set('amount', flt(row.quantity) * flt(row.rate))
 

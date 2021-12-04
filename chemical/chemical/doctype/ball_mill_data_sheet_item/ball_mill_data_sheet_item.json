@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "creation": "2018-03-14 11:01:25.665354",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -108,12 +109,12 @@
   },
   {
    "columns": 1,
+   "default": "100",
    "fetch_from": "batch_no.concentration",
    "fieldname": "concentration",
    "fieldtype": "Percent",
    "in_list_view": 1,
-   "label": "Concentration",
-   "read_only": 1
+   "label": "Concentration"
   },
   {
    "fieldname": "required_quantity",
@@ -177,7 +178,8 @@
   }
  ],
  "istable": 1,
- "modified": "2021-01-11 17:36:25.054412",
+ "links": [],
+ "modified": "2021-09-18 17:10:05.059375",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet Item",

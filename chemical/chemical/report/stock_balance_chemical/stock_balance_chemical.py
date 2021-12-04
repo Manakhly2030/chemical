@@ -47,6 +47,10 @@ def execute(filters=None):
 
 	_func = lambda x: x[1]
 
+	filter_company = filters.get("company")
+	current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
+	from_date_fiscal = frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date")
+
 	for (company, item, warehouse) in sorted(iwb_map):
 		if item_map.get(item):
 			qty_dict = iwb_map[(company, item, warehouse)]
@@ -88,24 +92,34 @@ def execute(filters=None):
 
 				report_data.update(stock_ageing_data)
 
+			has_batch_no = frappe.db.get_value("Item",report_data['item_code'],"has_batch_no")
+			item_code = report_data['item_code']
+			warehouse = report_data['warehouse']
+			if has_batch_no:
+				report_data['batch_wise'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+				target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}' warehouse='{warehouse}'
+				onClick=view_batch_wise_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Batch Detail</button>"""
+			
+			report_data['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+				target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date_fiscal}' to_date='{to_date}' warehouse='{warehouse}'
+				onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Stock Ledger</button>"""
+
 			data.append(report_data)
 
-	add_additional_uom_columns(columns, data, include_uom, conversion_factors)
-	filter_company = filters.get("company")
-	current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
-	from_date_fiscal = frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date")
-	for row in data:
-		has_batch_no = frappe.db.get_value("Item",row['item_code'],"has_batch_no")
-		item_code = row['item_code']
-		warehouse = row['warehouse']
-		if has_batch_no:
-			row['batch_wise'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
-			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}' warehouse='{warehouse}'
-			onClick=view_batch_wise_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Batch Detail</button>"""
+	# add_additional_uom_columns(columns, data, include_uom, conversion_factors)
+
+	# for row in data:
+	# 	has_batch_no = frappe.db.get_value("Item",row['item_code'],"has_batch_no")
+	# 	item_code = row['item_code']
+	# 	warehouse = row['warehouse']
+	# 	if has_batch_no:
+	# 		row['batch_wise'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+	# 		target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}' warehouse='{warehouse}'
+	# 		onClick=view_batch_wise_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Batch Detail</button>"""
 		
-		row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
-			target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date_fiscal}' to_date='{to_date}' warehouse='{warehouse}'
-			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Stock Ledger</button>"""
+	# 	row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+	# 		target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date_fiscal}' to_date='{to_date}' warehouse='{warehouse}'
+	# 		onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Stock Ledger</button>"""
 		
 	chart_data = get_chart_data(data, filters)
 

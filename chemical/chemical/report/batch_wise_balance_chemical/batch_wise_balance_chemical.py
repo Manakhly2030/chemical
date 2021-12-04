@@ -16,7 +16,13 @@ def execute(filters=None):
 	iwb_map = get_item_warehouse_batch_map(filters, float_precision)
 	iwb_map_without_group = get_item_warehouse_batch_map_without_group(filters, float_precision)
 
+	filter_company = filters.get("company")
+	current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
+	from_date = frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date")
+	to_date = filters.get('to_date')
+
 	data = []
+
 	for company in sorted(iwb_map):
 		for item in sorted(iwb_map[company]):
 			for wh in sorted(iwb_map[company][item]):
@@ -51,6 +57,10 @@ def execute(filters=None):
 								'uom': item_map[item]["stock_uom"],
 								'party_type':qty_dict_without_group.party_type,
 								'party':qty_dict_without_group.party,
+								'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+											target="_blank" item_code='{item}' from_date='{from_date}' to_date='{to_date}' batch_no='{batch}'
+											onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>""")
+
 							})
 						else:
 							data.append({
@@ -73,17 +83,18 @@ def execute(filters=None):
 								'uom': item_map[item]["stock_uom"],
 								'party_type':qty_dict_without_group.party_type,
 								'party':qty_dict_without_group.party,
+								'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+											target="_blank" item_code='{item}' from_date='{from_date}' to_date='{to_date}' batch_no='{batch}'
+											onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>""")
+
 							})
-	filter_company = filters.get("company")
-	current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
-	from_date = frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date")
-	to_date = filters.get('to_date')
-	for row in data:
-		item_code = row['item_code']
-		batch_no = row['batch_no']
-		row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
-			target="_blank" item_code='{item_code}' from_date='{from_date}' to_date='{to_date}' batch_no='{batch_no}'
-			onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>"""
+
+	# for row in data:
+	# 	item_code = row['item_code']
+	# 	batch_no = row['batch_no']
+	# 	row['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #5e64ff; padding: 3px 5px;border-radius: 5px;'
+	# 		target="_blank" item_code='{item_code}' from_date='{from_date}' to_date='{to_date}' batch_no='{batch_no}'
+	# 		onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>"""
 
 	return columns, data
 

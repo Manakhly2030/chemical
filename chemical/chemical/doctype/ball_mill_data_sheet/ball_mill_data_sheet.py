@@ -265,9 +265,10 @@ def make_outward_sample(source_name, target_doc=None):
 	def postprocess(source, doc):
 
 		doc.link_to = "Customer"
-		customer_name, destination = frappe.db.get_value("Customer", doc.party, ['customer_name', 'territory'])
-		doc.party_name = customer_name
-		doc.destination_1 = doc.destination = destination
+		if doc.get('party'):
+			customer_name, destination = frappe.db.get_value("Customer", doc.party, ['customer_name', 'territory'])
+			doc.party_name = customer_name
+			doc.destination_1 = doc.destination = destination
 
 		total_amount = 0.0
 		for d in doc.details:

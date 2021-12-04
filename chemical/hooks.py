@@ -342,7 +342,8 @@ scheduler_events = {
 override_doctype_dashboards = {
 	"Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
 	"Customer": "chemical.chemical.dashboard.customer.get_data",
-	"Quotation": "chemical.chemical.dashboard.quotation.get_data"
+	"Quotation": "chemical.chemical.dashboard.quotation.get_data",
+	"Lead": "chemical.chemical.dashboard.lead.get_data"
 }
 
 #Work Order Summary Report Override From Finbyz Dashboard For Chart
