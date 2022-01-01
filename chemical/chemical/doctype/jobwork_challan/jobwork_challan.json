@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "autoname": "naming_series:",
  "creation": "2019-01-11 11:50:29.807720",
  "doctype": "DocType",
@@ -60,7 +61,6 @@
   {
    "fieldname": "company",
    "fieldtype": "Link",
-   "hidden": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Company",
@@ -250,8 +250,10 @@
    "read_only": 1
   }
  ],
+ "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "modified": "2020-05-06 11:30:23.023582",
+ "links": [],
+ "modified": "2022-01-01 12:34:39.646052",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Jobwork Challan",
@@ -268,51 +270,6 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
-   "share": 1,
-   "submit": 1,
-   "write": 1
-  },
-  {
-   "amend": 1,
-   "cancel": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Manufacturing Manager",
-   "share": 1,
-   "submit": 1,
-   "write": 1
-  },
-  {
-   "amend": 1,
-   "cancel": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Manufacturing User",
-   "share": 1,
-   "submit": 1,
-   "write": 1
-  },
-  {
-   "amend": 1,
-   "cancel": 1,
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Accounts Manager",
    "share": 1,
    "submit": 1,
    "write": 1
