@@ -293,7 +293,7 @@ doc_events = {
 	"Landed Cost Voucher": {
 		"validate": [
 			"chemical.batch_valuation.lcv_validate",
-			"chemical.api.lcv_validate",
+			# "chemical.api.lcv_validate",
 		],
 		"on_submit": "chemical.batch_valuation.lcv_on_submit",
 		"on_cancel": [
