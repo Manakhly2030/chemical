@@ -38,8 +38,17 @@ def before_validate(self,method):
 	cal_rate_qty(self)
 
 def validate(self,method):
-	pass
-	#cal_rate_qty(self)
+	total_qty = 0.0
+	total_quantity = 0.0
+	
+	for row in self.items:
+		total_qty += row.qty
+		total_quantity += row.quantity
+	try:
+		self.total_qty = total_qty
+		self.total_quantity = total_quantity
+	except:
+		pass
 
 def si_update_status_updater_args(self):
 	if cint(self.update_stock):

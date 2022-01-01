@@ -204,7 +204,7 @@ def update_cost():
 				item_price.item_code = bom_obj.item
 				item_price.price_list_rate = per_unit_price
 			
-			item_price.save()
+				item_price.save()
 	
 
 # update price in BOM
