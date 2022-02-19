@@ -38,6 +38,7 @@ class BallMillDataSheet(Document):
 		self.set_incoming_rate()
 		self.repack_calculation()
 		self.cal_total()
+		self.set_lot_no_for_list_view()
 		if self._action == 'submit':
 			self.validate_qty()
 
@@ -221,6 +222,7 @@ class BallMillDataSheet(Document):
 		for item in self.packaging:
 			item.db_set('lot_no', None)
 			item.db_set('batch_no', None)
+		self.db_set('lot_no', None)
 		
 	def on_cancel(self):
 		if self.stock_entry:
@@ -230,6 +232,9 @@ class BallMillDataSheet(Document):
 
 			for row in self.packaging:
 				row.db_set('batch_no', '')
+
+	def set_lot_no_for_list_view(self):
+		self.lot_no=",".join([each.get('lot_no') for each in self.packaging])
 
 	def cal_total(self):
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
