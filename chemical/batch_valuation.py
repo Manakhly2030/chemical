@@ -13,22 +13,22 @@ def batch_wise_cost():
 
 @frappe.whitelist()
 def pr_validate(self, method):
-	if batch_wise_cost():
+	if batch_wise_cost() and not self.is_return:
 		make_batches(self, 'warehouse')
 
 @frappe.whitelist()
 def pr_on_cancel(self, method):
-	if batch_wise_cost():
+	if batch_wise_cost() and not self.is_return:
 		delete_batches(self, 'warehouse')
 
 @frappe.whitelist()
 def pi_validate(self, method):
-	if self.update_stock and batch_wise_cost():
+	if self.update_stock and batch_wise_cost() and not self.is_return:
 		make_batches(self, 'warehouse')
 
 @frappe.whitelist()
 def pi_on_cancel(self, method):
-	if self.update_stock and batch_wise_cost():
+	if self.update_stock and batch_wise_cost() and not self.is_return:
 		delete_batches(self, 'warehouse')
 
 @frappe.whitelist()
