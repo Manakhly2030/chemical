@@ -1,12 +1,12 @@
-import frappe, erpnext
+import frappe, erpnext, json
 from frappe import msgprint, _
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime,nowtime
-from erpnext.stock.stock_ledger import update_entries_after,get_valuation_rate
+from erpnext.stock.stock_ledger import update_entries_after,get_valuation_rate, _round_off_if_near_zero
 from erpnext.controllers.sales_and_purchase_return import get_return_against_item_fields,get_filters
 from erpnext.stock.utils import get_valuation_method,get_fifo_rate
 from six import string_types
-
-import json
+from pypika import CustomFunction
+from frappe.query_builder.functions import Sum
 
 # Utils Overrides
 @frappe.whitelist()
@@ -87,23 +87,24 @@ def process_sle(self, sle):
 	# Get dynamic incoming/outgoing rate
 	self.get_dynamic_incoming_outgoing_rate(sle)
 
-	# Finbyz Changes
-	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
-	if sle.batch_no and batch_wise_cost:
-		get_batch_values(self,sle)
-		self.wh_data.qty_after_transaction += flt(sle.actual_qty)
-		# if sle.voucher_type == "Stock Reconciliation":
-		# 	self.wh_data.qty_after_transaction = sle.qty_after_transaction
-		self.wh_data.stock_value = flt(self.wh_data.qty_after_transaction) * flt(self.wh_data.valuation_rate)
 
-	elif sle.serial_no:
+	if sle.serial_no:
 		self.get_serialized_values(sle)
 		self.wh_data.qty_after_transaction += flt(sle.actual_qty)
 		if sle.voucher_type == "Stock Reconciliation":
 			self.wh_data.qty_after_transaction = sle.qty_after_transaction
 
 		self.wh_data.stock_value = flt(self.wh_data.qty_after_transaction) * flt(self.wh_data.valuation_rate)
-		
+
+	# Finbyz Changes
+	elif sle.batch_no and cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items')):
+		update_batched_values(self,sle)
+		# get_batch_values(self,sle)
+		# self.wh_data.qty_after_transaction += flt(sle.actual_qty)
+		# # if sle.voucher_type == "Stock Reconciliation":
+		# # 	self.wh_data.qty_after_transaction = sle.qty_after_transaction
+		# self.wh_data.stock_value = flt(self.wh_data.qty_after_transaction) * flt(self.wh_data.valuation_rate)
+
 	else:
 		if sle.voucher_type=="Stock Reconciliation" and not sle.batch_no:
 			# assert
@@ -123,6 +124,8 @@ def process_sle(self, sle):
 
 	# rounding as per precision
 	self.wh_data.stock_value = flt(self.wh_data.stock_value, self.precision)
+	if not self.wh_data.qty_after_transaction:
+		self.wh_data.stock_value = 0.0
 	stock_value_difference = self.wh_data.stock_value - self.wh_data.prev_stock_value
 	self.wh_data.prev_stock_value = self.wh_data.stock_value
 
@@ -138,6 +141,62 @@ def process_sle(self, sle):
 	self.update_outgoing_rate_on_transaction(sle)
 
 # Finbyz changes
+def update_batched_values(self, sle):
+	incoming_rate = flt(sle.incoming_rate)
+	actual_qty = flt(sle.actual_qty)
+
+	self.wh_data.qty_after_transaction = _round_off_if_near_zero(self.wh_data.qty_after_transaction + actual_qty)
+
+	if actual_qty > 0:
+		stock_value_difference = incoming_rate * actual_qty
+	else:
+		outgoing_rate = get_batch_incoming_rate(item_code=sle.item_code,
+				warehouse=sle.warehouse, batch_no=sle.batch_no, posting_date=sle.posting_date,
+				posting_time=sle.posting_time, creation=sle.creation)
+		if outgoing_rate is None:
+			frappe.throw("Batch Valuation Incoming Rate not found")
+			# This can *only* happen if qty available for the batch is zero.
+			# in such case fall back various other rates.
+			# future entries will correct the overall accounting as each
+			# batch individually uses moving average rates.
+			# outgoing_rate = self.get_fallback_rate(sle)
+		stock_value_difference = outgoing_rate * actual_qty
+
+	self.wh_data.stock_value = _round_off_if_near_zero(self.wh_data.stock_value + stock_value_difference)
+	if self.wh_data.qty_after_transaction:
+		self.wh_data.valuation_rate = self.wh_data.stock_value / self.wh_data.qty_after_transaction
+
+def get_batch_incoming_rate(item_code, warehouse, batch_no, posting_date, posting_time, creation=None):
+	
+	Timestamp = CustomFunction('timestamp', ['date', 'time'])
+
+	sle = frappe.qb.DocType("Stock Ledger Entry")
+
+	timestamp_condition = (Timestamp(sle.posting_date, sle.posting_time) < Timestamp(posting_date, str(posting_time)))
+	if creation:
+		timestamp_condition |= (
+				(Timestamp(sle.posting_date, sle.posting_time) == Timestamp(posting_date, str(posting_time)))
+				& (sle.creation < creation)
+			)
+	batch_details = (
+		frappe.qb
+			.from_(sle)
+			.select(
+				Sum(sle.stock_value_difference).as_("batch_value"),
+				Sum(sle.actual_qty).as_("batch_qty")
+			)
+			.where(
+				(sle.item_code == item_code)
+				& (sle.warehouse == warehouse)
+				& (sle.batch_no == batch_no)
+				& (sle.is_cancelled == 0)
+			)
+			.where(timestamp_condition)
+	).run(as_dict=True)
+
+	if batch_details and batch_details[0].batch_qty:
+		return batch_details[0].batch_value / batch_details[0].batch_qty
+
 def get_batch_values(self, sle):
 	
 	incoming_rate = flt(sle.incoming_rate)

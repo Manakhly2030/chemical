@@ -161,7 +161,8 @@ def make_batches(self, warehouse_field):
 
 			has_batch_no = frappe.db.get_value('Item', row.item_code, 'has_batch_no')
 			if has_batch_no:
-				if row.batch_no and not frappe.db.exists("Stock Ledger Entry", {'is_cancelled':0,'company':self.company,'warehouse':row.get(warehouse_field),'batch_no':row.batch_no}):
+				if row.batch_no and flt(row.valuation_rate,4) == flt(frappe.db.get_value("Stock Ledger Entry", {'is_cancelled':0,'company':self.company,'warehouse':row.get(warehouse_field),'batch_no':row.batch_no,'incoming_rate':('!=', 0)},'incoming_rate'),4):
+				# if row.batch_no and not frappe.db.exists("Stock Ledger Entry", {'is_cancelled':0,'company':self.company,'warehouse':row.get(warehouse_field),'batch_no':row.batch_no}):
 					continue
 
 				if row.batch_no and self.doctype == "Stock Entry":

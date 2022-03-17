@@ -201,6 +201,7 @@ doctype_js = {
 
 override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
+	"erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.get_stock_balance_for": "chemical.chemical.doc_events.stock_reconciliation.get_stock_balance_for"
 }
 
 doc_events = {
@@ -384,3 +385,7 @@ update_entries_after.process_sle =  process_sle
 # stock entry
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 StockEntry.get_args_for_incoming_rate = get_args_for_incoming_rate
+
+from erpnext.stock.doctype.stock_reconciliation import stock_reconciliation
+from chemical.chemical.doc_events.stock_reconciliation import get_stock_balance_for
+stock_reconciliation.get_stock_balance_for = get_stock_balance_for
