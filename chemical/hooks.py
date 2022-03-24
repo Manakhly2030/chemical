@@ -327,6 +327,10 @@ doc_events = {
 	"Stock Ledger Entry": {
 		"before_submit": "chemical.chemical.doc_events.stock_ledger_entry.sl_before_submit"
 	},
+	"Stock Reconciliation":{
+		"on_submit":"chemical.chemical.doc_events.stock_reconciliation.on_submit",
+		"on_cancel":"chemical.chemical.doc_events.stock_reconciliation.on_cancel"
+	},
 	"Sales Order": {
 		"onload":"chemical.chemical.doc_events.sales_order.onload",
 		"on_cancel": "chemical.api.so_on_cancel",

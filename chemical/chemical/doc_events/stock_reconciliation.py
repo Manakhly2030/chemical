@@ -2,11 +2,26 @@ import frappe
 from erpnext.stock.utils import get_stock_balance, get_incoming_rate
 from erpnext.stock.doctype.batch.batch import get_batch_qty
 
+def on_submit(self, method):
+	update_valuation_rate_for_batch_no(self)
+
+def on_cancel(self, method):
+	update_valuation_rate_for_batch_no(self)
+
+def update_valuation_rate_for_batch_no(self):
+	for row in self.items:
+		if not row.batch_no: continue
+
+		valuation_rate = row.valuation_rate if self.docstatus == 1 else row.current_valuation_rate
+		if valuation_rate is None:
+			continue
+
+		frappe.db.set_value("Batch", row.batch_no, 'valuation_rate', valuation_rate)
+
 @frappe.whitelist()
 def get_stock_balance_for(item_code, warehouse,
 	posting_date, posting_time, batch_no=None, with_valuation_rate= True):
 	frappe.has_permission("Stock Reconciliation", "write", throw = True)
-	frappe.msgprint("called override")
 	item_dict = frappe.db.get_value("Item", item_code,
 		["has_serial_no", "has_batch_no"], as_dict=1)
 
