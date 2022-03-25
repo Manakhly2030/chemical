@@ -1,6 +1,6 @@
 import frappe, erpnext, json
 from frappe import msgprint, _
-from frappe.utils import nowdate, flt, cint, cstr,now_datetime,nowtime
+from frappe.utils import nowdate, flt, cint, cstr,now_datetime,nowtime, get_link_to_form
 from erpnext.stock.stock_ledger import update_entries_after,get_valuation_rate, _round_off_if_near_zero
 from erpnext.controllers.sales_and_purchase_return import get_return_against_item_fields,get_filters
 from erpnext.stock.utils import get_valuation_method,get_fifo_rate
@@ -154,7 +154,7 @@ def update_batched_values(self, sle):
 				warehouse=sle.warehouse, batch_no=sle.batch_no, posting_date=sle.posting_date,
 				posting_time=sle.posting_time, creation=sle.creation)
 		if outgoing_rate is None:
-			frappe.throw("Batch Valuation Incoming Rate not found")
+			frappe.throw(f"Batch Valuation: Incoming Rate not found in {frappe.bold(get_link_to_form('Batch',sle.batch_no))}")
 			# This can *only* happen if qty available for the batch is zero.
 			# in such case fall back various other rates.
 			# future entries will correct the overall accounting as each
