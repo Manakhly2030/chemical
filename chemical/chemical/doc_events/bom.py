@@ -19,7 +19,10 @@ def bom_before_save(self, method):
 	validate_cost_ratio_and_quantity_ratio(self)
 	cost_calculation(self)
 	yield_cal(self)
-	
+
+def on_submit(self, method):
+	cost_calculation(self)
+
 def set_fg_qty_in_additional_cost(self):
 	for row in self.additional_cost:
 		row.amount = flt(flt(row.qty) * flt(row.rate))
@@ -69,30 +72,38 @@ def cost_calculation(self):
 	self.db_set('per_unit_rmc',flt(flt(self.raw_material_cost)/flt(self.quantity)))
 	if hasattr(self, 'rmc_valuation_amount'):
 		self.db_set('rmc_valuation_amount',flt(valuation_amount))
+		rmc_valuation_amount = flt(valuation_amount)
 		self.db_set('rmc_last_purchase_amount',flt(last_purchase_amount))
-		self.db_set('per_unit_rmc_valuation',flt(flt(self.rmc_valuation_amount)/flt(self.quantity)))
-		self.db_set('per_unit_rmc_last_purchase',flt(flt(self.rmc_last_purchase_amount)/flt(self.quantity)))
+		rmc_last_purchase_amount = flt(last_purchase_amount)
+		self.db_set('per_unit_rmc_valuation',flt(flt(rmc_valuation_amount)/flt(self.quantity)))
+		self.db_set('per_unit_rmc_last_purchase',flt(flt(rmc_last_purchase_amount)/flt(self.quantity)))
 	
 	self.additional_amount = additional_amount
+	self.db_set('additional_amount',additional_amount)
 	self.db_set('total_operational_cost',flt(self.additional_amount) + flt(self.volume_amount) + etp_amount)
-	self.db_set('total_scrap_cost', abs(self.scrap_material_cost))
+	total_operational_cost = flt(self.additional_amount) + flt(self.volume_amount) + etp_amount
+	self.db_set('total_scrap_cost', flt(self.scrap_material_cost))
+	total_scrap_cost = flt(self.scrap_material_cost)
+	self.db_set('total_cost',self.raw_material_cost + total_operational_cost - flt(self.scrap_material_cost))
+	total_cost = self.raw_material_cost + total_operational_cost - flt(self.scrap_material_cost)
 
-	self.db_set('total_cost',self.raw_material_cost + self.total_operational_cost - flt(self.scrap_material_cost))
 	if hasattr(self, 'total_valuation_cost'):
-		self.db_set('total_valuation_cost',self.rmc_valuation_amount + self.total_operational_cost - flt(self.scrap_material_cost))
-		self.db_set('total_last_purchase_cost',self.rmc_last_purchase_amount + self.total_operational_cost - flt(self.scrap_material_cost))
-		
+		self.db_set('total_valuation_cost',rmc_valuation_amount + total_operational_cost - flt(self.scrap_material_cost))
+		total_valuation_cost = rmc_valuation_amount + total_operational_cost - flt(self.scrap_material_cost)
+		self.db_set('total_last_purchase_cost',rmc_last_purchase_amount + total_operational_cost - flt(self.scrap_material_cost))
+		total_last_purchase_cost = rmc_last_purchase_amount + total_operational_cost - flt(self.scrap_material_cost)
+	
 	self.db_set('per_unit_volume_cost',flt(self.volume_amount/self.quantity))	
 	self.db_set('per_unit_additional_cost',flt(flt(self.additional_amount)/self.quantity))
-	self.db_set('per_unit_operational_cost',flt(flt(self.total_operational_cost)/self.quantity))
-	self.db_set('per_unit_scrap_cost',flt(flt(self.total_scrap_cost)/self.quantity))
+	self.db_set('per_unit_operational_cost',flt(flt(total_operational_cost)/self.quantity))
+	self.db_set('per_unit_scrap_cost',flt(flt(total_scrap_cost)/self.quantity))
 
-	per_unit_price = flt(self.total_cost) / flt(self.quantity)
+	per_unit_price = flt(total_cost) / flt(self.quantity)
 	# if self.per_unit_price != per_unit_price:
 	self.db_set('per_unit_price', per_unit_price)
 	if hasattr(self, 'per_unit_valuation_price'):
-		self.db_set('per_unit_valuation_price', flt(self.total_valuation_cost) / flt(self.quantity))
-		self.db_set('per_unit_last_purchase_price', flt(self.total_last_purchase_cost) / flt(self.quantity))
+		self.db_set('per_unit_valuation_price', flt(total_valuation_cost) / flt(self.quantity))
+		self.db_set('per_unit_last_purchase_price', flt(total_last_purchase_cost) / flt(self.quantity))
 		
 	#frappe.db.commit()
 
@@ -169,18 +180,22 @@ def update_cost():
 			bom_obj.db_set('per_unit_rmc',flt(flt(bom_obj.raw_material_cost)/bom_obj.quantity))
 		
 		bom_obj.db_set("volume_amount",flt(bom_obj.volume_quantity) * flt(bom_obj.volume_rate))
+		volume_amount = flt(bom_obj.volume_quantity) * flt(bom_obj.volume_rate)
 		bom_obj.db_set("etp_amount",flt(bom_obj.etp_qty) * flt(bom_obj.etp_rate))
-		bom_obj.db_set('total_operational_cost',flt(bom_obj.additional_amount) + flt(bom_obj.volume_amount) + flt(bom_obj.etp_amount))
-		bom_obj.db_set('total_scrap_cost', abs(bom_obj.scrap_material_cost))
+		etp_amount = flt(bom_obj.etp_qty) * flt(bom_obj.etp_rate)
 
-		bom_obj.db_set("total_cost",bom_obj.raw_material_cost + bom_obj.total_operational_cost - flt(bom_obj.scrap_material_cost) )
+		bom_obj.db_set('total_operational_cost',flt(bom_obj.additional_amount) + flt(volume_amount) + flt(etp_amount))
+		total_operational_cost = flt(bom_obj.additional_amount) + flt(volume_amount) + flt(etp_amount)
+		bom_obj.db_set('total_scrap_cost', flt(bom_obj.scrap_material_cost))
+		total_scrap_cost = flt(bom_obj.scrap_material_cost)
+		bom_obj.db_set("total_cost",bom_obj.raw_material_cost + total_operational_cost - flt(bom_obj.scrap_material_cost) )
 		if hasattr(bom_obj, 'total_valuation_cost'):
-			bom_obj.db_set("total_valuation_cost",bom_obj.rmc_valuation_amount + bom_obj.total_operational_cost - flt(bom_obj.scrap_material_cost) )
-			bom_obj.db_set("total_last_purchase_cost",bom_obj.rmc_last_purchase_amount + bom_obj.total_operational_cost - flt(bom_obj.scrap_material_cost) )
+			bom_obj.db_set("total_valuation_cost",bom_obj.rmc_valuation_amount + total_operational_cost - flt(bom_obj.scrap_material_cost) )
+			bom_obj.db_set("total_last_purchase_cost",bom_obj.rmc_last_purchase_amount + total_operational_cost - flt(bom_obj.scrap_material_cost) )
 			
 		per_unit_price = flt(bom_obj.total_cost) / flt(bom_obj.quantity)
 		bom_obj.db_set('per_unit_price',flt(bom_obj.total_cost) / flt(bom_obj.quantity))
-		bom_obj.db_set('per_unit_volume_cost',flt(bom_obj.volume_amount/bom_obj.quantity))	
+		bom_obj.db_set('per_unit_volume_cost',flt(volume_amount/bom_obj.quantity))	
 		bom_obj.db_set('per_unit_additional_cost',flt(flt(bom_obj.additional_amount)/bom_obj.quantity))
 		bom_obj.db_set('per_unit_rmc',flt(flt(bom_obj.raw_material_cost)/bom_obj.quantity))
 		
@@ -188,8 +203,8 @@ def update_cost():
 			bom_obj.db_set('per_unit_rmc_valuation',flt(flt(bom_obj.rmc_valuation_amount)/bom_obj.quantity))
 			bom_obj.db_set('per_unit_rmc_last_purchase',flt(flt(bom_obj.rmc_last_purchase_amount)/bom_obj.quantity))
 			
-		bom_obj.db_set('per_unit_operational_cost',flt(flt(bom_obj.total_operational_cost)/bom_obj.quantity))
-		bom_obj.db_set('per_unit_scrap_cost',flt(flt(bom_obj.total_scrap_cost)/bom_obj.quantity))
+		bom_obj.db_set('per_unit_operational_cost',flt(flt(total_operational_cost)/bom_obj.quantity))
+		bom_obj.db_set('per_unit_scrap_cost',flt(flt(total_scrap_cost)/bom_obj.quantity))
 		bom_obj.db_update()
 		
 		if bom_obj.is_default:
@@ -225,19 +240,28 @@ def upadte_item_price(docname,item, price_list, per_unit_price):
 		doc.db_set('per_unit_rmc',flt(flt(doc.raw_material_cost)/doc.quantity))
 
 	doc.db_set('volume_amount',flt(doc.volume_quantity) * flt(doc.volume_rate))
+	volume_amount = flt(doc.volume_quantity) * flt(doc.volume_rate)
 	doc.db_set('etp_amount',flt(doc.etp_qty) * flt(doc.etp_rate))
-	doc.db_set('total_operational_cost',flt(doc.additional_amount) + flt(doc.volume_amount) + flt(doc.etp_amount))
-	doc.db_set('total_scrap_cost', abs(doc.scrap_material_cost))
+	etp_amount = flt(doc.etp_qty) * flt(doc.etp_rate)
 
-	doc.db_set("total_cost",doc.raw_material_cost + flt(doc.total_operational_cost) - flt(doc.scrap_material_cost))
+	doc.db_set('total_operational_cost',flt(doc.additional_amount) + flt(volume_amount) + flt(etp_amount))
+	total_operational_cost = flt(doc.additional_amount) + flt(volume_amount) + flt(etp_amount)
+	doc.db_set('total_scrap_cost', flt(doc.scrap_material_cost))
+	total_scrap_cost = flt(doc.scrap_material_cost)
+
+	doc.db_set("total_cost",doc.raw_material_cost + flt(total_operational_cost) - flt(doc.scrap_material_cost))
+	total_cost = doc.raw_material_cost + flt(total_operational_cost) - flt(doc.scrap_material_cost)
+
 	if hasattr(doc, 'total_valuation_cost'):
-		doc.db_set("total_valuation_cost",doc.rmc_valuation_amount + flt(doc.total_operational_cost) - flt(doc.scrap_material_cost))
-		doc.db_set("total_last_purchase_cost",doc.rmc_last_purchase_amount + flt(doc.total_operational_cost) - flt(doc.scrap_material_cost))
-		
+		doc.db_set("total_valuation_cost",doc.rmc_valuation_amount + flt(total_operational_cost) - flt(doc.scrap_material_cost))
+		total_valuation_cost = doc.rmc_valuation_amount + flt(total_operational_cost) - flt(doc.scrap_material_cost)
+		doc.db_set("total_last_purchase_cost",doc.rmc_last_purchase_amount + flt(total_operational_cost) - flt(doc.scrap_material_cost))
+		total_last_purchase_cost = doc.rmc_last_purchase_amount + flt(total_operational_cost) - flt(doc.scrap_material_cost)
+
 	doc.db_set('per_unit_price',flt(doc.total_cost) / flt(doc.quantity))
 	if hasattr(doc, 'per_unit_valuation_price'):
-		doc.db_set('per_unit_valuation_price',flt(doc.total_valuation_cost) / flt(doc.quantity))
-		doc.db_set('per_unit_last_purchase_price',flt(doc.total_last_purchase_cost) / flt(doc.quantity))
+		doc.db_set('per_unit_valuation_price',flt(total_valuation_cost) / flt(doc.quantity))
+		doc.db_set('per_unit_last_purchase_price',flt(total_last_purchase_cost) / flt(doc.quantity))
 		
 	
 	doc.db_set('per_unit_rmc',flt(flt(doc.raw_material_cost)/doc.quantity))
@@ -245,10 +269,10 @@ def upadte_item_price(docname,item, price_list, per_unit_price):
 		doc.db_set('per_unit_rmc_valuation',flt(flt(doc.rmc_valuation_amount)/doc.quantity))
 		doc.db_set('per_unit_rmc_last_purchase',flt(flt(doc.rmc_last_purchase_amount)/doc.quantity))
 		
-	doc.db_set('per_unit_volume_cost',flt(doc.volume_amount/doc.quantity))	
+	doc.db_set('per_unit_volume_cost',flt(volume_amount/doc.quantity))	
 	doc.db_set('per_unit_additional_cost',flt(flt(doc.additional_amount)/doc.quantity))
-	doc.db_set('per_unit_operational_cost',flt(flt(doc.total_operational_cost)/doc.quantity))
-	doc.db_set('per_unit_scrap_cost',flt(flt(doc.total_scrap_cost)/doc.quantity))
+	doc.db_set('per_unit_operational_cost',flt(flt(total_operational_cost)/doc.quantity))
+	doc.db_set('per_unit_scrap_cost',flt(flt(total_scrap_cost)/doc.quantity))
 	doc.db_update()
 
 
