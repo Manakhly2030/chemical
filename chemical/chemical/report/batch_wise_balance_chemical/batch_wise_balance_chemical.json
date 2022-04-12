@@ -1,0 +1,28 @@
+{
+ "add_total_row": 1,
+ "creation": "2021-02-18 11:35:27.737102",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "idx": 0,
+ "is_standard": "Yes",
+ "letter_head": "Parshwnath Dyestuff Industries",
+ "modified": "2021-02-18 11:35:42.482140",
+ "modified_by": "Administrator",
+ "module": "Chemical",
+ "name": "Batch wise balance chemical",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Stock Ledger Entry",
+ "report_name": "Batch wise balance chemical",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "Accounts Manager"
+  }
+ ]
+}
