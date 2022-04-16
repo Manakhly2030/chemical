@@ -3,7 +3,7 @@ from frappe import msgprint, _
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime,nowtime, get_link_to_form
 from erpnext.stock.stock_ledger import update_entries_after,get_valuation_rate, _round_off_if_near_zero
 from erpnext.controllers.sales_and_purchase_return import get_return_against_item_fields,get_filters
-from erpnext.stock.utils import get_valuation_method,get_fifo_rate
+from erpnext.stock.utils import get_valuation_method, get_fifo_rate, get_avg_purchase_rate
 from six import string_types
 from pypika import CustomFunction
 from frappe.query_builder.functions import Sum
