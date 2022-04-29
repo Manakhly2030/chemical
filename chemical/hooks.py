@@ -207,7 +207,8 @@ override_whitelisted_methods = {
 doc_events = {
 	"BOM": {
 		"before_save": "chemical.chemical.doc_events.bom.bom_before_save",
-		"validate": "chemical.chemical.doc_events.bom.bom_validate"	
+		"validate": "chemical.chemical.doc_events.bom.bom_validate",
+		"on_submit":"chemical.chemical.doc_events.bom.on_submit"
 	},
 	"Item Price": {
 		"before_save": "chemical.chemical.doc_events.item_price.before_save",
