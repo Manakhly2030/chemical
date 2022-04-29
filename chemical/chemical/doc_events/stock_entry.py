@@ -246,6 +246,7 @@ def cal_validate_additional_cost_qty(self):
 		for addi_cost in self.additional_costs:
 			if addi_cost.qty and addi_cost.rate:
 				addi_cost.amount = flt(addi_cost.qty) * flt(addi_cost.rate)
+				addi_cost.base_amount = flt(addi_cost.qty) * flt(addi_cost.rate)
 			if addi_cost.uom == "FG QTY":
 				addi_cost.qty = self.fg_completed_quantity
 				addi_cost.amount = flt(self.fg_completed_quantity) * flt(addi_cost.rate)
