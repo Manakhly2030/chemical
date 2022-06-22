@@ -394,3 +394,7 @@ StockEntry.get_args_for_incoming_rate = get_args_for_incoming_rate
 from erpnext.stock.doctype.stock_reconciliation import stock_reconciliation
 from chemical.chemical.doc_events.stock_reconciliation import get_stock_balance_for
 stock_reconciliation.get_stock_balance_for = get_stock_balance_for
+
+from chemical.api import get_due_date_from_template
+from erpnext.accounts import party
+party.get_due_date_from_template = get_due_date_from_template
