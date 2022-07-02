@@ -283,6 +283,9 @@ frappe.ui.form.on("Stock Entry", {
                             }
         
                             else{
+                                if(!d.concentration){
+                                    frappe.model.set_value(d.doctype, d.name, 'd.concentration',100);
+                                }
                                 frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty)*flt(d.concentration)/100);
                             }
                             if (frappe.meta.get_docfield("Stock Entry Detail", "supplier_quantity")){
@@ -310,7 +313,7 @@ frappe.ui.form.on("Stock Entry", {
                             }
         
                             if (frappe.meta.get_docfield("Stock Entry Detail", "accepted_concentration") && frappe.meta.get_docfield("Stock Entry Detail", "received_concentration")){
-                                frappe.model.set_value(d.doctype, d.name, 'concentration',flt(d.accepted_concentration) || flt(d.received_concentration));
+                                frappe.model.set_value(d.doctype, d.name, 'concentration',flt(d.accepted_concentration) || flt(d.received_concentration || 100));
                             }
         
                             if (!d.qty){
@@ -526,6 +529,7 @@ frappe.ui.form.on("Stock Entry", {
                             }
         
                             if (!d.concentration){
+                                frappe.model.set_value(d.doctype, d.name, 'concentration',100);
                                 if (frappe.meta.get_docfield("Stock Entry Detail", "received_concentration")){
                                    // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add received or accepted concentration")
                                 }
@@ -613,10 +617,12 @@ frappe.ui.form.on("Stock Entry", {
     se_cal_rate_qty: function(frm,cdt,cdn){
         var d = locals[cdt][cdn];
         frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
+            frappe.model.set_value(d.doctype, d.name, 'concentration',100);
             if (d.packing_size && d.no_of_packages) {
                 frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
                 if (r.maintain_as_is_stock) {
                     if (!d.concentration) {
+                        frappe.model.set_value(d.doctype, d.name, 'concentration',100);
                         //frappe.throw("Please add concentration for Item " + d.item_code)
                     }
                     frappe.model.set_value(d.doctype, d.name, 'quantity', d.qty * d.concentration / 100);

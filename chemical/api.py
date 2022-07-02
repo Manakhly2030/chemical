@@ -652,7 +652,7 @@ def get_due_date_from_template(template_name, posting_date, bill_date):
 	:param template_name: Name of the `Payment Terms Template`
 	:return: String representing the calculated due date
 	"""
-	due_date = getdate(bill_date or posting_date)
+	due_date = getdate(posting_date or bill_date)
 
 	template = frappe.get_doc("Payment Terms Template", template_name)
 

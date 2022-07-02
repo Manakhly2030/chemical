@@ -11,6 +11,8 @@ def onload(self,method):
 	#quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
+	for idx, item in enumerate(self.items):
+		item.idx = idx + 1
 	if self.purpose in ['Material Receipt','Repack'] and hasattr(self,'party_type') and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
 		if not self.reference_docname and not self.jw_ref and self.party_type == "Supplier":
 			se_repack_cal_rate_qty(self)
@@ -28,7 +30,7 @@ def validate(self,method):
 		if self.based_on not in item_list:
 			frappe.throw("Based on Item {} Required in Raw Materials".format(frappe.bold(self.based_on)))	
 	cal_validate_additional_cost_qty(self)
-	update_additional_cost_scrap(self)
+	# update_additional_cost_scrap(self)
 	calculate_rate_and_amount(self)
 	get_based_on(self)
 	cal_target_yield_cons(self)
@@ -98,7 +100,7 @@ def validate_fg_completed_quantity(self):
 		fg_qty = 0.0
 		fg_quantity = 0.0	
 		for item in self.items:
-			if item.t_warehouse:
+			if item.t_warehouse and item.is_finished_item:
 				fg_qty += item.qty
 				fg_quantity += item.quantity
 		self.fg_completed_qty = round(fg_qty,3)
@@ -112,41 +114,41 @@ def get_based_on(self):
 		self.based_on = frappe.db.get_value("Work Order", self.work_order, 'based_on')
 
 
-def	update_additional_cost_scrap(self):
-	if self.purpose == "Manufacture" and self.bom_no:
-		bom_qty = 1
-		se_qty = 1
-		bom = frappe.get_doc("BOM",self.bom_no)
-		for m in self.items:
-			if m.item_code == bom.based_on:
-				se_qty = m.qty
-				break
+# def update_additional_cost_scrap(self):
+# 	if self.purpose == "Manufacture" and self.bom_no:
+# 		bom_qty = 1
+# 		se_qty = 1
+# 		bom = frappe.get_doc("BOM",self.bom_no)
+# 		for m in self.items:
+# 			if m.item_code == bom.based_on:
+# 				se_qty = m.qty
+# 				break
 
-		for row in bom.items:
-			if row.item_code == bom.based_on:
-				bom_qty = row.qty
-				break
+# 		for row in bom.items:
+# 			if row.item_code == bom.based_on:
+# 				bom_qty = row.qty
+# 				break
 
-		amount = 0
-		if bom.scrap_items:
-			if self.is_new() and not self.amended_from:
-				for d in bom.scrap_items:
-					self.append('additional_costs', {
-						'description': d.item_code,
-						'qty': flt(flt(se_qty * d.stock_qty)/ bom_qty),
-						'rate': abs(d.rate),
-						'amount':  abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty),
-						'base_amount':abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty)
-					})
-			else:
-				for d in bom.scrap_items:
-					for i in self.additional_costs:
-						if i.description == d.item_code:
-							i.qty = flt(flt(se_qty * d.stock_qty)/ row.qty)
-							i.rate = abs(d.rate)
-							i.amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty)  
-							i.base_amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty) 
-							break
+# 		amount = 0
+# 		if bom.scrap_items:
+# 			if self.is_new() and not self.amended_from:
+# 				for d in bom.scrap_items:
+# 					self.append('additional_costs', {
+# 						'description': d.item_code,
+# 						'qty': flt(flt(se_qty * d.stock_qty)/ bom_qty),
+# 						'rate': abs(d.rate),
+# 						'amount':  abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty),
+# 						'base_amount':abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty)
+# 					})
+# 			else:
+# 				for d in bom.scrap_items:
+# 					for i in self.additional_costs:
+# 						if i.description == d.item_code:
+# 							i.qty = flt(flt(se_qty * d.stock_qty)/ row.qty)
+# 							i.rate = abs(d.rate)
+# 							i.amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty)  
+# 							i.base_amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty) 
+# 							break
 
 def sum_total_additional_costs(self):
 	self.total_additional_costs = sum(m.amount for m in self.additional_costs)
@@ -156,7 +158,7 @@ def calculate_rate_and_amount(self,reset_outgoing_rate=True, raise_error_if_no_r
 		is_multiple_finish  = 0
 		multi_item_list = []
 		for d in self.items:
-			if d.t_warehouse and d.qty != 0:
+			if d.t_warehouse and d.qty != 0 and d.is_finished_item:
 				is_multiple_finish +=1
 				multi_item_list.append(d.item_code)
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
@@ -303,7 +305,8 @@ def update_po(self):
 					total_qty += row.qty
 					actual_total_qty += row.quantity
 					valuation_rate += flt(row.qty)*flt(row.valuation_rate)
-					lot.append(row.lot_no)
+					if row.lot_no:
+						lot.append(row.lot_no)
 					if bom_doc.multiple_finish_item:
 						for bom_fi in bom_doc.multiple_finish_item:
 							if bom_fi.item_code == row.item_code:
@@ -385,6 +388,7 @@ def set_po_status(self, pro_doc):
 
 def calculate_multiple_repack_valuation(self):
 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
+	scrap_total = 0
 	if self.items:
 		qty = 0.0
 		quantity = 0.0
@@ -395,6 +399,9 @@ def calculate_multiple_repack_valuation(self):
 			if row.t_warehouse:
 				qty += row.qty
 				quantity += row.quantity
+			if row.is_scrap_item:
+				scrap_total += flt(row.basic_amount)
+		total_outgoing_value = flt(total_outgoing_value) - flt(scrap_total)
 		for row in self.items:
 			if row.t_warehouse:
 				row.basic_amount = flt(total_outgoing_value) * flt(row.quantity)/ quantity
@@ -409,9 +416,14 @@ def cal_rate_for_finished_item(self):
 	bom_doc = frappe.get_doc("BOM",self.bom_no)
 	bom_doc.ignore_permissions = True
 	is_multiple_finish = 0
+	scrap_total = 0
 	for d in self.items:
-		if d.t_warehouse:
+		if d.t_warehouse and not d.is_scrap_item:
 			is_multiple_finish +=1
+		if d.is_scrap_item:
+				scrap_total += flt(d.basic_amount)
+	if self.total_outgoing_value:
+		self.total_outgoing_value = max(flt(self.total_outgoing_value) - flt(scrap_total),0)
 	if is_multiple_finish > 1:
 		total_incoming_amount = 0.0
 		item_arr = list()
@@ -421,7 +433,7 @@ def cal_rate_for_finished_item(self):
 		cal_yield = 0
 		if self.purpose == 'Manufacture' and self.bom_no:
 			for row in self.items:
-				if row.t_warehouse:
+				if row.t_warehouse and not d.is_scrap_item:
 					finished_list.append({row.item_code:row.quantity}) #create a list of dict of finished item
 			for d in finished_list:
 				for k in d.keys():
@@ -657,7 +669,8 @@ def update_yield(self):
 				item_map[d.item_code]['quantity'] += flt(d.quantity)
 				item_map[d.item_code]['qty'] += flt(d.qty)
 				item_map[d.item_code]['yield_weights'] += flt(d.batch_yield)*flt(d.quantity)
-			frappe.msgprint(str(item_map))
+
+
 			if flag == 1:
 				# Last row object
 				last_row = self.items[-1]

@@ -36,12 +36,7 @@ erpnext.accounts.PurchaseInvoice = erpnext.accounts.PurchaseInvoice.extend({
 		var me = this;
         const doc = me.frm.doc;
 		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
-            if (frappe.meta.get_docfield("Purchase Invoice", "bl_date") || frappe.meta.get_docfield("Purchase Invoice", "shipping_bill_date")){
-                var posting_date = doc.bl_date || doc.shipping_bill_date || doc.posting_date
-            }
-            else{
-                var posting_date =  doc.posting_date || doc.transaction_date;
-            }
+            var posting_date =  doc.posting_date || doc.bill_date;
 			frappe.call({
 				method: "erpnext.controllers.accounts_controller.get_payment_terms",
 				args: {
