@@ -337,6 +337,12 @@ doc_events = {
 		"on_cancel": "chemical.api.so_on_cancel",
 		"validate": "chemical.chemical.doc_events.sales_order.validate"
 	},
+	("Outward Sample","Ball Mill Data Sheet","Outward Tracking"):{
+		"on_submit":"chemical.chemical.doc_events.outward_sample.on_submit",
+		"before_update_after_submit":"chemical.chemical.doc_events.outward_sample.before_update_after_submit",
+		"before_cancel":"chemical.chemical.doc_events.outward_sample.on_cancel",
+		"on_trash":"chemical.chemical.doc_events.outward_sample.on_trash"
+	},
 }
 
 scheduler_events = {
@@ -394,7 +400,3 @@ StockEntry.get_args_for_incoming_rate = get_args_for_incoming_rate
 from erpnext.stock.doctype.stock_reconciliation import stock_reconciliation
 from chemical.chemical.doc_events.stock_reconciliation import get_stock_balance_for
 stock_reconciliation.get_stock_balance_for = get_stock_balance_for
-
-from chemical.api import get_due_date_from_template
-from erpnext.accounts import party
-party.get_due_date_from_template = get_due_date_from_template
