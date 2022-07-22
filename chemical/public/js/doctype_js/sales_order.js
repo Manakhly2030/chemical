@@ -67,6 +67,10 @@ frappe.ui.form.on("Sales Order", {
                     frappe.model.set_value(d.doctype, d.name, 'rate', flt(d.price));
                 }
             }
+            if (d.packing_size && d.no_of_packages) {
+                frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
+            }
+            
 		})
     },
     

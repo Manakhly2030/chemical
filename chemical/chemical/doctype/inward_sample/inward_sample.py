@@ -10,6 +10,7 @@ from finbyzerp.api import before_naming as naming_series
 from frappe.model.mapper import get_mapped_doc
 
 class InwardSample(Document):
+	@frappe.whitelist()
 	def onclick_update_price(self):
 		if self.item_price:
 			if db.exists("Item Price" ,{ "item_code":self.item_code ,"price_list":self.price_list}):

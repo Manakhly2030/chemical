@@ -32,6 +32,29 @@ erpnext.accounts.PurchaseInvoice = erpnext.accounts.PurchaseInvoice.extend({
         }
 
     },
+    payment_terms_template: function() {
+		var me = this;
+        const doc = me.frm.doc;
+		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
+            var posting_date =  doc.posting_date || doc.bill_date;
+			frappe.call({
+				method: "erpnext.controllers.accounts_controller.get_payment_terms",
+				args: {
+					terms_template: doc.payment_terms_template,
+					posting_date: posting_date,
+					grand_total: doc.rounded_total || doc.grand_total,
+                    base_grand_total: doc.base_grand_total,
+					// bill_date: doc.bill_date
+				},
+				callback: function(r) {
+					if(r.message && !r.exc) {
+                        console.log(r.message)
+						me.frm.set_value("payment_schedule", r.message);
+					}
+				}
+			})
+		}
+    },
 })
 
 $.extend(cur_frm.cscript, new erpnext.accounts.PurchaseInvoice({ frm: cur_frm }));
@@ -146,7 +169,7 @@ frappe.ui.form.on("Purchase Invoice", {
                     }
 
                     else{
-                        if (d.quantity != (flt(d.qty)*flt(d.concentration))/100){
+                        if (d.quantity != flt(d.qty)*flt(d.concentration)/100){
                             frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty)*flt(d.concentration)/100);
                         }
                     }
@@ -374,7 +397,7 @@ frappe.ui.form.on("Purchase Invoice", {
                 }
 
                 if (!frappe.meta.get_docfield("Purchase Invoice Item", "receive_qty") && (!d.packing_size || !d.no_of_packages)){
-                    if (d.quantity){
+                    if (d.quantity && d.qty != flt(d.quantity)){
                         frappe.model.set_value(d.doctype,d.name,'qty',flt(d.quantity))
                     }
                 }
@@ -415,29 +438,29 @@ frappe.ui.form.on("Purchase Invoice", {
 	},
 });
 frappe.ui.form.on("Purchase Invoice Item", {
-    quantity: function (frm, cdt, cdn) {
-        let d = locals[cdt][cdn]
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-        // if (d.qty != d.quantity){
-        //     frappe.model.set_value(d.doctype,d.name,'qty',d.quantity)   
-        // }
-    },
-	price: function (frm, cdt, cdn) {
-        let d = locals[cdt][cdn]
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-        // if (d.rate != d.price){
-        //     frappe.model.set_value(d.doctype,d.name,'rate',d.price)   
-        // }
-    },
+    // quantity: function (frm, cdt, cdn) {
+    //     let d = locals[cdt][cdn]
+    //     frm.events.cal_rate_qty(frm, cdt, cdn)
+    //     // if (d.qty != d.quantity){
+    //     //     frappe.model.set_value(d.doctype,d.name,'qty',d.quantity)   
+    //     // }
+    // },
+	// price: function (frm, cdt, cdn) {
+    //     let d = locals[cdt][cdn]
+    //     frm.events.cal_rate_qty(frm, cdt, cdn)
+    //     // if (d.rate != d.price){
+    //     //     frappe.model.set_value(d.doctype,d.name,'rate',d.price)   
+    //     // }
+    // },
     receive_no_of_packages: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
-    received_concentration: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
-    concentration: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
+    // received_concentration: function (frm, cdt, cdn) {
+    //     frm.events.cal_rate_qty(frm, cdt, cdn)
+    // },
+    // concentration: function (frm, cdt, cdn) {
+    //     frm.events.cal_rate_qty(frm, cdt, cdn)
+    // },
     packing_size: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
@@ -453,13 +476,13 @@ frappe.ui.form.on("Purchase Invoice Item", {
     supplier_no_of_packages: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
-    supplier_concentration: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
+    // supplier_concentration: function (frm, cdt, cdn) {
+    //     frm.events.cal_rate_qty(frm, cdt, cdn)
+    // },
     accepted_no_of_packages: function (frm, cdt, cdn) {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
-    accepted_concentration: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
+    // accepted_concentration: function (frm, cdt, cdn) {
+    //     frm.events.cal_rate_qty(frm, cdt, cdn)
+    // },
 });

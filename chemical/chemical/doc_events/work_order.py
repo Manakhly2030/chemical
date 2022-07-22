@@ -57,11 +57,17 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	get_items(stock_entry)
 	if purpose=='Manufacture':
 		if work_order.is_multiple_item and work_order.bom_no:
+			remove_items = []
+			for item in stock_entry.items:
+				if item.is_finished_item:
+					remove_items.append(item)
+			for rm in remove_items:
+				stock_entry.items.remove(rm)
 			bom_multi_doc = frappe.get_doc("BOM",work_order.bom_no)
 			for finish_items in bom_multi_doc.multiple_finish_item:
-				if stock_entry.items[-1].item_code == finish_items.item_code:
-					if stock_entry.items[-1].transfer_qty == work_order.qty:
-						stock_entry.items.remove(stock_entry.items[-1]) 					
+				# if stock_entry.items[-2].item_code == finish_items.item_code:
+				# 	if stock_entry.items[-2].transfer_qty == work_order.qty:
+				# 		stock_entry.items.remove(stock_entry.items[-2])
 				bom = frappe.db.sql(''' select name from tabBOM where item = %s and docstatus=1''',finish_items.item_code)
 				if bom:
 					bom = bom[0][0]
@@ -74,8 +80,10 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 					'uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
 					'stock_uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
 					'conversion_factor': 1 ,
+					'is_finished_item': 1,
 					'batch_yield':finish_items.batch_yield,
-					'bom_no':bom
+					'bom_no':bom,
+					'concentration':100
 				})
 		# if hasattr(work_order, 'second_item'):
 		# 	if work_order.second_item:
@@ -173,6 +181,7 @@ def get_items(self):
 		if self.purpose in ("Manufacture", "Repack"):
 			self.load_items_from_bom()
 
+	self.set_scrap_items()
 	self.set_actual_qty()
 	self.calculate_rate_and_amount(raise_error_if_no_rate=False)
 
