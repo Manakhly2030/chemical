@@ -172,7 +172,7 @@ def get_invoice_dict(self, row=None):
 		args["is_pos"] = 0
 		args['invoice_no'] = row.invoice_no
 	else:
-		args['bill_no'] = row.invoice_no
+		args['bill_no'] = row.get('bill_no') or row.invoice_no
 
 	return args
 
