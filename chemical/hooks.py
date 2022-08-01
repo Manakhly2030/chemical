@@ -335,7 +335,7 @@ doc_events = {
 	"Sales Order": {
 		"onload":"chemical.chemical.doc_events.sales_order.onload",
 		"on_cancel": "chemical.api.so_on_cancel",
-		"validate": "chemical.chemical.doc_events.sales_order.validate"
+		"before_validate": "chemical.chemical.doc_events.sales_order.validate"
 	},
 	("Outward Sample","Ball Mill Data Sheet","Outward Tracking"):{
 		"on_submit":"chemical.chemical.doc_events.outward_sample.on_submit",
