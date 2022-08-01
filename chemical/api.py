@@ -242,7 +242,7 @@ def purchase_cal_rate_qty(self):
 			
 			if not hasattr(doc_items,'receive_qty') and (not d.packing_size or not d.no_of_packages):
 				if d.quantity:
-					d.qty = flt((d.quantity * 100.0) / d.concentration)			
+					d.qty = flt((d.quantity * 100.0) / flt(d.concentration))			
 			
 			if not d.qty:
 				if hasattr(doc_items,'receive_qty'):

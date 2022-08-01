@@ -617,7 +617,13 @@ frappe.ui.form.on("Stock Entry", {
     se_cal_rate_qty: function(frm,cdt,cdn){
         var d = locals[cdt][cdn];
         frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-            frappe.model.set_value(d.doctype, d.name, 'concentration',100);
+            // console.log(d.concentration)
+            if(d.concentration){
+                frappe.model.set_value(d.doctype, d.name, 'concentration',d.concentration);
+            }else{
+                frappe.model.set_value(d.doctype, d.name, 'concentration',100);
+            }
+            
             if (d.packing_size && d.no_of_packages) {
                 frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
                 if (r.maintain_as_is_stock) {
