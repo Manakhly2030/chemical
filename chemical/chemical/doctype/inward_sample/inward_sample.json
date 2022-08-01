@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "allow_import": 1,
  "autoname": "naming_series:",
  "creation": "2018-02-27 15:20:26.278941",
@@ -21,6 +22,7 @@
   "party_alias",
   "party_name",
   "remarks",
+  "ci_lot_no",
   "outward_ref_no",
   "section_break_16",
   "item_price",
@@ -133,10 +135,10 @@
   },
   {
    "allow_on_submit": 1,
+   "fetch_from": "outward_reference.ref_no",
    "fieldname": "outward_ref_no",
    "fieldtype": "Data",
    "label": "Outward Ref No",
-   "options": "outward_reference.ref_no",
    "read_only": 1
   },
   {
@@ -211,10 +213,16 @@
    "hidden": 1,
    "label": "Fiscal",
    "read_only": 1
+  },
+  {
+   "fieldname": "ci_lot_no",
+   "fieldtype": "Data",
+   "label": "CI Lot No"
   }
  ],
  "is_submittable": 1,
- "modified": "2020-06-25 13:55:37.959625",
+ "links": [],
+ "modified": "2022-06-01 12:51:25.434537",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Inward Sample",

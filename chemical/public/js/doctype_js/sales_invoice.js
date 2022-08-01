@@ -276,6 +276,30 @@ frappe.ui.form.on("Sales Invoice", {
         });
         frm.trigger("cal_total_quantity");
     },
+    cal_igst_amount: function (frm) {
+        let total_igst = 0.0;
+        if (frm.doc.currency != "INR") {    
+            frm.doc.items.forEach(function (d) {
+                if (d.item_tax_template){
+                    frappe.db.get_value("Item Tax Template", d.item_tax_template, "gst_rate",function(r){
+                        frappe.model.set_value(d.doctype, d.name, 'igst_amount', d.base_amount * parseInt(r.gst_rate) / 100);
+                    })
+                }
+                else if(frm.doc.taxes_and_charges){
+                    // console.log(d.igst_amount)
+                    frappe.db.get_value("Sales Taxes and Charges Template", frm.doc.taxes_and_charges, "gst_rate", function(r){
+                        frappe.model.set_value(d.doctype, d.name, 'igst_amount', d.base_amount * parseInt(r.gst_rate) / 100);
+                        // console.log(d.igst_amount)
+                    })
+                }
+                else{
+                    frappe.model.set_value(d.doctype, d.name, 'igst_amount', 0.0);
+                }
+                total_igst += flt(d.igst_amount);
+            });
+            frm.set_value('total_igst_amount', total_igst);
+        }
+    },
     cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
@@ -344,7 +368,9 @@ frappe.ui.form.on("Sales Invoice", {
             });
         }
     },
-   
+    taxes_and_charges: function (frm, cdt, cdn) {
+        frm.trigger('cal_igst_amount');
+    },
 });
 frappe.ui.form.on("Sales Invoice Item", {
     item_code: function (frm, cdt, cdn) {
@@ -387,9 +413,10 @@ frappe.ui.form.on("Sales Invoice Item", {
             });
             frm.events.cal_rate_qty(frm,cdt,cdn)
         }
+    },
+    item_tax_template: function (frm, cdt, cdn) {
+        frm.trigger('cal_igst_amount');
     }
-
-   
 });
 
 erpnext.selling.SellingController = erpnext.TransactionController.extend({
