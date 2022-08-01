@@ -11,6 +11,9 @@ def onload(self,method):
 	#quantity_price_to_qty_rate(self)
 
 def before_validate(self,method):
+	update_item_batches_based_on_fifo(self)
+	for idx, item in enumerate(self.items):
+		item.idx = idx + 1
 	if self.purpose in ['Material Receipt','Repack'] and hasattr(self,'party_type') and hasattr(self,'reference_docname') and hasattr(self,'jw_ref'):
 		if not self.reference_docname and not self.jw_ref and self.party_type == "Supplier":
 			se_repack_cal_rate_qty(self)
@@ -28,7 +31,7 @@ def validate(self,method):
 		if self.based_on not in item_list:
 			frappe.throw("Based on Item {} Required in Raw Materials".format(frappe.bold(self.based_on)))	
 	cal_validate_additional_cost_qty(self)
-	update_additional_cost_scrap(self)
+	# update_additional_cost_scrap(self)
 	calculate_rate_and_amount(self)
 	get_based_on(self)
 	cal_target_yield_cons(self)
@@ -98,7 +101,7 @@ def validate_fg_completed_quantity(self):
 		fg_qty = 0.0
 		fg_quantity = 0.0	
 		for item in self.items:
-			if item.t_warehouse:
+			if item.t_warehouse and item.is_finished_item:
 				fg_qty += item.qty
 				fg_quantity += item.quantity
 		self.fg_completed_qty = round(fg_qty,3)
@@ -112,41 +115,41 @@ def get_based_on(self):
 		self.based_on = frappe.db.get_value("Work Order", self.work_order, 'based_on')
 
 
-def	update_additional_cost_scrap(self):
-	if self.purpose == "Manufacture" and self.bom_no:
-		bom_qty = 1
-		se_qty = 1
-		bom = frappe.get_doc("BOM",self.bom_no)
-		for m in self.items:
-			if m.item_code == bom.based_on:
-				se_qty = m.qty
-				break
+# def update_additional_cost_scrap(self):
+# 	if self.purpose == "Manufacture" and self.bom_no:
+# 		bom_qty = 1
+# 		se_qty = 1
+# 		bom = frappe.get_doc("BOM",self.bom_no)
+# 		for m in self.items:
+# 			if m.item_code == bom.based_on:
+# 				se_qty = m.qty
+# 				break
 
-		for row in bom.items:
-			if row.item_code == bom.based_on:
-				bom_qty = row.qty
-				break
+# 		for row in bom.items:
+# 			if row.item_code == bom.based_on:
+# 				bom_qty = row.qty
+# 				break
 
-		amount = 0
-		if bom.scrap_items:
-			if self.is_new() and not self.amended_from:
-				for d in bom.scrap_items:
-					self.append('additional_costs', {
-						'description': d.item_code,
-						'qty': flt(flt(se_qty * d.stock_qty)/ bom_qty),
-						'rate': abs(d.rate),
-						'amount':  abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty),
-						'base_amount':abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty)
-					})
-			else:
-				for d in bom.scrap_items:
-					for i in self.additional_costs:
-						if i.description == d.item_code:
-							i.qty = flt(flt(se_qty * d.stock_qty)/ row.qty)
-							i.rate = abs(d.rate)
-							i.amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty)  
-							i.base_amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty) 
-							break
+# 		amount = 0
+# 		if bom.scrap_items:
+# 			if self.is_new() and not self.amended_from:
+# 				for d in bom.scrap_items:
+# 					self.append('additional_costs', {
+# 						'description': d.item_code,
+# 						'qty': flt(flt(se_qty * d.stock_qty)/ bom_qty),
+# 						'rate': abs(d.rate),
+# 						'amount':  abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty),
+# 						'base_amount':abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ bom_qty)
+# 					})
+# 			else:
+# 				for d in bom.scrap_items:
+# 					for i in self.additional_costs:
+# 						if i.description == d.item_code:
+# 							i.qty = flt(flt(se_qty * d.stock_qty)/ row.qty)
+# 							i.rate = abs(d.rate)
+# 							i.amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty)  
+# 							i.base_amount = abs(d.rate)* flt(flt(se_qty * d.stock_qty)/ row.qty) 
+# 							break
 
 def sum_total_additional_costs(self):
 	self.total_additional_costs = sum(m.amount for m in self.additional_costs)
@@ -156,7 +159,7 @@ def calculate_rate_and_amount(self,reset_outgoing_rate=True, raise_error_if_no_r
 		is_multiple_finish  = 0
 		multi_item_list = []
 		for d in self.items:
-			if d.t_warehouse and d.qty != 0:
+			if d.t_warehouse and d.qty != 0 and d.is_finished_item:
 				is_multiple_finish +=1
 				multi_item_list.append(d.item_code)
 		if is_multiple_finish > 1 and self.purpose == "Manufacture":
@@ -303,7 +306,8 @@ def update_po(self):
 					total_qty += row.qty
 					actual_total_qty += row.quantity
 					valuation_rate += flt(row.qty)*flt(row.valuation_rate)
-					lot.append(row.lot_no)
+					if row.lot_no:
+						lot.append(row.lot_no)
 					if bom_doc.multiple_finish_item:
 						for bom_fi in bom_doc.multiple_finish_item:
 							if bom_fi.item_code == row.item_code:
@@ -385,6 +389,7 @@ def set_po_status(self, pro_doc):
 
 def calculate_multiple_repack_valuation(self):
 	self.total_additional_costs = sum([flt(t.amount) for t in self.get("additional_costs")])
+	scrap_total = 0
 	if self.items:
 		qty = 0.0
 		quantity = 0.0
@@ -395,6 +400,9 @@ def calculate_multiple_repack_valuation(self):
 			if row.t_warehouse:
 				qty += row.qty
 				quantity += row.quantity
+			if row.is_scrap_item:
+				scrap_total += flt(row.basic_amount)
+		total_outgoing_value = flt(total_outgoing_value) - flt(scrap_total)
 		for row in self.items:
 			if row.t_warehouse:
 				row.basic_amount = flt(total_outgoing_value) * flt(row.quantity)/ quantity
@@ -409,9 +417,14 @@ def cal_rate_for_finished_item(self):
 	bom_doc = frappe.get_doc("BOM",self.bom_no)
 	bom_doc.ignore_permissions = True
 	is_multiple_finish = 0
+	scrap_total = 0
 	for d in self.items:
-		if d.t_warehouse:
+		if d.t_warehouse and not d.is_scrap_item:
 			is_multiple_finish +=1
+		if d.is_scrap_item:
+				scrap_total += flt(d.basic_amount)
+	if self.total_outgoing_value:
+		self.total_outgoing_value = max(flt(self.total_outgoing_value) - flt(scrap_total),0)
 	if is_multiple_finish > 1:
 		total_incoming_amount = 0.0
 		item_arr = list()
@@ -421,7 +434,7 @@ def cal_rate_for_finished_item(self):
 		cal_yield = 0
 		if self.purpose == 'Manufacture' and self.bom_no:
 			for row in self.items:
-				if row.t_warehouse:
+				if row.t_warehouse and not d.is_scrap_item:
 					finished_list.append({row.item_code:row.quantity}) #create a list of dict of finished item
 			for d in finished_list:
 				for k in d.keys():
@@ -657,7 +670,8 @@ def update_yield(self):
 				item_map[d.item_code]['quantity'] += flt(d.quantity)
 				item_map[d.item_code]['qty'] += flt(d.qty)
 				item_map[d.item_code]['yield_weights'] += flt(d.batch_yield)*flt(d.quantity)
-			frappe.msgprint(str(item_map))
+
+
 			if flag == 1:
 				# Last row object
 				last_row = self.items[-1]
@@ -732,3 +746,170 @@ def update_yield(self):
 		po.db_set("concentration", flt(concentration/count))
 		
 			
+
+	
+def update_item_batches_based_on_fifo(self):
+	if not self.get('get_batches_based_on_fifo'):
+		return
+	def get_item_details_custom(self,each_item):
+		item = frappe.db.sql(
+			"""select i.name, i.stock_uom, i.description, i.image, i.item_name, i.item_group,
+				i.has_batch_no, i.sample_quantity, i.has_serial_no, i.allow_alternative_item,
+				id.expense_account, id.buying_cost_center
+			from `tabItem` i LEFT JOIN `tabItem Default` id ON i.name=id.parent and id.company=%s
+			where i.name=%s
+				and i.disabled=0
+				and (i.end_of_life is null or i.end_of_life='0000-00-00' or i.end_of_life > %s)""",
+			(self.company, each_item.get("item_code") or each_item.get("item_name"), nowdate()),
+			as_dict=1,
+		)
+
+		if not item:
+			frappe.throw(
+				_("Item {0} is not active or end of life has been reached").format(each_item.get("item_code"))
+			)
+
+		return item[0]
+
+
+	new_items=[]
+
+	self.old_items={}
+	for row in self.items:
+		item = get_item_details_custom(self,row)
+		if (
+					row.get("s_warehouse", None)
+					and row.get("qty")
+					and item.get("has_batch_no")
+				):
+			if not self.old_items.get((row.item_code,row.s_warehouse)):
+				self.old_items[(row.item_code,row.s_warehouse)]=[]
+
+			self.old_items[(row.item_code,row.s_warehouse)].append(row)
+		else:
+			new_items.append(row)
+	self.items=[]
+	self.batches=[]
+	for item_warehouse_group in self.old_items.values():
+		self.batches=[]
+		self.batches= get_fifo_batches(item_warehouse_group[0].item_code, item_warehouse_group[0].s_warehouse)
+		for each_item in item_warehouse_group:
+			item = get_item_details_custom(self,each_item)
+			if (
+					each_item.get("s_warehouse", None)
+					and each_item.get("qty")
+					and item.get("has_batch_no")
+				):
+				update_multiple_item_batch_based_on_fifo(self,each_item)
+
+	self.get_batches_based_on_fifo=0
+	if new_items:
+		self.items.extend(new_items)
+
+	set_concentration_based_on_batch(self)
+	# frappe.throw(str(self.items))
+
+def set_concentration_based_on_batch(self):
+	for each in self.items:
+		if not each.get('concentration') and each.batch_no:
+			each.concentration = flt(frappe.db.get_value("Batch",each.batch_no,'concentration'))
+		elif not each.get('concentration'):
+			each.concentration = flt(100)
+
+def get_fifo_batches(item_code, warehouse):
+	batches = frappe.db.sql("""
+		select 
+			batch_id, sum(actual_qty) as qty,concentration from `tabBatch` join `tabStock Ledger Entry` ignore index (item_code, warehouse) 
+			on (`tabBatch`.batch_id = `tabStock Ledger Entry`.batch_no )
+		where 
+			`tabStock Ledger Entry`.item_code = %s 
+			and `tabStock Ledger Entry`.warehouse = %s 
+			and (`tabBatch`.expiry_date >= CURDATE() or `tabBatch`.expiry_date IS NULL)
+		group by `tabStock Ledger Entry`.batch_no
+		having sum(actual_qty) > 0 
+		order by `tabBatch`.creation """, (item_code, warehouse), as_dict=True)
+
+	return batches
+
+def update_multiple_item_batch_based_on_fifo(self,each_item):
+
+	if not self.batches:
+		return 
+	
+	
+	remaining_qty=flt(each_item.qty,7)
+	for idx,each_batch in enumerate(self.batches):
+		if remaining_qty > 0 :
+			if flt(each_batch.qty,7)< 0.000001:
+				continue
+			if idx == 0:
+				use_qty=flt(each_batch.qty if remaining_qty > each_batch.qty else remaining_qty,7)
+				if not use_qty:
+					continue
+				self.add_to_stock_entry_detail({
+					each_item.item_code: {
+							"from_warehouse": each_item.s_warehouse,
+							"to_warehouse":each_item.t_warehouse,
+							"qty": use_qty,
+							"quantity": use_qty,
+							"item_name": each_item.item_name,
+							"item_code": each_item.item_code,
+							"description": each_item.description,
+							"stock_uom": each_item.stock_uom,
+							"expense_account": each_item.expense_account,
+							"cost_center": each_item.get('buying_cost_center'),
+							"original_item": each_item.original_item,
+							"batch_no": str(each_batch.batch_id),
+							"item_group":each_item.get('item_group'),
+							"is_process_loss":each_item.get('is_process_loss'),
+							"is_scrap_item":each_item.get('is_scrap_item'),
+							"is_finished_item":each_item.get('is_finished_item'),
+							"concentration":flt(each_batch.concentration or each_item.get('concentration') or 100)
+						}
+					})
+				remaining_qty -= use_qty
+				update_used_batches(self,str(each_batch.batch_id),use_qty)
+				# frappe.msgprint(str(f"{each_item.item_code} ----> existing		bid-{str(each_batch.batch_id)} qty-{use_qty} 				batches-{str(self.batches)}"))
+			else:
+				update_item=each_item.as_dict().copy()
+				use_qty=flt(each_batch.qty if remaining_qty > each_batch.qty else remaining_qty,7)
+				update_item.batch_no = each_batch.batch_id
+				update_item.qty = use_qty
+				update_item.quantity = use_qty
+				remaining_qty -= use_qty
+				if not use_qty:
+					continue
+				self.add_to_stock_entry_detail({
+					each_item.item_code: {
+							"from_warehouse": each_item.s_warehouse,
+							"to_warehouse":each_item.t_warehouse,
+							"qty": use_qty,
+							"quantity": use_qty,
+							"item_code": each_item.item_code,
+							"item_name": each_item.item_name,
+							"description": each_item.description,
+							"stock_uom": each_item.stock_uom,
+							"expense_account": each_item.expense_account,
+							"cost_center": each_item.get('buying_cost_center'),
+							"original_item": each_item.original_item,
+							"batch_no": str(each_batch.batch_id),
+							"item_group":each_item.get('item_group'),
+							"is_process_loss":each_item.get('is_process_loss'),
+							"is_scrap_item":each_item.get('is_scrap_item'),
+							"is_finished_item":each_item.get('is_finished_item'),
+							"concentration":flt(each_batch.concentration or each_item.get('concentration') or 100)
+					}})
+					
+				update_used_batches(self, str(each_batch.batch_id),use_qty)
+				# frappe.msgprint(str(f"{each_item.item_code} ----> new 	bid-{str(each_batch.batch_id)} qty-{use_qty} 			batches-{str(self.batches)}"))
+
+		else:
+			break
+
+
+def update_used_batches(self,batch_id,qty):
+	for idx,each in enumerate(self.batches):
+		if each.batch_id == batch_id:
+			each.qty-=qty
+			break
+
