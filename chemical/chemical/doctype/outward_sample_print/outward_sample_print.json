@@ -73,14 +73,9 @@
    "options": "Outward Sample Print Item"
   }
  ],
-<<<<<<< HEAD
- "links": [],
- "modified": "2022-06-27 17:32:18.598358",
-=======
  "index_web_pages_for_search": 1,
  "links": [],
  "modified": "2022-05-23 12:00:16.531841",
->>>>>>> 9e2f35e517da808b8e8334127be7fe50e9c4c087
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample Print",
