@@ -135,8 +135,9 @@ frappe.ui.form.on('Ball Mill Data Sheet', {
 	// 	});
 	// },
 	onload: (frm) => {
+		frm.ignore_doctypes_on_cancel_all = ['Outward Sample'];
 		if (frm.doc.__islocal){
-		frm.trigger('naming_series');
+			frm.trigger('naming_series');
 		}
 	},
 	naming_series: function (frm) {
