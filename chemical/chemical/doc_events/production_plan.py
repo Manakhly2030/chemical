@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
 from erpnext.manufacturing.doctype.work_order.work_order import get_item_details
@@ -44,6 +45,7 @@ def get_sales_orders(self):
 
 	return open_so
 
+@frappe.whitelist()
 def get_open_sales_orders(self):
 		""" Pull sales orders  which are pending to deliver based on criteria selected"""
 		open_so = get_sales_orders(self)
