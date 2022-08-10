@@ -92,10 +92,10 @@ class OutwardSample(Document):
 
 		total_amount = 0.0
 		for row in bm.items:
-			price = self.get_price_list(row.item_name, "Standard Buying").price_list_rate
+			price = self.get_price_list(row.item_code, "Standard Buying").price_list_rate
 
 			if row.batch_yield:
-				bomyield = frappe.db.get_value("BOM",{'item': row.item_name},"batch_yield")
+				bomyield = frappe.db.get_value("BOM",{'item': row.item_code},"batch_yield")
 				if bomyield != 0:
 					rate = (price * flt(bomyield)) / row.batch_yield
 				else:

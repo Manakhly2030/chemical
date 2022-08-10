@@ -224,6 +224,11 @@ class BallMillDataSheet(Document):
 			item.db_set('batch_no', None)
 		self.db_set('lot_no', None)
 		
+		if frappe.db.exists("Outward Sample",{"last_purchase_reference":self.name}):
+			outward_sample_list = frappe.db.get_all("Outward Sample",{"last_purchase_reference":self.name},pluck="name")
+			for outward_sample in outward_sample_list:
+				frappe.db.set_value("Outward Sample",outward_sample,"last_purchase_reference", None)
+
 	def on_cancel(self):
 		if self.stock_entry:
 			se = frappe.get_doc("Stock Entry",self.stock_entry)

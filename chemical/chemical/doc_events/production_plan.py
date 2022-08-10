@@ -44,7 +44,6 @@ def get_sales_orders(self):
 		}, as_dict=1)
 
 	return open_so
-
 @frappe.whitelist()
 def get_open_sales_orders(self):
 		""" Pull sales orders  which are pending to deliver based on criteria selected"""
