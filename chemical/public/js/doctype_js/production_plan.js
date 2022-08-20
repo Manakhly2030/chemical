@@ -5,6 +5,15 @@ frappe.ui.form.on("Production Plan", {
 			method:"chemical.chemical.doc_events.production_plan.override_proplan_functions",
 			callback: function(r) {
                 refresh_field("sales_orders");
+                refresh_field("po_items"); 
+			}
+		});
+    },
+    onload: function(frm){
+		frappe.call({
+			method:"chemical.chemical.doc_events.production_plan.override_proplan_functions",
+			callback: function(r) {
+                refresh_field("sales_orders");
                 refresh_field("po_items");
 			}
 		});

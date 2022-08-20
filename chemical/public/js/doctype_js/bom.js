@@ -94,7 +94,17 @@ frappe.ui.form.on("BOM", {
             frm.doc.multiple_finish_item = []
         }
 	},
-	
+	setup:function(frm){
+        frm.set_query("item_code", "items", function(doc) {
+			return {
+				query: "erpnext.manufacturing.doctype.bom.bom.item_query",
+				filters: {
+					"item_code": doc.item,
+                    "is_purchase_item":1
+				}
+			};
+		});
+    },
     /* cal_operational_cost: function (frm) {
         let op_cost = flt(frm.doc.operational_cost * frm.doc.quantity);
         let total_cost = flt(op_cost + frm.doc.total_cost)
@@ -179,23 +189,25 @@ frappe.ui.form.on("BOM", {
 		}
 	}, */
     update_cost: function (frm) {
-        return frappe.call({
-            method: "chemical.chemical.doc_events.bom.update_bom_cost",
-            freeze: true,
-            args: {
-                doc:frm.doc.name,
-                update_parent: true,
-                from_child_bom: false,
-                save: true
-            },
-            callback: function (r) {
-                frm.events.update_price_list(frm);
-                refresh_field("items");
-                if (!r.exc){
-                    frm.refresh_fields();
+        if (!frm.is_dirty()){
+            return frappe.call({
+                method: "chemical.chemical.doc_events.bom.update_bom_cost",
+                freeze: true,
+                args: {
+                    doc:frm.doc.name,
+                    update_parent: true,
+                    from_child_bom: false,
+                    save: true
+                },
+                callback: function (r) {
+                    frm.events.update_price_list(frm);
+                    refresh_field("items");
+                    if (!r.exc){
+                        frm.refresh_fields();
+                    }
                 }
-            }
-        });
+            });
+        }
     },
 	etp_qty: function(frm){
 		frm.set_value('etp_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))

@@ -91,7 +91,7 @@ frappe.ui.form.on('Outward Sample', {
 		//frm.trigger("cal_rate");
 		frm.trigger("cal_amount");
 		frm.trigger("cal_per_unit_price");
-		if (frm.doc.link_to == 'Customer') {
+		if (frm.doc.link_to == 'Customer' && frm.doc.product_name) {
 			frappe.call({
 				method: 'chemical.api.get_customer_ref_code',
 				args: {

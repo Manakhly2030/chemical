@@ -182,7 +182,7 @@ def make_batches(self, warehouse_field):
 				batch.price = flt(row.price,2)
 
 				if self.doctype == "Stock Entry":
-					if self.stock_entry_type == "Manufacture":
+					if self.stock_entry_type == "Manufacture" or self.stock_entry_type == "Material Receipt" :
 						batch.manufacturing_date = self.posting_date
 				try:
 					batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")

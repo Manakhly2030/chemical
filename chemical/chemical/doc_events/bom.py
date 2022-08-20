@@ -315,7 +315,11 @@ def update_item_price_daily():
 @frappe.whitelist()	
 def update_bom_cost(doc,update_parent=True, from_child_bom=False, save=True):
 	bom_doc = frappe.get_doc("BOM",doc)
-	_update_bom_cost(bom_doc,update_parent=update_parent, from_child_bom=from_child_bom, save=save)
+	if bom_doc.rm_cost_as_per != "Valuation Rate":
+		_update_bom_cost(bom_doc,update_parent=update_parent, from_child_bom=from_child_bom, save=save)
+	else:
+		from erpnext.manufacturing.doctype.bom.bom import BOM
+		BOM.update_cost(bom_doc,update_parent=update_parent, from_child_bom=from_child_bom, save=save)
 
 def _update_bom_cost(self,update_parent=False, from_child_bom=False, save=False):
 	docitems_type = frappe.get_doc({"doctype":"BOM Item"})
