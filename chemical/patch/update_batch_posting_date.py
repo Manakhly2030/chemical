@@ -38,5 +38,5 @@ def update_formatted_posting_date():
         set formatted_posting_date = CONVERT(STR_TO_DATE(posting_date,"%y%m%d"), DATETIME)
         where posting_date IS NOT NULL and posting_date != ''
     """)
-    frappe.throw("the remaining number of batches are {}".format(len(frappe.db.get_all("Batch",{'posting_date':['in',['',None]]}))))
+    # frappe.throw("the remaining number of batches are {}".format(len(frappe.db.get_all("Batch",{'posting_date':['in',['',None]]}))))
 
