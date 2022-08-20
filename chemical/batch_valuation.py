@@ -188,6 +188,12 @@ def make_batches(self, warehouse_field):
 					batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
 				except:
 					batch.posting_date = self.posting_date.strftime("%y%m%d")
+				try:
+					batch.formatted_posting_date = datetime.combine(datetime.strptime(
+						self.posting_date, "%Y-%m-%d"), datetime.strptime(self.posting_time,"%H:%M:%S").time())
+				except:
+					batch.formatted_posting_date = datetime.combine(self.posting_date.strptime(
+						"%Y-%m-%d"), self.posting_time.strptime("%H:%M:%S"))
 				batch.actual_quantity = flt(row.qty * row.conversion_factor)
 				batch.reference_doctype = self.doctype
 				batch.reference_name = self.name
