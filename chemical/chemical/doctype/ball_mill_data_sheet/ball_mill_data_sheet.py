@@ -188,6 +188,16 @@ class BallMillDataSheet(Document):
 					'basic_amount': flt(d.qty * self.per_unit_amount),
 					'cost_center': cost_center
 				})
+			for d in self.ball_mill_additional_cost:	
+				se.append('additional_costs',{
+					'expense_account':d.expense_account ,
+					'description': d.description,
+					'amount': flt(d.amount),
+					'rate':flt(d.amount),
+					'qty':1
+				})
+			se.set_missing_values()
+			se.run_method("set_missing_values")
 			se.save()
 			se.submit()
 			self.db_set('stock_entry',se.name)
@@ -243,7 +253,7 @@ class BallMillDataSheet(Document):
 
 	def cal_total(self):
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
-		self.per_unit_amount = self.amount/ self.actual_qty
+		self.per_unit_amount = (self.amount + sum([flt(row.amount) for row in self.ball_mill_additional_cost]))/ self.actual_qty
 		self.total_qty = sum([flt(item.qty) for item in self.items])		
 		self.total_quantity = sum([flt(item.quantity) for item in self.items])
 		self.actual_quantity = sum([flt(item.quantity) for item in self.packaging])
