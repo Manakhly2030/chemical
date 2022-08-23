@@ -163,6 +163,9 @@ class BallMillDataSheet(Document):
 					'quantity':row.quantity,
 					'basic_rate': row.basic_rate,
 					'price':row.price,
+					't_warehouse':None,
+					'uom':frappe.db.get_value("Item",row.item_name,"stock_uom"),
+					'stock_uom':frappe.db.get_value("Item",self.product_name,"stock_uom"),
 					'basic_amount': row.basic_amount,
 					'cost_center': cost_center,
 					'batch_no': row.batch_no,
@@ -176,6 +179,9 @@ class BallMillDataSheet(Document):
 				se.append('items',{
 					'item_code': self.product_name,
 					't_warehouse': d.warehouse or self.warehouse,
+					's_warehouse':None,
+					'uom':frappe.db.get_value("Item",self.product_name,"stock_uom"),
+					'stock_uom':frappe.db.get_value("Item",self.product_name,"stock_uom"),
 					'qty': d.qty,
 					'quantity':d.quantity,
 					'packaging_material': d.packaging_material,
@@ -196,8 +202,9 @@ class BallMillDataSheet(Document):
 					'rate':flt(d.amount),
 					'qty':1
 				})
-			se.set_missing_values()
-			se.run_method("set_missing_values")
+			# print(se.items[0].uom)
+			# se.set_missing_values()
+			# se.run_method("set_missing_values")
 			se.save()
 			se.submit()
 			self.db_set('stock_entry',se.name)
