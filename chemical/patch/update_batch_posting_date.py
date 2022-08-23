@@ -15,6 +15,7 @@ def create_duplicate_posting_date_field_for_batch():
     doc.fieldname = "formatted_posting_date"
     doc.insert_after = "posting_date"
     doc.fieldtype = "Datetime"
+    doc.read_only = 1
     doc.save(ignore_permissions=True)
 
 
