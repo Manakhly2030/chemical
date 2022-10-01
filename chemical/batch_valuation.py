@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-import frappe
+import frappe,datetime
 from frappe import _
 from frappe.utils import flt, cint, cstr
 from frappe.desk.reportview import get_match_cond
-import datetime
 
 
 def batch_wise_cost():
@@ -152,6 +151,7 @@ def set_basic_rate_for_t_warehouse(self):
 	self.run_method('calculate_rate_and_amount')
 
 def make_batches(self, warehouse_field):
+	# import datetime
 	if self._action == "submit":
 		validate_concentration(self, warehouse_field)
 
@@ -189,11 +189,16 @@ def make_batches(self, warehouse_field):
 				except:
 					batch.posting_date = self.posting_date.strftime("%y%m%d")
 				try:
-					batch.formatted_posting_date = datetime.combine(datetime.strptime(
-						self.posting_date, "%Y-%m-%d"), datetime.strptime(self.posting_time,"%H:%M:%S").time())
+					# from datetime 
+					# batch.formatted_posting_date = datetime.datetime.combine(datetime.strptime(
+					# 	self.posting_date, "%Y-%m-%d"), datetime.strptime(self.posting_time,"%H:%M:%S").time())
+					batch.formatted_posting_date = datetime.datetime.combine(datetime.datetime.strptime(
+                        str(self.posting_date), "%Y-%m-%d"), datetime.datetime.strptime(str(self.posting_time),"%H:%M:%S.%f").time())
 				except:
-					batch.formatted_posting_date = datetime.combine(self.posting_date.strptime(
-						"%Y-%m-%d"), self.posting_time.strptime("%H:%M:%S"))
+					# from datetime 
+					# batch.formatted_posting_date = datetime.datetime.combine(self.posting_date.strptime(
+					# 	"%Y-%m-%d"), self.posting_time.strptime("%H:%M:%S"))
+					batch.formatted_posting_date = datetime.datetime.combine(datetime.datetime.strptime(str(self.posting_date), "%Y-%m-%d"), datetime.datetime.strptime(str(self.posting_time),"%H:%M:%S").time())
 				batch.actual_quantity = flt(row.qty * row.conversion_factor)
 				batch.reference_doctype = self.doctype
 				batch.reference_name = self.name
