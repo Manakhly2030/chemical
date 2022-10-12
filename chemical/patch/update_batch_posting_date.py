@@ -15,6 +15,7 @@ def create_duplicate_posting_date_field_for_batch():
     doc.fieldname = "formatted_posting_date"
     doc.insert_after = "posting_date"
     doc.fieldtype = "Datetime"
+    doc.read_only = 1
     doc.save(ignore_permissions=True)
 
 
@@ -38,5 +39,5 @@ def update_formatted_posting_date():
         set formatted_posting_date = CONVERT(STR_TO_DATE(posting_date,"%y%m%d"), DATETIME)
         where posting_date IS NOT NULL and posting_date != ''
     """)
-    frappe.throw("the remaining number of batches are {}".format(len(frappe.db.get_all("Batch",{'posting_date':['in',['',None]]}))))
+    # frappe.throw("the remaining number of batches are {}".format(len(frappe.db.get_all("Batch",{'posting_date':['in',['',None]]}))))
 

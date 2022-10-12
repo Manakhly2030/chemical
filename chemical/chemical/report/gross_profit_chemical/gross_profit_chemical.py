@@ -42,7 +42,6 @@ def execute(filters=None):
 				"gross_profit_percent",
 				"project",
 			],
-			"batch_no": ["item_code"],
 			"item_code": [
 				"item_code",
 				"item_name",
@@ -271,7 +270,7 @@ def get_columns(group_wise_columns, filters):
 				"width": 100,
 			},
 			"qty": {"label": _("Qty"), "fieldname": "qty", "fieldtype": "Float", "width": 80},
-			"batch_no": {"label": _("Batch No"), "fieldname": "batch_no", "fieldtype": "Link","options":"Batch", "width": 80},
+			"batch_no": {"label": _("Batch No"), "fieldname": "batch_no", "fieldtype": "Data", "width": 80},
 			"base_rate": {
 				"label": _("Avg. Selling Rate"),
 				"fieldname": "avg._selling_rate",
@@ -407,6 +406,7 @@ class GrossProfitGenerator(object):
 		self.load_invoice_items()
 
 		if filters.group_by == "Invoice":
+			self.set_missing_batch()
 			self.group_items_by_invoice()
 
 		self.load_stock_ledger_entries()
@@ -660,7 +660,7 @@ class GrossProfitGenerator(object):
 	def load_invoice_items(self):
 		conditions = ""
 		if self.filters.company:
-			conditions += " and company = %(company)s"
+			conditions += " and `tabSales Invoice`.company = %(company)s"
 		if self.filters.from_date:
 			conditions += " and posting_date >= %(from_date)s"
 		if self.filters.to_date:
@@ -693,19 +693,19 @@ class GrossProfitGenerator(object):
 				`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return,
 				`tabSales Invoice Item`.cost_center,
-				`tabSales Invoice Item`.concentration,IFNULL(dni.batch_no,`tabSales Invoice Item`.batch_no) as batch_no,
-				dni.name as dn_detail, dni.parent as delivery_note
+				`tabSales Invoice Item`.concentration,
+				`tabSales Invoice Item`.batch_no as batch_no,
+				`tabItem`.has_batch_no
 				{sales_person_cols}
 			from
 				`tabSales Invoice` inner join `tabSales Invoice Item`
 					on `tabSales Invoice Item`.parent = `tabSales Invoice`.name
-				LEFT JOIN `tabDelivery Note Item` as dni on dni.si_detail = `tabSales Invoice Item`.name and dni.docstatus = 1
+				LEFT Join `tabItem` ON `tabSales Invoice Item`.item_code = `tabItem`.name
 				{sales_team_table}
 			where
 				`tabSales Invoice`.docstatus=1 and `tabSales Invoice`.is_opening!='Yes' {conditions} {match_cond}
 			order by
-				`tabSales Invoice`.posting_date desc, `tabSales Invoice`.posting_time desc"""
-				.format(
+				`tabSales Invoice`.posting_date desc, `tabSales Invoice`.posting_time desc""".format(
 				conditions=conditions,
 				sales_person_cols=sales_person_cols,
 				sales_team_table=sales_team_table,
@@ -714,6 +714,44 @@ class GrossProfitGenerator(object):
 			self.filters,
 			as_dict=1,
 		)
+
+	def set_missing_batch(self):
+		conditions = ""
+		if self.filters.company:
+			conditions += " and `tabDelivery Note`.company = %(company)s"
+		if self.filters.from_date:
+			conditions += " and posting_date >= %(from_date)s"
+		if self.filters.to_date:
+			conditions += " and posting_date <= %(to_date)s"
+		if self.filters.get("sales_invoice"):
+			conditions += " and `tabDelivery Note Item`.against_sales_invoice = %(sales_invoice)s"
+
+		dn_list = frappe.db.sql("""
+			select
+				`tabDelivery Note Item`.name, `tabDelivery Note Item`.item_code,
+				`tabDelivery Note Item`.batch_no, `tabDelivery Note Item`.si_detail
+			from
+				`tabDelivery Note` inner join `tabDelivery Note Item`
+					on `tabDelivery Note Item`.parent = `tabDelivery Note`.name
+				LEFT Join `tabItem` ON `tabDelivery Note Item`.item_code = `tabItem`.name
+			where
+				`tabDelivery Note`.docstatus=1  {conditions} 
+			order by
+				`tabDelivery Note`.posting_date desc, `tabDelivery Note`.posting_time desc""".format(
+				conditions=conditions,
+			),
+			self.filters,
+			as_dict=1,
+		)
+		batch_map={}
+		for each in dn_list:
+			batch_map.setdefault(each.si_detail,[])
+			batch_map[each.si_detail].append(each.get('batch_no'))
+		
+		for row in self.si_list:
+			if row.has_batch_no and not row.batch_no:
+				if batch_map.get(row.item_row):
+					row.batch_no = ' , '.join(batch_map.get(row.item_row))
 
 	def group_items_by_invoice(self):
 		"""
