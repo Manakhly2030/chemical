@@ -13,6 +13,9 @@ def update_qc_reference(self):
 			if self.batch_no and self.docstatus == 1:
 				conditions += " and t1.batch_no = '%s'"%(self.batch_no)
 
+			if self.lot_no and self.docstatus == 1:
+				conditions += " and t1.lot_no = '%s'"%(self.lot_no)
+
 			if self.docstatus == 2: # if cancel, then remove qi link wherever same name
 				conditions += " and t1.quality_inspection = '%s'"%(self.name)
 

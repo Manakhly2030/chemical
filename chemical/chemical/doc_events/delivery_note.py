@@ -10,34 +10,13 @@ def validate(self,method):
     cal_rate_qty(self)
 	
 def dn_on_submit(self, method):
-	update_sales_invoice(self)
 	validate_customer_batch(self)
-#added
-def on_submit(self, method):
-	update_sales_invoice(self)
 
 def before_cancel(self, method):
 	dn_update_status_updater_args(self)
-	update_sales_invoice(self)
 
 def before_submit(self, method):
 	dn_update_status_updater_args(self)
-
-
-def update_sales_invoice(self):
-	for row in self.items:
-		if row.against_sales_invoice and row.si_detail:
-			if self._action == 'submit':
-				delivery_note = self.name
-				dn_detail = row.name
-
-			elif self._action == 'cancel':
-				delivery_note = ''
-				dn_detail = ''
-
-			frappe.db.sql("""update `tabSales Invoice Item` 
-				set dn_detail = %s, delivery_note = %s 
-				where name = %s """, (dn_detail, delivery_note, row.si_detail))
 
 def dn_update_status_updater_args(self):
 	self.status_updater = [{

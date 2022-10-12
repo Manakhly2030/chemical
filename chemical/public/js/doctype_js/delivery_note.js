@@ -62,6 +62,14 @@ this.frm.cscript.onload = function (frm) {
 }
 
 frappe.ui.form.on("Delivery Note", {
+    onload : function (frm) {
+        if (frm.doc.items && frm.doc.__islocal){
+            frm.doc.items.forEach(function (d) {
+                d.quantity =  d.qty;
+            });
+            frm.refresh_field('items');
+        }
+    },
     before_save: function (frm) {
 
         frm.doc.items.forEach(function (d) {
