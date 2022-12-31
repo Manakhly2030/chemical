@@ -213,7 +213,7 @@ def get_transfered_raw_materials(self):
 	transferred_materials = frappe.db.sql("""
 		select
 			item_name, original_item, item_code, quantity, qty, sed.t_warehouse as warehouse, sed.s_warehouse as s_warehouse,
-			description, stock_uom, expense_account, cost_center, batch_no
+			description, stock_uom, expense_account, cost_center, sed.batch_no
 		from `tabStock Entry` se,`tabStock Entry Detail` sed
 		where
 			se.name = sed.parent and se.docstatus=1 and se.purpose='Material Transfer for Manufacture'

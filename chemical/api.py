@@ -65,6 +65,7 @@ def _get_party_details(party=None, party_type="Customer", ignore_permissions=Tru
 	set_contact_details(out, party, party_type)
 	set_other_values(out, party, party_type)
 	set_organization_details(out, party, party_type)
+	
 	return out
 
 def set_address_details(out, party, party_type):
@@ -228,7 +229,7 @@ def purchase_cal_rate_qty(self):
 		if maintain_as_is_stock:
 			if hasattr(doc_items,'received_concentration'):
 				d.receive_quantity = flt(d.receive_qty) * flt(d.received_concentration) / 100
-			if hasattr(doc_items,'supplier_concentration'):
+			if hasattr(doc_items,'supplier_concentration') and hasattr(doc_items,'supplier_qty'):
 				if not d.supplier_concentration:
 					frappe.throw("{} Row: {} Please add supplier concentration".format(d.doctype,d.idx))
 				d.supplier_quantity = flt(d.supplier_qty) * flt(d.supplier_concentration) / 100
@@ -345,7 +346,7 @@ def se_repack_cal_rate_qty(self):
 			if maintain_as_is_stock:
 				if hasattr(doc_items,'received_concentration'):
 					d.receive_quantity = flt(d.receive_qty) * flt(d.received_concentration) / 100
-				if hasattr(doc_items,'supplier_concentration'):
+				if hasattr(doc_items,'supplier_concentration') and hasattr(doc_items,'supplier_qty'):
 					if not d.supplier_concentration:
 						frappe.throw("{} Row: {} Please add supplier concentration".format(d.doctype,d.idx))
 					d.supplier_quantity = flt(d.supplier_qty) * flt(d.supplier_concentration) / 100
@@ -378,7 +379,7 @@ def se_repack_cal_rate_qty(self):
 			else:
 				if hasattr(doc_items,'received_concentration'):
 					d.receive_quantity = flt(d.receive_qty)
-				if hasattr(doc_items,'supplier_concentration'):
+				if hasattr(doc_items,'supplier_concentration') and hasattr(doc_items,'supplier_qty'):
 					d.supplier_quantity = flt(d.supplier_qty)
 				if hasattr(doc_items,'accepted_concentration'):
 					d.accepted_quantity = flt(d.accepted_qty)

@@ -91,9 +91,9 @@ frappe.ui.form.on("Purchase Receipt", {
                     if (frappe.meta.get_docfield("Purchase Receipt Item", "supplier_packing_size") && frappe.meta.get_docfield("Purchase Receipt Item", "supplier_no_of_packages")){
                         frappe.model.set_value(d.doctype, d.name, 'supplier_qty', flt(d.supplier_packing_size) * flt(d.supplier_no_of_packages));
                  }
-                 if(!d.supplier_qty){
-                     frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
-                 }
+                //  if(!d.supplier_qty){
+                //      frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
+                //  }
                 }
 
                 if (frappe.meta.get_docfield("Purchase Receipt Item", "receive_packing_size")){
