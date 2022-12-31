@@ -197,6 +197,27 @@ def get_batch_incoming_rate(item_code, warehouse, batch_no, posting_date, postin
 	if batch_details and batch_details[0].batch_qty:
 		return batch_details[0].batch_value / batch_details[0].batch_qty
 
+	# Uncomment below if valuation rate not found for batch at time of repost
+	
+	# batch_details = (
+	# 	frappe.qb
+	# 		.from_(sle)
+	# 		.select(
+	# 			(sle.incoming_rate).as_("incoming_rate"),
+	# 			Sum(sle.actual_qty).as_("batch_qty")
+	# 		)
+	# 		.where(
+	# 			(sle.item_code == item_code)
+	# 			& (sle.warehouse == warehouse)
+	# 			& (sle.batch_no == batch_no)
+	# 			& (sle.actual_qty > 0)
+	# 			& (sle.is_cancelled == 0)
+	# 		)
+	# ).run(as_dict=True)
+
+	# if batch_details and batch_details[0].batch_qty:
+	# 	return batch_details[0].incoming_rate
+
 def get_batch_values(self, sle):
 	
 	incoming_rate = flt(sle.incoming_rate)

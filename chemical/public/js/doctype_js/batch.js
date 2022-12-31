@@ -1,22 +1,22 @@
 frappe.ui.form.on("Batch", {
     refresh: function(frm) {
-		frm.remove_custom_button("View Ledger");
-		let current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
-		var from_date = '';
-		frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date", function(r){
-			from_date = r.year_start_date
-		})
-        if(!frm.is_new()) {
-			frm.add_custom_button(__("View Chemical Ledger"), () => {
-				frappe.route_options = {
-					batch_no: frm.doc.name,
-					item_code:frm.doc.item,
-					company: '',
-					from_date:from_date
-				};
-				frappe.set_route("query-report", "Stock Ledger Chemical");
-			});
-		}
+		// frm.remove_custom_button("View Ledger");
+		// let current_fiscal_year = frappe.defaults.get_user_default("fiscal_year")
+		// var from_date = '';
+		// frappe.db.get_value("Fiscal Year",current_fiscal_year,"year_start_date", function(r){
+		// 	from_date = r.year_start_date
+		// })
+        // if(!frm.is_new()) {
+		// 	frm.add_custom_button(__("View Chemical Ledger"), () => {
+		// 		frappe.route_options = {
+		// 			batch_no: frm.doc.name,
+		// 			item_code:frm.doc.item,
+		// 			company: '',
+		// 			from_date:from_date
+		// 		};
+		// 		frappe.set_route("query-report", "Stock Ledger Chemical");
+		// 	});
+		// }
 		$("div").remove(".form-dashboard-section.custom");
 		frm.trigger('_make_dashboard')
 	},

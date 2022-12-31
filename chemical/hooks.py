@@ -304,10 +304,7 @@ doc_events = {
 	},
 	"Delivery Note": {
 		"onload":"chemical.chemical.doc_events.delivery_note.onload",
-		"on_submit": [
-			 "chemical.chemical.doc_events.delivery_note.dn_on_submit",
-			 "chemical.chemical.doc_events.delivery_note.on_submit",
-		],
+		"on_submit": "chemical.chemical.doc_events.delivery_note.dn_on_submit",
 		"before_cancel": "chemical.chemical.doc_events.delivery_note.before_cancel",
 		"before_submit": "chemical.chemical.doc_events.delivery_note.before_submit",
 
