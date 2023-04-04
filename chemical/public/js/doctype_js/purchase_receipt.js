@@ -1,5 +1,5 @@
-erpnext.stock.PurchaseReceiptController = erpnext.stock.PurchaseReceiptController.extend({
-    show_stock_ledger: function () {
+erpnext.stock.PurchaseReceiptController = class PurchaseReceiptController extends erpnext.buying.BuyingController {
+    show_stock_ledger() {
         var me = this;
         if (this.frm.doc.docstatus === 1) {
             cur_frm.add_custom_button(__("Stock Ledger"), function () {
@@ -13,16 +13,19 @@ erpnext.stock.PurchaseReceiptController = erpnext.stock.PurchaseReceiptControlle
             }, __("View"));
         }
 
-    },
-})
+    }
+}
+
+
 cur_frm.fields_dict.set_warehouse.get_query = function(doc) {
 	return {
 		filters: {
-			"company": doc.company,
+			"company": doc.company, 
            
 		}
 	}
 };
+
 cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
 	return {
 		filters: {

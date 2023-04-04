@@ -8,62 +8,62 @@
 
 
 cur_frm.fields_dict.from_warehouse.get_query = function (doc) {
-	return {
-		filters: {
-			"company": doc.company,
+    return {
+        filters: {
+            "company": doc.company,
             "is_group":0,
-		}
-	}
+        }
+    }
 };
 cur_frm.fields_dict.to_warehouse.get_query = function (doc) {
-	return {
-		filters: {
-			"company": doc.company,
+    return {
+        filters: {
+            "company": doc.company,
             "is_group":0,
-		}
-	}
+        }
+    }
 };
 cur_frm.fields_dict.items.grid.get_field("s_warehouse").get_query = function (doc) {
-	return {
-		filters: {
-			"company": doc.company,
+    return {
+        filters: {
+            "company": doc.company,
             "is_group":0,
-		}
-	}
+        }
+    }
 };
 cur_frm.fields_dict.items.grid.get_field("t_warehouse").get_query = function (doc) {
-	return {
-		filters: {
-			"company": doc.company,
+    return {
+        filters: {
+            "company": doc.company,
             "is_group":0,
-		}
-	}
+        }
+    }
 };
 cur_frm.fields_dict.items.grid.get_field("bom_no").get_query = function (doc) {
-	return {
-		filters: {
-			"docstatus": 1,
-		}
-	}
+    return {
+        filters: {
+            "docstatus": 1,
+        }
+    }
 };
 
-erpnext.stock.StockController = erpnext.stock.StockController.extend({
+erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockController{
 
-        onload: function () {
-            // warehouse query if company
-            // Finbyz changes: Override default warehouse filter
-            if (this.frm.fields_dict.company) {
-                // var me = this;
-                // erpnext.queries.setup_queries(this.frm, "Warehouse", function (doc) {
-                //     return {
-                //         filters: [
-                //             ["Warehouse", "is_group", "=", 0]
-                //         ]
-                //     }
-                // });
-            }
-        },
-    show_stock_ledger: function () {
+    onload () {
+        // warehouse query if company
+        // Finbyz changes: Override default warehouse filter
+        if (this.frm.fields_dict.company) {
+            // var me = this;
+            // erpnext.queries.setup_queries(this.frm, "Warehouse", function (doc) {
+            //     return {
+            //         filters: [
+            //             ["Warehouse", "is_group", "=", 0]
+            //         ]
+            //     }
+            // });
+        }
+    }
+    show_stock_ledger () {
         var me = this;
         if (this.frm.doc.docstatus === 1) {
             cur_frm.add_custom_button(__("Stock Ledger"), function () {
@@ -77,10 +77,10 @@ erpnext.stock.StockController = erpnext.stock.StockController.extend({
             }, __("View"));
         }
 
-    },
-})
+    }
+}
 
-$.extend(cur_frm.cscript, new erpnext.stock.StockController({ frm: cur_frm }));
+$.extend(cur_frm.cscript, new erpnext.stock.StockEntry({ frm: cur_frm }));
 
 // Add searchfield to Item query
 // this.frm.cscript.onload = function (frm) {
@@ -106,7 +106,7 @@ $.extend(cur_frm.cscript, new erpnext.stock.StockController({ frm: cur_frm }));
 // }
 
 frappe.ui.form.on("Stock Entry", {
-	onload: function(frm){
+    onload: function(frm){
         frm.set_query("batch_no", "items", function (doc, cdt, cdn) {
             let d = locals[cdt][cdn];
             if (!d.item_code) {
@@ -137,24 +137,24 @@ frappe.ui.form.on("Stock Entry", {
             });
             frm.refresh_field('items');
         }
-		/* if(frm.doc.from_bom){
-			frappe.db.get_value("BOM",frm.doc.bom_no,['etp_rate','volume_rate'],function(r){
-				if(!frm.doc.etp_rate){
-					frm.set_value('etp_rate',r.etp_rate);
-				}
-				if(!frm.doc.volume_rate){
-					frm.set_value('volume_rate',r.volume_rate);
-				}
-			});
-		} */
-		if(frm.doc.work_order){
-			frappe.db.get_value("Work Order", frm.doc.work_order, 'skip_transfer', function (r) {
-				if (r.skip_transfer == 1) {
-					cur_frm.set_df_property("get_raw_materials", "hidden", 0);
-				}
+        /* if(frm.doc.from_bom){
+            frappe.db.get_value("BOM",frm.doc.bom_no,['etp_rate','volume_rate'],function(r){
+                if(!frm.doc.etp_rate){
+                    frm.set_value('etp_rate',r.etp_rate);
+                }
+                if(!frm.doc.volume_rate){
+                    frm.set_value('volume_rate',r.volume_rate);
+                }
             });
-		}
-	},
+        } */
+        if(frm.doc.work_order){
+            frappe.db.get_value("Work Order", frm.doc.work_order, 'skip_transfer', function (r) {
+                if (r.skip_transfer == 1) {
+                    cur_frm.set_df_property("get_raw_materials", "hidden", 0);
+                }
+            });
+        }
+    },
     // validate: function (frm) {
     //     if (frm.doc.__islocal) {
     //         frm.events.get_raw_materials(frm);
@@ -444,8 +444,8 @@ frappe.ui.form.on("Stock Entry", {
                 })
             });
         }
-	},
-	cal_rate_qty: function (frm, cdt, cdn) {
+    },
+    cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
         if ((frm.doc.purpose == 'Material Receipt' || frm.doc.purpose =='Repack') && frappe.meta.get_docfield("Stock Entry", "reference_docname") && frappe.meta.get_docfield("Stock Entry", "jw_ref"))
         {
@@ -780,12 +780,12 @@ frappe.ui.form.on("Stock Entry", {
     //     let cost = flt(frm.doc.volume * frm.doc.volume_rate);
     //     frm.set_value('volume_cost', cost);
     // },
-	// etp_qty: function(frm){
-	// 	frm.set_value('volume_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
-	// },
-	// etp_rate: function(frm){
-	// 	frm.set_value('volume_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
-	// },
+    // etp_qty: function(frm){
+    // 	frm.set_value('volume_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
+    // },
+    // etp_rate: function(frm){
+    // 	frm.set_value('volume_amount',flt(frm.doc.etp_qty*frm.doc.etp_rate))
+    // },
     cal_qty: function (frm) {
         let qty = 0;
         frm.doc.items.forEach(function (d) {
@@ -809,7 +809,7 @@ frappe.ui.form.on("Stock Entry", {
             // }
 
         });
-    },
+    }
 });
 
 frappe.ui.form.on("Stock Entry Detail", {
@@ -874,7 +874,7 @@ frappe.ui.form.on("Stock Entry Detail", {
         frm.events.cal_rate_qty(frm, cdt, cdn)
     },
     price: function(frm,cdt,cdn){
-		frm.events.cal_rate_qty(frm, cdt, cdn)
+        frm.events.cal_rate_qty(frm, cdt, cdn)
     },   
     concentration: function(frm, cdt, cdn){
         frm.events.cal_rate_qty(frm, cdt, cdn)

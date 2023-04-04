@@ -35,8 +35,9 @@ cur_frm.fields_dict.taxes_and_charges.get_query = function (doc) {
 	}
 };
 /* Overide Stock Ledger View Button */
-erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceController.extend({
-    show_stock_ledger: function () {
+
+erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends erpnext.selling.SellingController {
+    show_stock_ledger() {
         var me = this;
         if (this.frm.doc.docstatus === 1) {
             cur_frm.add_custom_button(__("Stock Ledger"), function () {
@@ -50,8 +51,8 @@ erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceControlle
             }, __("View"));
         }
 
-    },
-    payment_terms_template: function() {
+    }
+    payment_terms_template() {
 		var me = this;
         const doc = me.frm.doc;
 		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
@@ -76,7 +77,7 @@ erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceControlle
 				}
 			})
 		}
-    },
+    }
     // posting_date: function() {
 	// 	var me = this;
 	// 	if (this.frm.doc.posting_date) {
@@ -133,14 +134,14 @@ erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceControlle
 	// 	}
 	// },
 
-    set_batch_number: function(cdt, cdn) {
+    set_batch_number(cdt, cdn) {
 		const doc = frappe.get_doc(cdt, cdn);
 		if (doc && doc.has_batch_no && doc.warehouse && !doc.batch_no) {
 			this._set_batch_number(doc);
 		}
-	},
+	}
 
-	_set_batch_number: function(doc) {
+	_set_batch_number(doc) {
 		let args = {'item_code': doc.item_code, 'warehouse': doc.warehouse, 'qty': flt(doc.qty) * flt(doc.conversion_factor)};
 		if (doc.has_serial_no && doc.serial_no) {
 			args['serial_no'] = doc.serial_no
@@ -157,8 +158,8 @@ erpnext.accounts.SalesInvoiceController = erpnext.accounts.SalesInvoiceControlle
 				}
 			}
 		});
-	},
-})
+	}
+};
 
 $.extend(cur_frm.cscript, new erpnext.accounts.SalesInvoiceController({ frm: cur_frm }));
 
@@ -198,7 +199,7 @@ this.frm.cscript.onload = function (frm) {
             }
         }
     });
-}
+},
 
 frappe.ui.form.on("Sales Invoice", {
     before_save: function (frm) {
@@ -345,7 +346,7 @@ frappe.ui.form.on("Sales Invoice", {
         }
     },
    
-});
+}),
 frappe.ui.form.on("Sales Invoice Item", {
     item_code: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
@@ -403,8 +404,8 @@ frappe.ui.form.on("Sales Invoice Item", {
     }
 
    
-});
+}),
 
-erpnext.selling.SellingController = erpnext.TransactionController.extend({
+erpnext.selling.SellingController = class SellingController extends erpnext.TransactionController{
     
-})
+};

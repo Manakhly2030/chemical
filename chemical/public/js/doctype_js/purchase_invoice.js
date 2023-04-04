@@ -16,8 +16,8 @@ cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
 	}
 };
 
-erpnext.accounts.PurchaseInvoice = erpnext.accounts.PurchaseInvoice.extend({
-	show_stock_ledger: function () {
+erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.BuyingController {
+	show_stock_ledger() {
         var me = this;
         if (this.frm.doc.docstatus === 1) {
             cur_frm.add_custom_button(__("Stock Ledger"), function () {
@@ -31,8 +31,8 @@ erpnext.accounts.PurchaseInvoice = erpnext.accounts.PurchaseInvoice.extend({
             }, __("View"));
         }
 
-    },
-    payment_terms_template: function() {
+    }
+    payment_terms_template() {
 		var me = this;
         const doc = me.frm.doc;
 		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
@@ -54,8 +54,8 @@ erpnext.accounts.PurchaseInvoice = erpnext.accounts.PurchaseInvoice.extend({
 				}
 			})
 		}
-    },
-})
+    }
+}
 
 $.extend(cur_frm.cscript, new erpnext.accounts.PurchaseInvoice({ frm: cur_frm }));
 

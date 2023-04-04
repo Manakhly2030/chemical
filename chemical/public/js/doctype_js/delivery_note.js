@@ -4,8 +4,8 @@
 // this.frm.add_fetch('batch_no', 'batch_yield', 'batch_yield');
 // this.frm.add_fetch('batch_no', 'concentration', 'concentration');
 
-erpnext.stock.DeliveryNoteController = erpnext.stock.DeliveryNoteController.extend({
-	show_stock_ledger: function () {
+erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpnext.selling.SellingController{
+	show_stock_ledger () {
         var me = this;
         if (this.frm.doc.docstatus === 1) {
             cur_frm.add_custom_button(__("Stock Ledger"), function () {
@@ -19,8 +19,8 @@ erpnext.stock.DeliveryNoteController = erpnext.stock.DeliveryNoteController.exte
             }, __("View"));
         }
 
-    },
-})
+    }
+};
 
 cur_frm.fields_dict.taxes_and_charges.get_query = function (doc) {
 	return {
