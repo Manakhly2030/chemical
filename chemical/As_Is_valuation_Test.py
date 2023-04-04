@@ -46,6 +46,7 @@ if not frappe.db.exists("Item","TEST_ITEM_1"):
     item_create.item_code = "TEST_ITEM_1"
     item_create.item_group = "All Item Groups"
     item_create.is_stock_item = 1
+    item_create.gst_hsn_code = "90303990"
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
@@ -67,6 +68,7 @@ if not frappe.db.exists("Item","TEST_ITEM_2"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.gst_hsn_code = "90319000"
     item_create.stock_uom = "Kg"
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
@@ -83,6 +85,7 @@ if not frappe.db.exists("Item","TEST_ITEM_3"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.gst_hsn_code = "92092000"
     item_create.stock_uom = "Kg"
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
@@ -100,6 +103,7 @@ if not frappe.db.exists("Item","TEST_ITEM_4"):
     item_create.maintain_as_is_stock= 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.gst_hsn_code = "95030020"
     item_create.stock_uom = "Kg"
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
     warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
@@ -118,6 +122,7 @@ if not frappe.db.exists("Item","FINISH_TEST_ITEM"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.gst_hsn_code = "998942"
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
@@ -135,6 +140,7 @@ if not frappe.db.exists("Item","SECOND_FINISH_TEST_ITEM"):
     item_create.is_stock_item = 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.gst_hsn_code = "91149091"
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
@@ -153,6 +159,7 @@ if not frappe.db.exists("Item","AsIs_Finish_item"):
     item_create.maintain_as_is_stock= 1
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
+    item_create.gst_hsn_code = "90308400"
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
@@ -818,18 +825,21 @@ bom_create.append("items",{
     "item_code" : "TEST_ITEM_2",
     "item_name" : "TEST_ITEM_2",
     "qty": 100,
+    "uom":"Foot",
     "rate": 256.11
 })
 bom_create.append("items",{
     "item_code" : "TEST_ITEM_3",
     "item_name" : "TEST_ITEM_3",
     "qty": 100,
+    "uom":"Foot",
     "rate": 82.61
 })
 bom_create.append("items",{
     "item_code" : "TEST_ITEM_4",
     "item_name" : "TEST_ITEM_4",
     "qty": 100,
+    "uom":"Foot",
     "rate": 224.81,    
 })
 # new functionality 
@@ -838,6 +848,7 @@ bom_create.append("multiple_finish_item",{
     "cost_ratio": 60,
     "qty_ratio": 50,
     "qty": 500,
+    "uom":"Foot",
     "batch_yield": 5,
 })
 bom_create.append("multiple_finish_item",{
@@ -845,6 +856,7 @@ bom_create.append("multiple_finish_item",{
     "cost_ratio": 20,
     "qty_ratio": 25,
     "qty": 250,
+    "uom":"Foot",
     "batch_yield": 2.5,
 })
 bom_create.append("multiple_finish_item",{
@@ -852,6 +864,7 @@ bom_create.append("multiple_finish_item",{
     "cost_ratio": 20,
     "qty_ratio": 25,
     "qty": 250,
+    "uom":"Foot",
     "batch_yield": 2.5,
 })
 bom_create.append("additional_cost",{
@@ -859,6 +872,7 @@ bom_create.append("additional_cost",{
     "qty": 1000,
     "uom": "FG QTY",
     "rate": 200,
+    "uom":"Foot",
     "amount": 200000,
 })
 
@@ -1006,7 +1020,7 @@ work_order_create.batch_yield = 10
 work_order_create.is_multiple_item = 1
 company =  frappe.db.get_value("Company",{},"company_name")
 work_order_create.wip_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
-work_order_create.fg_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"FINISHED GOODS(CRUDE)"},"name")
+work_order_create.fg_warehouse = "Finished Goods - CI"
 work_order_create.bom_no = "BOM-FINISH_TEST_ITEM-001"
 work_order_create.concentration = 0
 work_order_create.use_multi_level_bom = 1

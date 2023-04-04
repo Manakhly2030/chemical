@@ -8,40 +8,40 @@ from . import __version__ as app_version
 # OpeningInvoiceCreationTool.get_invoice_dict = get_invoice_dict
 # OpeningInvoiceCreationTool.make_invoices = make_invoices
 
-from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
-from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+# from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
+# from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 
 #Chemical
 from chemical.chemical.doc_events.stock_entry import validate_fg_completed_quantity, calculate_rate_and_amount, validate_finished_goods
 from chemical.chemical.doc_events.work_order import get_status, update_work_order_qty, update_transaferred_qty_for_required_items, update_consumed_qty_for_required_items
 
 #Chemical
-StockEntry.validate_finished_goods = validate_finished_goods
-StockEntry.calculate_rate_and_amount = calculate_rate_and_amount
-StockEntry.validate_fg_completed_qty = validate_fg_completed_quantity
-WorkOrder.get_status = get_status
-WorkOrder.update_work_order_qty = update_work_order_qty
-WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_for_required_items
-WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_required_items
+# StockEntry.validate_finished_goods = validate_finished_goods #DONE
+# StockEntry.calculate_rate_and_amount = calculate_rate_and_amount #Done
+# StockEntry.validate_fg_completed_qty = validate_fg_completed_quantity #done
+# WorkOrder.get_status = get_status #done
+# WorkOrder.update_work_order_qty = update_work_order_qty #done
+#WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_for_required_items #done
+# WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_required_items #done
 
 
 #payment term override
-from chemical.api import get_due_date
-from erpnext.controllers import accounts_controller
-accounts_controller.get_due_date = get_due_date
+# from chemical.api import get_due_date
+# from erpnext.controllers import accounts_controller
+# accounts_controller.get_due_date = get_due_date
 
 # overide reason bcz raw material changes on change event of fg_completed_qty
-from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-from chemical.chemical.doc_events.work_order import get_items
-StockEntry.get_items = get_items
+# from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+# from chemical.chemical.doc_events.work_order import get_items
+# StockEntry.get_items = get_items
 
 # import erpnext
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
 
 #quality inspection override for sample
-from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection
-from chemical.chemical.doc_events.quality_inspection import update_qc_reference
-QualityInspection.update_qc_reference = update_qc_reference
+# from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection #done
+# from chemical.chemical.doc_events.quality_inspection import update_qc_reference #done
+# QualityInspection.update_qc_reference = update_qc_reference #done
 
 app_name = "chemical"
 app_title = "Chemical"
@@ -198,6 +198,14 @@ doctype_js = {
 # after_migrate = [
 # 	'frappe.website.doctype.website_theme.website_theme.generate_theme_files_if_not_exist'
 # ]
+override_doctype_class = {
+	"SubcontractingController" : "chemical.chemical.override_class.SubcontractingController.SubcontractingController",
+	"SellingController":"chemical.chemical.override_class.SellingController.SellingController",
+	"BuyingController":"chemical.chemical.override_class.BuyingController.BuyingController",
+	"Work Order" : "chemical.chemical.override_class.WorkOrder.WorkOrder",
+	"Stock Entry":"chemical.chemical.override_class.stock_entry.NewStockEntry",
+	"Quality Inspection" : "chemical.chemical.override_class.QualityInspection.QualityInspection"
+}
 
 override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
@@ -366,17 +374,17 @@ override_doctype_dashboards = {
 from chemical.batch_valuation_overrides import get_supplied_items_cost,set_incoming_rate_buying,set_incoming_rate_selling,get_rate_for_return,get_incoming_rate,process_sle,get_args_for_incoming_rate
 
 # Buying controllers
-from erpnext.controllers.buying_controller import BuyingController
-BuyingController.get_supplied_items_cost = get_supplied_items_cost
-BuyingController.set_incoming_rate = set_incoming_rate_buying
+# from erpnext.controllers.buying_controller import BuyingController
+# BuyingController.get_supplied_items_cost = get_supplied_items_cost #done
+# BuyingController.set_incoming_rate = set_incoming_rate_buying #done
 
 # Selling controllers
-from erpnext.controllers.selling_controller import SellingController
-SellingController.set_incoming_rate = set_incoming_rate_selling
+# from erpnext.controllers.selling_controller import SellingController
+# SellingController.set_incoming_rate = set_incoming_rate_selling # done
 
 # sales and purchase return
-from erpnext.controllers import sales_and_purchase_return
-sales_and_purchase_return.get_rate_for_return =  get_rate_for_return
+# from erpnext.controllers import sales_and_purchase_return
+# sales_and_purchase_return.get_rate_for_return =  get_rate_for_return
 
 # utils
 
@@ -387,13 +395,13 @@ import erpnext
 erpnext.stock.utils.get_incoming_rate = get_incoming_rate
 
 # stock_ledger
-from erpnext.stock.stock_ledger import update_entries_after
-update_entries_after.process_sle =  process_sle
+# from erpnext.stock.stock_ledger import update_entries_after
+# update_entries_after.process_sle =  process_sle
 
 # stock entry
-from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-StockEntry.get_args_for_incoming_rate = get_args_for_incoming_rate
+# from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+# StockEntry.get_args_for_incoming_rate = get_args_for_incoming_rate #done
 
-from erpnext.stock.doctype.stock_reconciliation import stock_reconciliation
-from chemical.chemical.doc_events.stock_reconciliation import get_stock_balance_for
-stock_reconciliation.get_stock_balance_for = get_stock_balance_for
+# from erpnext.stock.doctype.stock_reconciliation import stock_reconciliation
+# from chemical.chemical.doc_events.stock_reconciliation import get_stock_balance_for
+# stock_reconciliation.get_stock_balance_for = get_stock_balance_for

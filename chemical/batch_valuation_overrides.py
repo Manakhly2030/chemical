@@ -1,7 +1,8 @@
 import frappe, erpnext, json
 from frappe import msgprint, _
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime,nowtime, get_link_to_form
-from erpnext.stock.stock_ledger import update_entries_after,get_valuation_rate, _round_off_if_near_zero
+from erpnext.stock.valuation import round_off_if_near_zero
+# from erpnext.stock.stock_ledger import update_entries_after,get_valuation_rate, _round_off_if_near_zero
 from erpnext.controllers.sales_and_purchase_return import get_return_against_item_fields,get_filters
 from erpnext.stock.utils import get_valuation_method, get_fifo_rate, get_avg_purchase_rate
 from six import string_types
@@ -145,7 +146,7 @@ def update_batched_values(self, sle):
 	incoming_rate = flt(sle.incoming_rate)
 	actual_qty = flt(sle.actual_qty)
 
-	self.wh_data.qty_after_transaction = _round_off_if_near_zero(self.wh_data.qty_after_transaction + actual_qty)
+	self.wh_data.qty_after_transaction = round_off_if_near_zero(self.wh_data.qty_after_transaction + actual_qty)
 
 	if actual_qty > 0:
 		stock_value_difference = incoming_rate * actual_qty
@@ -162,7 +163,7 @@ def update_batched_values(self, sle):
 			# outgoing_rate = self.get_fallback_rate(sle)
 		stock_value_difference = outgoing_rate * actual_qty
 
-	self.wh_data.stock_value = _round_off_if_near_zero(self.wh_data.stock_value + stock_value_difference)
+	self.wh_data.stock_value = round_off_if_near_zero(self.wh_data.stock_value + stock_value_difference)
 	if self.wh_data.qty_after_transaction:
 		self.wh_data.valuation_rate = self.wh_data.stock_value / self.wh_data.qty_after_transaction
 

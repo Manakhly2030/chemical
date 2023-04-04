@@ -44,6 +44,7 @@ if not frappe.db.exists("Item","TEST_ITEM_1"):
     item_create.item_code = "TEST_ITEM_1"
     item_create.item_group = "All Item Groups"
     item_create.is_stock_item = 1
+    item_create.gst_hsn_code =  "90303990",
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
@@ -60,6 +61,7 @@ if not frappe.db.exists("Item","TEST_ITEM_2"):
     item_create.item_code = "TEST_ITEM_2"
     item_create.item_group = "All Item Groups"
     item_create.is_stock_item = 1
+    item_create.gst_hsn_code : "90319000"
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     item_create.append("item_defaults",{
@@ -73,6 +75,7 @@ if not frappe.db.exists("Item","TEST_ITEM_3"):
     item_create.item_code = "TEST_ITEM_3"
     item_create.item_group = "All Item Groups"
     item_create.is_stock_item = 1
+    item_create.gst_hsn_code = "92092000"
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     item_create.append("item_defaults",{
@@ -86,6 +89,7 @@ if not frappe.db.exists("Item","FINISH_TEST_ITEM"):
     item_create.item_code = "FINISH_TEST_ITEM"
     item_create.item_group = "All Item Groups"
     item_create.is_stock_item = 1
+    item_create.gst_hsn_code = "998942"
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Stores"},"name")
@@ -130,6 +134,7 @@ first_pr.append("items",{
     "packing_size":25,
     "packaging_material": packaging_material,
     "lot_no":"Test/1",
+    'gst_hsn_code': "90303990",
     "no_of_packages":20,
     "concentration":85, # type = percent
     "warehouse":warehouse,
@@ -148,6 +153,7 @@ first_pr.append("items",{
     "packaging_material": packaging_material,
     "lot_no":"Test/2",
     "no_of_packages":22,
+    "gst_hsn_code" : "90319000",
     "concentration":95, # type = percent
     "warehouse":warehouse,
     "cost_center":cost_center,
@@ -164,6 +170,7 @@ first_pr.append("items",{
     "packing_size":25,
     "packaging_material": packaging_material,
     "lot_no":"Test/3",
+    "gst_hsn_code" : "92092000",
     "no_of_packages":28,
     "concentration":90, # type = percent
     "warehouse":warehouse,
