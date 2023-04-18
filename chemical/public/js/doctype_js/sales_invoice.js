@@ -161,7 +161,7 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 	}
 };
 
-$.extend(cur_frm.cscript, new erpnext.accounts.SalesInvoiceController({ frm: cur_frm }));
+extend_cscript(cur_frm.cscript, new erpnext.accounts.SalesInvoiceController({ frm: cur_frm }));
 
 
 // Add searchfield to Item query

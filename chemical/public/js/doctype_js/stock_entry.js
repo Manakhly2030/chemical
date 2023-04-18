@@ -80,7 +80,7 @@ erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockControlle
     }
 }
 
-$.extend(cur_frm.cscript, new erpnext.stock.StockEntry({ frm: cur_frm }));
+extend_cscript(cur_frm.cscript, new erpnext.stock.StockEntry({ frm: cur_frm }));
 
 // Add searchfield to Item query
 // this.frm.cscript.onload = function (frm) {
