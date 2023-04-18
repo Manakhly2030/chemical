@@ -57,7 +57,7 @@ erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.
     }
 }
 
-extend_cscripts(cur_frm.cscript, new erpnext.accounts.PurchaseInvoice({ frm: cur_frm }));
+extend_cscript(cur_frm.cscript, new erpnext.accounts.PurchaseInvoice({ frm: cur_frm }));
 
 frappe.ui.form.on("Purchase Invoice", {
 
