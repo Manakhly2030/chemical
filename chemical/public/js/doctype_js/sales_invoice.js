@@ -36,7 +36,7 @@ cur_frm.fields_dict.taxes_and_charges.get_query = function (doc) {
 };
 /* Overide Stock Ledger View Button */
 
-erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends erpnext.selling.SellingController {
+erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends erpnext.accounts.SalesInvoiceController {
     show_stock_ledger() {
         var me = this;
         if (this.frm.doc.docstatus === 1) {

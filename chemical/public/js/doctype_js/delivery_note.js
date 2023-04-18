@@ -4,7 +4,7 @@
 // this.frm.add_fetch('batch_no', 'batch_yield', 'batch_yield');
 // this.frm.add_fetch('batch_no', 'concentration', 'concentration');
 
-erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpnext.selling.SellingController{
+erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpnext.stock.DeliveryNoteController{
 	show_stock_ledger () {
         var me = this;
         if (this.frm.doc.docstatus === 1) {

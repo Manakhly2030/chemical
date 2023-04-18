@@ -16,7 +16,7 @@ cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
 	}
 };
 
-erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.buying.BuyingController {
+erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.accounts.PurchaseInvoice {
 	show_stock_ledger() {
         var me = this;
         if (this.frm.doc.docstatus === 1) {

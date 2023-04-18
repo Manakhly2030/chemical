@@ -47,7 +47,7 @@ cur_frm.fields_dict.items.grid.get_field("bom_no").get_query = function (doc) {
     }
 };
 
-erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockController{
+erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockEntry{
 
     onload () {
         // warehouse query if company

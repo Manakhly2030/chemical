@@ -1,4 +1,4 @@
-erpnext.stock.PurchaseReceiptController = class PurchaseReceiptController extends erpnext.buying.BuyingController {
+erpnext.stock.PurchaseReceiptController = class PurchaseReceiptController extends erpnext.stock.PurchaseReceiptController {
     show_stock_ledger() {
         var me = this;
         if (this.frm.doc.docstatus === 1) {
