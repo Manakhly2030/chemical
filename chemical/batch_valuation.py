@@ -17,7 +17,7 @@ def pr_validate(self, method):
 
 @frappe.whitelist()
 def pr_on_cancel(self, method):
-	if batch_wise_cost() and not self.is_return:
+	if not self.is_return:
 		delete_batches(self, 'warehouse')
 
 @frappe.whitelist()
@@ -27,7 +27,7 @@ def pi_validate(self, method):
 
 @frappe.whitelist()
 def pi_on_cancel(self, method):
-	if self.update_stock and batch_wise_cost() and not self.is_return:
+	if self.update_stock and not self.is_return:
 		delete_batches(self, 'warehouse')
 
 @frappe.whitelist()
@@ -104,11 +104,10 @@ def make_transfer_batches(self):
 
 @frappe.whitelist()
 def stock_entry_on_cancel(self, method):
-	if batch_wise_cost():
-		if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture']:
-			delete_transfer_batches(self)
-		else:
-			delete_batches(self, 't_warehouse')
+	if self.purpose in ['Material Transfer', 'Material Transfer for Manufacture']:
+		delete_transfer_batches(self)
+	else:
+		delete_batches(self, 't_warehouse')
 
 def delete_transfer_batches(self):
 	from frappe.model.delete_doc import check_if_doc_is_linked
@@ -220,7 +219,7 @@ def delete_batches(self, warehouse):
 			#row.batch_no = ''
 			#check_if_doc_is_linked(batch_no)
 			#frappe.delete_doc("Batch", batch_no.name)
-			row.db_set('batch_no', '')
+			row.db_set('batch_no', "")
 	# else:
 	# 	frappe.db.commit()
 

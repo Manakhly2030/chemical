@@ -882,3 +882,29 @@ def get_due_date_from_template(template_name, posting_date, bill_date):
                 due_date, add_months(get_last_day(due_date), term.credit_months)
             )
     return due_date
+
+
+
+import frappe
+from frappe.utils import (
+	add_days,
+	add_months,
+	cint,
+	date_diff,
+	flt,
+	get_first_day,
+	get_last_day,
+	get_link_to_form,
+	getdate,
+	rounded,
+	today,
+)
+
+
+import datetime
+def before_naming(self , method):
+    data = frappe.db.get_value(self.reference_doctype, self.reference_name, "posting_date")
+    try:
+        self.posting_date = datetime.datetime.strptime(data, "%Y-%m-%d").strftime("%y%m%d")
+    except:
+        self.posting_date = data.strftime("%y%m%d")
