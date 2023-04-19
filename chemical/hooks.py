@@ -405,3 +405,7 @@ from chemical.batch_valuation_overrides import get_supplied_items_cost,set_incom
 # from erpnext.stock.doctype.stock_reconciliation import stock_reconciliation
 # from chemical.chemical.doc_events.stock_reconciliation import get_stock_balance_for
 # stock_reconciliation.get_stock_balance_for = get_stock_balance_for
+
+from erpnext.controllers.stock_controller import StockController
+from chemical.api import make_batches
+StockController.make_batches = make_batches

@@ -36,48 +36,48 @@ cur_frm.fields_dict.taxes_and_charges.get_query = function (doc) {
 };
 /* Overide Stock Ledger View Button */
 
-erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends erpnext.accounts.SalesInvoiceController {
-    show_stock_ledger() {
-        var me = this;
-        if (this.frm.doc.docstatus === 1) {
-            cur_frm.add_custom_button(__("Stock Ledger"), function () {
-                frappe.route_options = {
-                    voucher_no: me.frm.doc.name,
-                    from_date: me.frm.doc.posting_date,
-                    to_date: me.frm.doc.posting_date,
-                    company: me.frm.doc.company
-                };
-                frappe.set_route("query-report", "Stock Ledger");
-            }, __("View"));
-        }
+// erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends erpnext.selling.SellingController {
+    // show_stock_ledger() {
+    //     var me = this;
+    //     if (this.frm.doc.docstatus === 1) {
+    //         cur_frm.add_custom_button(__("Stock Ledger"), function () {
+    //             frappe.route_options = {
+    //                 voucher_no: me.frm.doc.name,
+    //                 from_date: me.frm.doc.posting_date,
+    //                 to_date: me.frm.doc.posting_date,
+    //                 company: me.frm.doc.company
+    //             };
+    //             frappe.set_route("query-report", "Stock Ledger");
+    //         }, __("View"));
+    //     }
 
-    }
-    payment_terms_template() {
-		var me = this;
-        const doc = me.frm.doc;
-		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
-            if (frappe.meta.get_docfield("Sales Invoice", "bl_date") || frappe.meta.get_docfield("Sales Invoice", "shipping_bill_date")){
-                var posting_date = doc.bl_date || doc.shipping_bill_date || doc.posting_date
-            }
-            else{
-                var posting_date =  doc.posting_date || doc.transaction_date;
-            }
-			frappe.call({
-				method: "erpnext.controllers.accounts_controller.get_payment_terms",
-				args: {
-					terms_template: doc.payment_terms_template,
-					posting_date: posting_date,
-					grand_total: doc.rounded_total || doc.grand_total,
-					bill_date: doc.bill_date
-				},
-				callback: function(r) {
-					if(r.message && !r.exc) {
-						me.frm.set_value("payment_schedule", r.message);
-					}
-				}
-			})
-		}
-    }
+    // }
+    // payment_terms_template() {
+	// 	var me = this;
+    //     const doc = me.frm.doc;
+	// 	if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
+    //         if (frappe.meta.get_docfield("Sales Invoice", "bl_date") || frappe.meta.get_docfield("Sales Invoice", "shipping_bill_date")){
+    //             var posting_date = doc.bl_date || doc.shipping_bill_date || doc.posting_date
+    //         }
+    //         else{
+    //             var posting_date =  doc.posting_date || doc.transaction_date;
+    //         }
+	// 		frappe.call({
+	// 			method: "erpnext.controllers.accounts_controller.get_payment_terms",
+	// 			args: {
+	// 				terms_template: doc.payment_terms_template,
+	// 				posting_date: posting_date,
+	// 				grand_total: doc.rounded_total || doc.grand_total,
+	// 				bill_date: doc.bill_date
+	// 			},
+	// 			callback: function(r) {
+	// 				if(r.message && !r.exc) {
+	// 					me.frm.set_value("payment_schedule", r.message);
+	// 				}
+	// 			}
+	// 		})
+	// 	}
+    // }
     // posting_date: function() {
 	// 	var me = this;
 	// 	if (this.frm.doc.posting_date) {
@@ -134,32 +134,32 @@ erpnext.accounts.SalesInvoiceController = class SalesInvoiceController extends e
 	// 	}
 	// },
 
-    set_batch_number(cdt, cdn) {
-		const doc = frappe.get_doc(cdt, cdn);
-		if (doc && doc.has_batch_no && doc.warehouse && !doc.batch_no) {
-			this._set_batch_number(doc);
-		}
-	}
+    // set_batch_number(cdt, cdn) {
+	// 	const doc = frappe.get_doc(cdt, cdn);
+	// 	if (doc && doc.has_batch_no && doc.warehouse && !doc.batch_no) {
+	// 		this._set_batch_number(doc);
+	// 	}
+	// }
 
-	_set_batch_number(doc) {
-		let args = {'item_code': doc.item_code, 'warehouse': doc.warehouse, 'qty': flt(doc.qty) * flt(doc.conversion_factor)};
-		if (doc.has_serial_no && doc.serial_no) {
-			args['serial_no'] = doc.serial_no
-		}
+	// _set_batch_number(doc) {
+	// 	let args = {'item_code': doc.item_code, 'warehouse': doc.warehouse, 'qty': flt(doc.qty) * flt(doc.conversion_factor)};
+	// 	if (doc.has_serial_no && doc.serial_no) {
+	// 		args['serial_no'] = doc.serial_no
+	// 	}
 
-		return frappe.call({
-			method: 'erpnext.stock.doctype.batch.batch.get_batch_no',
-			args: args,
-			callback: function(r) {
-				if(r.message) {
-					frappe.model.set_value(doc.doctype, doc.name, 'batch_no', r.message);
-				} else {
-				    frappe.model.set_value(doc.doctype, doc.name, 'batch_no', r.message);
-				}
-			}
-		});
-	}
-};
+	// 	return frappe.call({
+	// 		method: 'erpnext.stock.doctype.batch.batch.get_batch_no',
+	// 		args: args,
+	// 		callback: function(r) {
+	// 			if(r.message) {
+	// 				frappe.model.set_value(doc.doctype, doc.name, 'batch_no', r.message);
+	// 			} else {
+	// 			    frappe.model.set_value(doc.doctype, doc.name, 'batch_no', r.message);
+	// 			}
+	// 		}
+	// 	});
+	// }
+// };
 
 // extend_cscript(cur_frm.cscript, new erpnext.accounts.SalesInvoiceController({ frm: cur_frm }));
 
@@ -227,7 +227,7 @@ frappe.ui.form.on("Sales Invoice", {
         frm.doc.items.forEach(function (d) {
             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
                 if (r.maintain_as_is_stock){
-                    if(!d.concentration){
+                    if(!d.concentration || d.concentration == 0){
                         frappe.throw("Please add concentration for Item " + d.item_code)
                     }
                 }

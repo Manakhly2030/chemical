@@ -16,46 +16,46 @@ cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
 	}
 };
 
-erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.accounts.PurchaseInvoice {
-	show_stock_ledger() {
-        var me = this;
-        if (this.frm.doc.docstatus === 1) {
-            cur_frm.add_custom_button(__("Stock Ledger"), function () {
-                frappe.route_options = {
-                    voucher_no: me.frm.doc.name,
-                    from_date: me.frm.doc.posting_date,
-                    to_date: me.frm.doc.posting_date,
-                    company: me.frm.doc.company
-                };
-                frappe.set_route("query-report", "Stock Ledger");
-            }, __("View"));
-        }
+// erpnext.accounts.PurchaseInvoice = class PurchaseInvoice extends erpnext.accounts.PurchaseInvoice {
+// 	show_stock_ledger() {
+//         var me = this;
+//         if (this.frm.doc.docstatus === 1) {
+//             cur_frm.add_custom_button(__("Stock Ledger"), function () {
+//                 frappe.route_options = {
+//                     voucher_no: me.frm.doc.name,
+//                     from_date: me.frm.doc.posting_date,
+//                     to_date: me.frm.doc.posting_date,
+//                     company: me.frm.doc.company
+//                 };
+//                 frappe.set_route("query-report", "Stock Ledger");
+//             }, __("View"));
+//         }
 
-    }
-    payment_terms_template() {
-		var me = this;
-        const doc = me.frm.doc;
-		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
-            var posting_date =  doc.posting_date || doc.bill_date;
-			frappe.call({
-				method: "erpnext.controllers.accounts_controller.get_payment_terms",
-				args: {
-					terms_template: doc.payment_terms_template,
-					posting_date: posting_date,
-					grand_total: doc.rounded_total || doc.grand_total,
-                    base_grand_total: doc.base_grand_total,
-					// bill_date: doc.bill_date
-				},
-				callback: function(r) {
-					if(r.message && !r.exc) {
-                        console.log(r.message)
-						me.frm.set_value("payment_schedule", r.message);
-					}
-				}
-			})
-		}
-    }
-}
+//     }
+//     payment_terms_template() {
+// 		var me = this;
+//         const doc = me.frm.doc;
+// 		if(doc.payment_terms_template && doc.doctype !== 'Delivery Note') {
+//             var posting_date =  doc.posting_date || doc.bill_date;
+// 			frappe.call({
+// 				method: "erpnext.controllers.accounts_controller.get_payment_terms",
+// 				args: {
+// 					terms_template: doc.payment_terms_template,
+// 					posting_date: posting_date,
+// 					grand_total: doc.rounded_total || doc.grand_total,
+//                     base_grand_total: doc.base_grand_total,
+// 					// bill_date: doc.bill_date
+// 				},
+// 				callback: function(r) {
+// 					if(r.message && !r.exc) {
+//                         console.log(r.message)
+// 						me.frm.set_value("payment_schedule", r.message);
+// 					}
+// 				}
+// 			})
+// 		}
+//     }
+// }
 
 // extend_cscript(cur_frm.cscript, new erpnext.accounts.PurchaseInvoice({ frm: cur_frm }));
 

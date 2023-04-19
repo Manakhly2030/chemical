@@ -47,38 +47,38 @@ cur_frm.fields_dict.items.grid.get_field("bom_no").get_query = function (doc) {
     }
 };
 
-erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockEntry{
+// erpnext.stock.StockEntry = class StockEntry extends erpnext.stock.StockEntry{
 
-    onload () {
-        // warehouse query if company
-        // Finbyz changes: Override default warehouse filter
-        if (this.frm.fields_dict.company) {
-            // var me = this;
-            // erpnext.queries.setup_queries(this.frm, "Warehouse", function (doc) {
-            //     return {
-            //         filters: [
-            //             ["Warehouse", "is_group", "=", 0]
-            //         ]
-            //     }
-            // });
-        }
-    }
-    show_stock_ledger () {
-        var me = this;
-        if (this.frm.doc.docstatus === 1) {
-            cur_frm.add_custom_button(__("Stock Ledger"), function () {
-                frappe.route_options = {
-                    voucher_no: me.frm.doc.name,
-                    from_date: me.frm.doc.posting_date,
-                    to_date: me.frm.doc.posting_date,
-                    company: me.frm.doc.company
-                };
-                frappe.set_route("query-report", "Stock Ledger");
-            }, __("View"));
-        }
+//     onload () {
+//         // warehouse query if company
+//         // Finbyz changes: Override default warehouse filter
+//         if (this.frm.fields_dict.company) {
+//             // var me = this;
+//             // erpnext.queries.setup_queries(this.frm, "Warehouse", function (doc) {
+//             //     return {
+//             //         filters: [
+//             //             ["Warehouse", "is_group", "=", 0]
+//             //         ]
+//             //     }
+//             // });
+//         }
+//     }
+//     show_stock_ledger () {
+//         var me = this;
+//         if (this.frm.doc.docstatus === 1) {
+//             cur_frm.add_custom_button(__("Stock Ledger"), function () {
+//                 frappe.route_options = {
+//                     voucher_no: me.frm.doc.name,
+//                     from_date: me.frm.doc.posting_date,
+//                     to_date: me.frm.doc.posting_date,
+//                     company: me.frm.doc.company
+//                 };
+//                 frappe.set_route("query-report", "Stock Ledger");
+//             }, __("View"));
+//         }
 
-    }
-}
+//     }
+// }
 
 // extend_cscript(cur_frm.cscript, new erpnext.stock.StockEntry({ frm: cur_frm }));
 
