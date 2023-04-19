@@ -198,14 +198,14 @@ doctype_js = {
 # after_migrate = [
 # 	'frappe.website.doctype.website_theme.website_theme.generate_theme_files_if_not_exist'
 # ]
-override_doctype_class = {
-	"SubcontractingController" : "chemical.chemical.override_class.SubcontractingController.SubcontractingController",
-	"SellingController":"chemical.chemical.override_class.SellingController.SellingController",
-	"BuyingController":"chemical.chemical.override_class.BuyingController.BuyingController",
-	"Work Order" : "chemical.chemical.override_class.WorkOrder.WorkOrder",
-	"Stock Entry":"chemical.chemical.override_class.stock_entry.NewStockEntry",
-	"Quality Inspection" : "chemical.chemical.override_class.QualityInspection.QualityInspection"
-}
+# override_doctype_class = {
+# 	"SubcontractingController" : "chemical.chemical.override_class.SubcontractingController.SubcontractingController",
+# 	"SellingController":"chemical.chemical.override_class.SellingController.SellingController",
+# 	"BuyingController":"chemical.chemical.override_class.BuyingController.BuyingController",
+# 	"Work Order" : "chemical.chemical.override_class.WorkOrder.WorkOrder",
+# 	"Stock Entry":"chemical.chemical.override_class.stock_entry.NewStockEntry",
+# 	"Quality Inspection" : "chemical.chemical.override_class.QualityInspection.QualityInspection"
+# }
 
 override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
@@ -268,8 +268,8 @@ doc_events = {
 			"chemical.chemical.doc_events.stock_entry.on_update_after_submit",
 		]
 	},
-	"Batch": {
-		'before_naming': "chemical.batch_valuation.override_batch_autoname",
+	 "Batch":{
+    		"before_naming":"chemical.api.before_naming"
 	},
 	"Purchase Receipt": {
 		"onload":"chemical.chemical.doc_events.purchase_receipt.onload",
@@ -391,8 +391,8 @@ from chemical.batch_valuation_overrides import get_supplied_items_cost,set_incom
 # from erpnext.stock import utils
 # utils.get_incoming_rate =  get_incoming_rate
 
-import erpnext
-erpnext.stock.utils.get_incoming_rate = get_incoming_rate
+# import erpnext
+# erpnext.stock.utils.get_incoming_rate = get_incoming_rate
 
 # stock_ledger
 # from erpnext.stock.stock_ledger import update_entries_after
