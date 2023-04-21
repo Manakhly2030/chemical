@@ -2,8 +2,29 @@
 // For license information, please see license.txt
 /* eslint-disable */
 
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+};
+
 frappe.query_reports["Batch Wise Balance Chemical"] = {
 	onload: function(report){
+		var item_code = getUrlParameter("item_code");
+		var warehouse = getUrlParameter("warehouse");
+		console.log(getUrlParameter("item_code"))
+		console.log(warehouse)
+		if(item_code){
+			setTimeout(()=>{
+				frappe.query_report.set_filter_value('item_code', item_code);
+			},150)
+		}
+		if(warehouse){
+			setTimeout(()=>{
+				frappe.query_report.set_filter_value('warehouse', warehouse);
+			},150)
+		}
 		frappe.call({
 			method:"chemical.chemical.report.stock_ledger_chemical.stock_ledger_chemical.show_party_hidden",
 			callback: function(r){

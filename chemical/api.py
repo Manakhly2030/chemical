@@ -925,7 +925,9 @@ def make_batches(self, warehouse_field):
                             supplier=getattr(self, "supplier", None),
                             reference_doctype=self.doctype,
                             reference_name=self.name,
-                            concentration = d.get("concentration")
+                            concentration = d.get("concentration"),
+                            lot_no = d.get("lot_no"),
+                            valuation_rate = d.get("valuation_rate")
                         )
                     )
                     .insert()
