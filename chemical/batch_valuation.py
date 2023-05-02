@@ -204,6 +204,8 @@ def make_batches(self, warehouse_field):
 				batch.insert()
 				row.batch_no = batch.name
 
+
+
 def delete_batches(self, warehouse):
 	from frappe.model.delete_doc import check_if_doc_is_linked
 	
