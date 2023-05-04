@@ -7,7 +7,6 @@ import frappe, erpnext
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import nowtime, flt, cint, getdate, get_fullname, get_url_to_form
-from erpnext.stock.utils import get_incoming_rate
 from erpnext.stock.stock_ledger import get_valuation_rate
 from frappe.model.mapper import get_mapped_doc
 from finbyzerp.api import get_fiscal, naming_series_name
@@ -359,5 +358,29 @@ def get_sales_order(doctype, txt, searchfield, start, page_len, filters):
 def get_sample_no(parent,item_code):
 	value = frappe.db.get_value("Sales Order Item", {'parent': parent,'item_code': item_code}, 'outward_sample')
 	return value
-	
-	
+
+import frappe, erpnext
+from frappe import _
+import json
+from frappe.utils import flt, cstr, nowdate, nowtime, cint
+
+def get_incoming_rate(args, raise_error_if_no_rate=True):
+	"""Get Incoming Rate based on valuation method"""
+	from erpnext.stock.stock_ledger import get_previous_sle, get_valuation_rate
+	if isinstance(args, str):
+		args = json.loads(args)
+
+	in_rate = 0
+	#finbyz changes
+	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
+
+	#finbyz changes
+	if args.get("batch_no") :
+		in_rate = get_batch_rate(args.get("batch_no"))	
+	return in_rate
+
+def get_batch_rate(batch_no):
+	"""Get Batch Valuation Rate of Batch No"""
+
+	return flt(frappe.db.sql("""SELECT valuation_rate FROM `tabBatch` 
+		WHERE name = %s """, batch_no)[0][0])
