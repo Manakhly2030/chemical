@@ -31,9 +31,9 @@ from chemical.chemical.doc_events.work_order import get_status, update_work_orde
 # accounts_controller.get_due_date = get_due_date
 
 # overide reason bcz raw material changes on change event of fg_completed_qty
-# from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
-# from chemical.chemical.doc_events.work_order import get_items
-# StockEntry.get_items = get_items
+from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+from chemical.chemical.doc_events.work_order import get_items
+StockEntry.get_items = get_items
 
 # import erpnext
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
@@ -362,7 +362,9 @@ override_doctype_dashboards = {
 	"Quotation": "chemical.chemical.dashboard.quotation.get_data",
 	"Lead": "chemical.chemical.dashboard.lead.get_data"
 }
-
+from erpnext.controllers.stock_controller import StockController
+from chemical.api import make_batches as make_batches_api
+StockController.make_batches = make_batches_api
 #Work Order Summary Report Override From Finbyz Dashboard For Chart
 # from chemical.chemical.report.work_order_summary import execute as wos_execute
 # from finbyz_dashboard.finbyz_dashboard.report.work_order_summary import work_order_summary
@@ -405,7 +407,3 @@ from chemical.batch_valuation_overrides import get_supplied_items_cost,set_incom
 # from erpnext.stock.doctype.stock_reconciliation import stock_reconciliation
 # from chemical.chemical.doc_events.stock_reconciliation import get_stock_balance_for
 # stock_reconciliation.get_stock_balance_for = get_stock_balance_for
-
-from erpnext.controllers.stock_controller import StockController
-from chemical.api import make_batches
-StockController.make_batches = make_batches
