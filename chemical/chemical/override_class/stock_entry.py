@@ -139,7 +139,8 @@ class NewStockEntry(StockController):
             self.fg_completed_qty = 0.0
 
         if self._action == "submit":
-            self.make_batches("t_warehouse")
+            if self.purpose != ['Material Transfer', 'Material Transfer for Manufacture']:
+            make_batches(self , "t_warehouse")
         else:
             set_batch_nos(self, "s_warehouse")
 
