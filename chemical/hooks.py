@@ -252,7 +252,7 @@ doc_events = {
 			"chemical.chemical.doc_events.stock_entry.before_submit",
 		],
 		"on_submit": [
-			"chemical.batch_valuation.stock_entry_on_submit",
+			# "chemical.batch_valuation.stock_entry_on_submit",
 			"chemical.chemical.doc_events.stock_entry.stock_entry_on_submit",
 		],
 		"before_cancel":[
