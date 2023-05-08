@@ -35,6 +35,7 @@ def stock_entry_validate(self, method):
 	if batch_wise_cost():
 		if self.purpose not in ['Material Transfer', 'Material Transfer for Manufacture']:
 			make_batches(self, 't_warehouse')
+			set_incoming_rate(self)
 			
 	if self.purpose in ['Repack','Manufacture','Material Issue']:
 		self.get_stock_and_rate()
