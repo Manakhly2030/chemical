@@ -35,7 +35,7 @@ def stock_entry_validate(self, method):
 	if batch_wise_cost():
 		if self.purpose not in ['Material Transfer', 'Material Transfer for Manufacture']:
 			make_batches(self, 't_warehouse')
-			set_incoming_rate(self)
+			
 			
 	if self.purpose in ['Repack','Manufacture','Material Issue']:
 		self.get_stock_and_rate()
@@ -399,16 +399,15 @@ def get_batch(doctype, txt, searchfield, start, page_len, filters):
 def set_incoming_rate(self):
 	precision = cint(frappe.db.get_default("float_precision")) 
 	for d in self.items:
-		if d.source_warehouse:
+		if d.s_warehouse:
 			args = self.get_args_for_incoming_rate(d)
 			d.basic_rate = flt(get_incoming_rate(args), precision)
-		elif not d.source_warehouse:
+		elif not d.s_warehouse:
 			d.basic_rate = 0.0
 		elif self.warehouse and not d.basic_rate:
 			d.basic_rate = flt(get_valuation_rate(d.item_code, self.warehouse,
 				self.doctype, d.name, 1,
 				currency=erpnext.get_company_currency(self.company)), precision)
-
 		d.basic_amount = d.basic_rate * d.qty
 
 import frappe, erpnext
