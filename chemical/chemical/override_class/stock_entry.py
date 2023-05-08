@@ -10,7 +10,7 @@ from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.query_builder.functions import Sum
 from frappe.utils import cint, comma_or, cstr, flt, format_time, formatdate, getdate, nowdate
-
+from chemical.api import make_batches
 import erpnext
 from erpnext.accounts.general_ledger import process_gl_map
 from erpnext.controllers.taxes_and_totals import init_landed_taxes_and_totals
@@ -139,8 +139,8 @@ class NewStockEntry(StockController):
             self.fg_completed_qty = 0.0
 
         if self._action == "submit":
-            if self.purpose != ['Material Transfer', 'Material Transfer for Manufacture']:
-            make_batches(self , "t_warehouse")
+            if self.purpose not in ['Material Transfer', 'Material Transfer for Manufacture']:
+                make_batches(self , "t_warehouse")
         else:
             set_batch_nos(self, "s_warehouse")
 
