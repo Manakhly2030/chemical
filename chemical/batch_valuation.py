@@ -5,7 +5,7 @@ import frappe,datetime
 from frappe import _
 from frappe.utils import flt, cint, cstr
 from frappe.desk.reportview import get_match_cond
-
+from erpnext.stock.stock_ledger import get_valuation_rate
 
 def batch_wise_cost():
 	return cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
@@ -43,6 +43,8 @@ def stock_entry_validate(self, method):
 
 def validate_additional_cost(self,method):
 	if self.purpose in ['Repack','Manufacture'] and self._action == "submit":
+		# frappe.throw(str(self.value_difference))
+		# frappe.throw(str(self.total_additional_costs))
 		diff = abs(round(flt(self.value_difference,1)) - (round(flt(self.total_additional_costs,1))))
 		if diff > 5:
 			frappe.throw(f"ValuationError: Value difference {diff} between incoming and outgoing amount is higher than additional cost")
@@ -391,3 +393,45 @@ def get_batch(doctype, txt, searchfield, start, page_len, filters):
 				group by batch_no having sum(sle.actual_qty) > 0
 				order by batch.expiry_date, sle.batch_no desc
 				limit %(start)s, %(page_len)s""".format(cond, match_conditions=get_match_cond(doctype), searchfields=searchfields), args)
+
+
+def set_incoming_rate(self):
+	precision = cint(frappe.db.get_default("float_precision")) 
+	for d in self.items:
+		if d.source_warehouse:
+			args = self.get_args_for_incoming_rate(d)
+			d.basic_rate = flt(get_incoming_rate(args), precision)
+		elif not d.source_warehouse:
+			d.basic_rate = 0.0
+		elif self.warehouse and not d.basic_rate:
+			d.basic_rate = flt(get_valuation_rate(d.item_code, self.warehouse,
+				self.doctype, d.name, 1,
+				currency=erpnext.get_company_currency(self.company)), precision)
+
+		d.basic_amount = d.basic_rate * d.qty
+
+import frappe, erpnext
+from frappe import _
+import json
+from frappe.utils import flt, cstr, nowdate, nowtime, cint
+
+def get_incoming_rate(args, raise_error_if_no_rate=True):
+	"""Get Incoming Rate based on valuation method"""
+	from erpnext.stock.stock_ledger import get_previous_sle, get_valuation_rate
+	if isinstance(args, str):
+		args = json.loads(args)
+
+	in_rate = 0
+	#finbyz changes
+	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
+
+	#finbyz changes
+	if args.get("batch_no") :
+		in_rate = get_batch_rate(args.get("batch_no"))	
+	return in_rate
+
+def get_batch_rate(batch_no):
+	"""Get Batch Valuation Rate of Batch No"""
+
+	return flt(frappe.db.sql("""SELECT valuation_rate FROM `tabBatch` 
+		WHERE name = %s """, batch_no)[0][0])
