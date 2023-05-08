@@ -154,10 +154,13 @@ def set_basic_rate_for_t_warehouse(self):
 
 def make_batches(self, warehouse_field):
 	# import datetime
+	
 	if self._action == "submit":
 		validate_concentration(self, warehouse_field)
 
 		for row in self.items:
+			if self.doctype == 'Stock Entry' and self.purpose in ['Material Transfer', 'Material Transfer for Manufacture']:
+				continue
 			if not row.get(warehouse_field):
 				continue
 
