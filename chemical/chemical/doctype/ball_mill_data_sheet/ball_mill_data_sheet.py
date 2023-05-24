@@ -50,7 +50,7 @@ class BallMillDataSheet(Document):
 			elif not d.source_warehouse:
 				d.basic_rate = 0.0
 			elif self.warehouse and not d.basic_rate:
-				d.basic_rate = flt(get_valuation_rate(d.item_code, self.warehouse,
+				d.basic_rate = flt(get_valuation_rate(d.item_name, self.warehouse,
 					self.doctype, d.name, 1,
 					currency=erpnext.get_company_currency(self.company)), precision)
 
