@@ -44,7 +44,7 @@ class BallMillDataSheet(Document):
 	def set_incoming_rate(self):
 		precision = cint(frappe.db.get_default("float_precision")) 
 		for d in self.items:
-			if d.source_warehouse:
+			if d.source_warehouse and d.batch_no:
 				args = self.get_args_for_incoming_rate(d)
 				d.basic_rate = flt(get_incoming_rate(args), precision)
 			elif not d.source_warehouse:
