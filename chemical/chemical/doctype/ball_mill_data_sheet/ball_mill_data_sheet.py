@@ -48,8 +48,8 @@ class BallMillDataSheet(Document):
 			if d.source_warehouse and d.batch_no:
 				args = self.get_args_for_incoming_rate(d)
 				d.basic_rate = get_incoming_rate((args), precision)
-			elif d.warehouse and not d.basic_rate:
-				d.basic_rate = get_valuation_rate(d.item_code, d.warehouse,
+			elif d.source_warehouse and not d.basic_rate:
+				d.basic_rate = get_valuation_rate(d.item_code, d.source_warehouse,
 					self.doctype, d.name, 1,
 					currency=erpnext.get_company_currency((self.company), precision))
 			elif not d.source_warehouse:
