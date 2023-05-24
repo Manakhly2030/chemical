@@ -40,23 +40,22 @@ class BallMillDataSheet(Document):
 		self.set_lot_no_for_list_view()
 		if self._action == 'submit':
 			self.validate_qty()
-
+			
 	def set_incoming_rate(self):
 		precision = cint(frappe.db.get_default("float_precision")) 
+		sum_qty_uv, sum_quantity = 0, 0 # uncomment_for_next_development
 		for d in self.items:
 			if d.source_warehouse and d.batch_no:
 				args = self.get_args_for_incoming_rate(d)
-				d.basic_rate = flt(get_incoming_rate(args), precision)
+				d.basic_rate = get_incoming_rate((args), precision)
+			elif d.warehouse and not d.basic_rate:
+				d.basic_rate = get_valuation_rate(d.item_code, d.warehouse,
+					self.doctype, d.name, 1,
+					currency=erpnext.get_company_currency((self.company), precision))
 			elif not d.source_warehouse:
 				d.basic_rate = 0.0
-			elif d.warehouse and not d.basic_rate:
-				d.basic_rate = flt(get_valuation_rate(d.item_name, d.warehouse,
-					self.doctype, d.name, 1,
-					currency=erpnext.get_company_currency(self.company)), precision)
-
+			
 			d.basic_amount = d.basic_rate * d.qty
-	
-	
 	def get_args_for_incoming_rate(self, item):
 		warehouse = item.source_warehouse or self.warehouse
 		return frappe._dict({
