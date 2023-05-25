@@ -39,9 +39,9 @@ StockEntry.get_items = get_items
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
 
 #quality inspection override for sample
-# from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection #done
-# from chemical.chemical.doc_events.quality_inspection import update_qc_reference #done
-# QualityInspection.update_qc_reference = update_qc_reference #done
+from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection #done
+from chemical.chemical.doc_events.quality_inspection import update_qc_reference #done
+QualityInspection.update_qc_reference = update_qc_reference #done
 
 app_name = "chemical"
 app_title = "Chemical"
@@ -341,6 +341,10 @@ doc_events = {
 		"onload":"chemical.chemical.doc_events.sales_order.onload",
 		"on_cancel": "chemical.api.so_on_cancel",
 		"before_validate": "chemical.chemical.doc_events.sales_order.validate"
+	},
+    "Quality Inspection": {
+       "on_submit": "chemical.chemical.doc_events.quality_inspection.validate",
+       "on_cancel": "chemical.chemical.doc_events.quality_inspection.on_cancel"
 	},
 	("Outward Sample","Ball Mill Data Sheet","Outward Tracking"):{
 		"on_submit":"chemical.chemical.doc_events.outward_sample.on_submit",
