@@ -1,5 +1,5 @@
 {
- "add_total_row": 0,
+ "add_total_row": 1,
  "columns": [],
  "creation": "2020-07-11 15:56:39.649472",
  "disable_prepared_report": 1,
@@ -10,7 +10,7 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": "",
- "modified": "2022-08-04 10:23:13.654298",
+ "modified": "2023-05-20 13:36:51.435567",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Gross Profit Chemical",

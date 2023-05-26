@@ -200,7 +200,7 @@ def price_to_rate(self):
 		concentration = item.concentration or 100	
 		if item.basic_rate:
 			if maintain_as_is_stock:
-				item.price = flt(item.basic_rate)*100/concentration
+				item.price = flt(item.basic_rate)*100/flt(concentration)
 			else:
 				item.price = flt(item.basic_rate)	
 def cal_target_yield_cons(self):

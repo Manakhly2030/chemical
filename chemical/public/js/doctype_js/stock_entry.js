@@ -922,13 +922,13 @@ erpnext.stock.select_batch_and_serial_no = (frm, item) => {
 
 }
 
-frappe.ui.form.on("Stock Entry", {
-    stock_entry_type: function(frm){
-        if(frm.doc.stock_entry_type == "Manufacture"){
-            cur_frm.set_value("inspection_required", 1)
-        }
-        else{
-            cur_frm.set_value("inspection_required", 0)
-        }
-    }
-})
+// frappe.ui.form.on("Stock Entry", {
+//     stock_entry_type: function(frm){
+//         if(frm.doc.stock_entry_type == "Manufacture"){
+//             cur_frm.set_value("inspection_required", 1)
+//         }
+//         else{
+//             cur_frm.set_value("inspection_required", 0)
+//         }
+//     }
+// })

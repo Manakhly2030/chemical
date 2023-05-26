@@ -1,5 +1,3 @@
-# Latest Code from Chemical (Stash before Pull)
-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
@@ -40,7 +38,6 @@ def execute(filters=None):
 				"base_amount",
 				"buying_amount",
 				"batch_no",
-				"lot_no",
 				"gross_profit",
 				"gross_profit_percent",
 				"project",
@@ -258,12 +255,7 @@ def get_columns(group_wise_columns, filters):
 				"options": "Item Group",
 				"width": 100,
 			},
-			"brand": {
-				"label": _("Brand"), 
-				"fieldtype": "Link", 
-				"options": "Brand", 
-				"width": 100
-			},
+			"brand": {"label": _("Brand"), "fieldtype": "Link", "options": "Brand", "width": 100},
 			"description": {
 				"label": _("Description"),
 				"fieldname": "description",
@@ -277,24 +269,8 @@ def get_columns(group_wise_columns, filters):
 				"options": "warehouse",
 				"width": 100,
 			},
-			"qty": {
-				"label": _("Qty"), 
-				"fieldname": "qty", 
-				"fieldtype": "Float",
-				"width": 80
-			},
-			"batch_no": {
-				"label": _("Batch No"), 
-				"fieldname": "batch_no", 
-				"fieldtype": "Data", 
-				"width": 100
-			},
-			"lot_no": {
-				"label": _("Lot No"), 
-				"fieldname": "lot_no", 
-				"fieldtype": "Data", 
-				"width": 100
-			},
+			"qty": {"label": _("Qty"), "fieldname": "qty", "fieldtype": "Float", "width": 80},
+			"batch_no": {"label": _("Batch No"), "fieldname": "batch_no", "fieldtype": "Data", "width": 80},
 			"base_rate": {
 				"label": _("Avg. Selling Rate"),
 				"fieldname": "avg._selling_rate",
@@ -417,8 +393,7 @@ def get_column_names():
 			"gross_profit": "gross_profit",
 			"gross_profit_percent": "gross_profit_%",
 			"project": "project",
-			"batch_no":"batch_no",
-			"lot_no":"lot_no",
+			"batch_no":"batch_no"
 		}
 	)
 
@@ -465,7 +440,7 @@ class GrossProfitGenerator(object):
 				product_bundles = self.product_bundles.get("Delivery Note", {}).get(
 					row.delivery_note, frappe._dict()
 				)
-				row.item_row = row.dn_detail
+
 
 			# get buying amount
 			if row.item_code in product_bundles:
@@ -519,19 +494,21 @@ class GrossProfitGenerator(object):
 				new_row = self.set_average_rate(new_row)
 				self.grouped_data.append(new_row)
 			else:
-				for i, row in enumerate(self.grouped[key]):
-					if row.indent == 1.0:
-						if (
-							row.parent in self.returned_invoices and row.item_code in self.returned_invoices[row.parent]
-						):
-							returned_item_rows = self.returned_invoices[row.parent][row.item_code]
-							for returned_item_row in returned_item_rows:
-								row.qty += flt(returned_item_row.qty)
-								row.base_amount += flt(returned_item_row.base_amount, self.currency_precision)
-							row.buying_amount = flt(flt(row.qty) * flt(row.buying_rate), self.currency_precision)
-						if flt(row.qty) or row.base_amount:
-							row = self.set_average_rate(row)
-							self.grouped_data.append(row)
+				pass
+				# FInbyz Changes as it was double counting return entries.
+				# for i, row in enumerate(self.grouped[key]):
+				# 	if row.indent == 1.0:
+				# 		if (
+				# 			row.parent in self.returned_invoices and row.item_code in self.returned_invoices[row.parent]
+				# 		):
+				# 			returned_item_rows = self.returned_invoices[row.parent][row.item_code]
+				# 			for returned_item_row in returned_item_rows:
+				# 				row.qty += flt(returned_item_row.qty)
+				# 				row.base_amount += flt(returned_item_row.base_amount, self.currency_precision)
+				# 			row.buying_amount = flt(flt(row.qty) * flt(row.buying_rate), self.currency_precision)
+				# 		if flt(row.qty) or row.base_amount:
+				# 			row = self.set_average_rate(row)
+				# 			self.grouped_data.append(row)
 
 	def is_not_invoice_row(self, row):
 		return (self.filters.get("group_by") == "Invoice" and row.indent != 0.0) or self.filters.get(
@@ -608,7 +585,11 @@ class GrossProfitGenerator(object):
 			return flt(row.qty) * item_rate
 
 		else:
-			dn_list=frappe.db.get_all("Delivery Note Item", {'item_code':row.item_code,'against_sales_invoice':row.parent,'si_detail':row.name},['warehouse','parent','name'])
+			item_row = None
+			dn_list=frappe.db.get_all("Delivery Note Item", {'item_code':row.item_code,'against_sales_invoice':row.parent,'si_detail':row.item_row, 'docstatus': 1},['warehouse','parent','name'],order_by="`idx` DESC",)
+			dn_name_list = []
+			for dn in dn_list:
+				dn_name_list.append(dn.name)
 			if dn_list:
 				row.warehouse = dn_list[0].warehouse
 				row.dn_detail = dn_list[0].name
@@ -616,21 +597,28 @@ class GrossProfitGenerator(object):
 
 			my_sle = self.sle.get((item_code, row.warehouse))
 			if (row.update_stock or row.dn_detail) and my_sle:
-				parenttype, parent = row.parenttype, row.parent
+				parenttype, parent,item_row = row.parenttype, row.parent, row.item_row
 				if row.dn_detail:
-					parenttype, parent = "Delivery Note", row.delivery_note
-
+					parenttype, parent, item_row = "Delivery Note", row.delivery_note, row.dn_detail
+				dn_name_list.append(item_row)
 				for i, sle in enumerate(my_sle):
 					# find the stock valution rate from stock ledger entry
 					if (
 						sle.voucher_type == parenttype
 						and parent == sle.voucher_no
-						and sle.voucher_detail_no == row.item_row
+						and sle.voucher_detail_no == item_row
 					):
-						previous_stock_value = len(my_sle) > i + 1 and flt(my_sle[i + 1].stock_value) or 0.0
+						total_qty = frappe.db.get_value("Stock Ledger Entry", {'voucher_type': parenttype, 'voucher_no': parent,'item_code': row.item_code, "voucher_detail_no": ["in",tuple(dn_name_list)], 'actual_qty' : ['<', 0]}, "SUM(actual_qty) as qty")
 
+						j = i + 1
+						while len(dn_list) > 1 and ((sle.voucher_detail_no == my_sle[j].voucher_detail_no) or (my_sle[j].voucher_detail_no in dn_name_list)):
+							j += 1
+						previous_stock_value = len(my_sle) > i + 1 and flt(my_sle[j].stock_value) or 0.0
 						if previous_stock_value:
-							return (previous_stock_value - flt(sle.stock_value)) * flt(row.qty) / abs(flt(sle.qty))
+							if total_qty and len(dn_list) > 1:
+								return (previous_stock_value - flt(sle.stock_value))* (flt(row.qty)) / abs(total_qty)
+							else:
+								return (previous_stock_value - flt(sle.stock_value))
 						else:
 							return flt(row.qty) * self.get_average_buying_rate(row, item_code)
 			else:
@@ -647,7 +635,7 @@ class GrossProfitGenerator(object):
 					"voucher_no": row.parent,
 					"allow_zero_valuation": True,
 					"company": self.filters.company,
-					'batch_no': row.batch_no
+					'batch_no': row.first_batch
 				}
 			)
 
@@ -687,9 +675,9 @@ class GrossProfitGenerator(object):
 		if self.filters.company:
 			conditions += " and `tabSales Invoice`.company = %(company)s"
 		if self.filters.from_date:
-			conditions += " and posting_date >= %(from_date)s"
+			conditions += " and `tabSales Invoice`.posting_date >= %(from_date)s"
 		if self.filters.to_date:
-			conditions += " and posting_date <= %(to_date)s"
+			conditions += " and `tabSales Invoice`.posting_date <= %(to_date)s"
 
 		if self.filters.group_by=="Sales Person":
 			sales_person_cols = ", sales.sales_person, sales.allocated_amount, sales.incentives"
@@ -703,6 +691,9 @@ class GrossProfitGenerator(object):
 
 		if self.filters.get("item_code"):
 			conditions += " and `tabSales Invoice Item`.item_code = %(item_code)s"
+
+		if not self.filters.get('show_return_entries'):
+			conditions += "and `tabSales Invoice`.is_return = 0"
 
 		self.si_list = frappe.db.sql("""
 			select
@@ -743,51 +734,44 @@ class GrossProfitGenerator(object):
 	def set_missing_batch(self):
 		conditions = ""
 		if self.filters.company:
-			conditions += " and dn.company = %(company)s"
+			conditions += " and `tabDelivery Note`.company = %(company)s"
 		if self.filters.from_date:
-			conditions += " and dn.posting_date >= %(from_date)s"
+			conditions += " and `tabDelivery Note`.posting_date >= %(from_date)s"
 		if self.filters.to_date:
-			conditions += " and dn.posting_date <= %(to_date)s"
+			conditions += " and `tabDelivery Note`.posting_date <= %(to_date)s"
 		if self.filters.get("sales_invoice"):
-			conditions += " and dni.against_sales_invoice = %(sales_invoice)s"
+			conditions += " and `tabDelivery Note Item`.against_sales_invoice = %(sales_invoice)s"
 
 		dn_list = frappe.db.sql("""
 			select
-				dni.name, dni.item_code,
-				dni.batch_no,dni.si_detail,batch.lot_no
+				`tabDelivery Note Item`.name, `tabDelivery Note Item`.item_code,
+				`tabDelivery Note Item`.batch_no, `tabDelivery Note Item`.si_detail
 			from
-				`tabDelivery Note` as dn 
-				inner join `tabDelivery Note Item` as dni
-					on dni.parent = dn.name
-				LEFT Join `tabItem` as item ON dni.item_code = item.name
-				LEFT Join `tabBatch` as batch ON dni.batch_no = batch.name
+				`tabDelivery Note`
+				INNER JOIN `tabDelivery Note Item` on `tabDelivery Note Item`.parent = `tabDelivery Note`.name
+				LEFT Join `tabItem` ON `tabDelivery Note Item`.item_code = `tabItem`.name
 			where
-				dn.docstatus=1  {conditions} 
+				`tabDelivery Note`.docstatus=1 {conditions} 
 			order by
-				dn.posting_date desc, dn.posting_time desc""".format(
+				`tabDelivery Note`.posting_date desc, `tabDelivery Note`.posting_time desc""".format(
 				conditions=conditions,
 			),
 			self.filters,
 			as_dict=1,
 		)
+	
 		batch_map={}
-		lot_map={}
 		for each in dn_list:
 			batch_map.setdefault(each.si_detail,[])
-			lot_map.setdefault(each.si_detail,[])
 			batch_map[each.si_detail].append(each.get('batch_no'))
-			if each.get('lot_no'):
-				lot_map[each.si_detail].append(each.get('lot_no'))
-
 		
 		for row in self.si_list:
 			if row.has_batch_no and not row.batch_no:
 				if batch_map.get(row.item_row):
 					row.batch_no = ' , '.join(list(set(batch_map.get(row.item_row))))
 					row.batch_no = """<a href={batch_url} >{batch_no}</a>""".format(batch_url=f'''https://{frappe.local.site}/app/batch/view/list%3Fbatch_id%3D%5B"in"%2C"{'%252C'.join(list(set(batch_map.get(row.item_row))))}"%5D''',batch_no=' , '.join(list(set(batch_map.get(row.item_row)))))
-			if lot_map.get(row.item_row):
-				row.lot_no = ' , '.join(list(set(lot_map.get(row.item_row))))
-
+					row.batch_list = batch_map.get(row.item_row)
+					row.first_batch = batch_map.get(row.item_row)[0]
 
 	def group_items_by_invoice(self):
 		"""
@@ -840,7 +824,6 @@ class GrossProfitGenerator(object):
 				"delivery_note": None,
 				"qty": None,
 				"batch_no":None,
-				"lot_no":None,
 				"item_row": None,
 				"is_return": row.is_return,
 				"cost_center": row.cost_center,
@@ -896,7 +879,7 @@ class GrossProfitGenerator(object):
 
 	def load_stock_ledger_entries(self):
 		res = frappe.db.sql(
-			"""select item_code, voucher_type, voucher_no,
+			"""select item_code, voucher_type, voucher_no, name,
 				voucher_detail_no, stock_value, warehouse, actual_qty as qty
 			from `tabStock Ledger Entry`
 			where company=%(company)s and is_cancelled = 0

@@ -419,7 +419,7 @@ def se_repack_cal_rate_qty(self):
 				if d.batch_no:
 					concentration = frappe.db.get_value("Batch",d.batch_no,"concentration") or 100
 				else:
-					concentration = d.concentration or 100
+					concentration = flt(d.concentration) or 100
 			if d.get('packing_size') and d.get('no_of_packages'):
 				d.qty = (d.packing_size * d.no_of_packages)
 				if maintain_as_is_stock:
@@ -433,7 +433,7 @@ def se_repack_cal_rate_qty(self):
 			else:
 				if maintain_as_is_stock:
 					if d.quantity:
-						d.qty = flt((d.quantity * 100.0) / concentration)
+						d.qty = flt((d.quantity * 100.0) / flt(concentration))
 
 					if d.qty and not d.quantity:
 						d.quantity = d.qty * concentration / 100.0
@@ -476,7 +476,7 @@ def se_cal_rate_qty(self):
 		else:
 			if maintain_as_is_stock:
 				if d.quantity:
-					d.qty = flt((d.quantity * 100.0) / concentration)
+					d.qty = flt((d.quantity * 100.0) / flt(concentration))
 
 				if d.qty and not d.quantity:
 					d.quantity = d.qty * concentration / 100.0
