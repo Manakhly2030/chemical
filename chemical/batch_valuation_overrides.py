@@ -124,7 +124,8 @@ def process_sle(self, sle):
 				self.wh_data.stock_value = sum((flt(batch[0]) * flt(batch[1]) for batch in self.wh_data.stock_queue))
 
 	# rounding as per precision
-	self.wh_data.stock_value = flt(self.wh_data.stock_value, self.precision)
+	precision = frappe.get_precision("Stock Entry Detail", "qty")
+	self.wh_data.stock_value = flt(self.wh_data.stock_value, precision)
 	if not self.wh_data.qty_after_transaction:
 		self.wh_data.stock_value = 0.0
 	stock_value_difference = self.wh_data.stock_value - self.wh_data.prev_stock_value
