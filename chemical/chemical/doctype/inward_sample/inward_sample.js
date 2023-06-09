@@ -68,6 +68,13 @@ frappe.ui.form.on('Inward Sample', {
 				if (r.message) {
 					frm.set_value('party_name', r.message.party_name);
 				}
+				if (frm.doc.party){
+					frappe.db.get_value(frm.doc.link_to , frm.doc.party , 'alias' , (d) =>{
+						if (d.alias){
+							frm.set_value('party_alias', d.alias);
+						}
+					});
+				}
 			}
 		});
 		frm.set_value("party_alias", frm.doc.party)
