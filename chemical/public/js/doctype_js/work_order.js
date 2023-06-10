@@ -67,7 +67,7 @@ frappe.ui.form.on("Work Order", {
 	},
 	refresh: function(frm){
 		$(".form-inner-toolbar").find("button[data-label=Finish]").css({"float":"right"})
-		if(frm.doc.status != 'Completed' && !frm.doc.skip_transfer && frm.doc.docstatus == 1){
+		if(frm.doc.status != 'Completed' && !frm.doc.skip_transfer && frm.doc.docstatus == 1 && frm.doc.material_transferred_for_manufacturing != frm.doc.qty){
 			var transfer_btn = frm.add_custom_button(__('Transfer Material'), function() {
 				erpnext.work_order.make_se(frm, 'Material Transfer for Manufacture');
 			});
