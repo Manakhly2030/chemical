@@ -94,17 +94,7 @@ frappe.ui.form.on("BOM", {
             frm.doc.multiple_finish_item = []
         }
 	},
-	setup:function(frm){
-        frm.set_query("item_code", "items", function(doc) {
-			return {
-				query: "erpnext.manufacturing.doctype.bom.bom.item_query",
-				filters: {
-					"item_code": doc.item,
-                    "is_purchase_item":1
-				}
-			};
-		});
-    },
+	
     /* cal_operational_cost: function (frm) {
         let op_cost = flt(frm.doc.operational_cost * frm.doc.quantity);
         let total_cost = flt(op_cost + frm.doc.total_cost)
