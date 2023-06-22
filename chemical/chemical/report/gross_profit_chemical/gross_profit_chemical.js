@@ -38,6 +38,12 @@ frappe.query_reports["Gross Profit Chemical"] = {
 			"options": "Invoice\nItem Code\nItem Group\nBrand\nWarehouse\nCustomer\nCustomer Group\nTerritory\nSales Person\nProject",
 			"default": "Invoice"
 		},
+		{
+			"fieldname":"show_return_entries",
+			"label": __("Show Return Entries"),
+			"fieldtype": "Check",
+			"default": 0
+		},
 	],
 	"tree": true,
 	"name_field": "parent",
