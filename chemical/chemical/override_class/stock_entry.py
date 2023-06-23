@@ -904,7 +904,7 @@ class NewStockEntry(StockController):
             outgoing_items_cost = sum([flt(row.qty) * flt(row.rate) for row in bom_items.values()])
 
         return flt((outgoing_items_cost - scrap_items_cost) / finished_item_qty)
-
+    
     def distribute_additional_costs(self):
         # If no incoming items, set additional costs blank
         if not any(d.item_code for d in self.items if d.t_warehouse):

@@ -131,7 +131,9 @@ doctype_js = {
 
 # before_install = "chemical.install.before_install"
 # after_install = "chemical.install.after_install"
-
+from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
+from chemical.chemical.doc_events.stock_entry import validate_finished_goods
+StockEntry.validate_finished_goods = validate_finished_goods
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config
