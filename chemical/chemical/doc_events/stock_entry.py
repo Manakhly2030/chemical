@@ -933,6 +933,8 @@ def validate_finished_goods(self):
 	
 	bom_multi_doc = frappe.get_doc("BOM", frappe.db.get_value("Work Order" , self.work_order , "bom_no"))
 	production_item = [d.item_code for d in bom_multi_doc.multiple_finish_item]
+	if not production_item:
+		production_item.append(frappe.db.get_value("Work Order",self.work_order , "production_item"))
 	for d in self.get("items"):
 		if d.is_finished_item:
 			if not self.work_order:
