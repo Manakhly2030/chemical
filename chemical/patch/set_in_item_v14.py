@@ -10,3 +10,8 @@ def set_valuation_method():
 
 def set_create_new_batch():
     frappe.db.sql(""" Update `tabItem` Set create_new_batch = 1 Where has_batch_no = 1 """)
+    frappe.db.sql("""
+        UPDATE `tabBatch` 
+        SET use_batchwise_valuation = 1
+        WHERE use_batchwise_valuation = 0
+    """)
