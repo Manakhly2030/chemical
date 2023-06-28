@@ -363,6 +363,7 @@ from frappe import _
 import json
 from frappe.utils import flt, cstr, nowdate, nowtime, cint
 
+from erpnext.stock.stock_ledger import get_batch_incoming_rate
 def get_incoming_rate(args, raise_error_if_no_rate=True):
 	"""Get Incoming Rate based on valuation method"""
 	from erpnext.stock.stock_ledger import get_previous_sle, get_valuation_rate
@@ -375,7 +376,8 @@ def get_incoming_rate(args, raise_error_if_no_rate=True):
 
 	#finbyz changes
 	if args.get("batch_no") :
-		in_rate = get_batch_rate(args.get("batch_no"))	
+		# in_rate = get_batch_rate(args.get("batch_no"))	
+		in_rate = get_batch_incoming_rate(args.get('item_code'), args.get('warehouse'), args.get("batch_no"), args.get("posting_date"), args.get("posting_time"))
 	return in_rate
 
 def get_batch_rate(batch_no):
