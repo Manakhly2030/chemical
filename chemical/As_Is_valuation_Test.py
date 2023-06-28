@@ -15,6 +15,27 @@ from chemical.chemical.doc_events.work_order import make_stock_entry
 #     warehouse =  frappe.db.get_value("Warehouse",{'company':company},"name") #it will Fetch the warehouse of the given Company
 #     return company, warehouse
 
+# Create New Tax Category
+if not frappe.db.exists("Tax Category", "Test Tax Category"):
+    tax_category = frappe.new_doc("Tax Category")
+    tax_category.title = "Test Tax Category"
+    tax_category.gst_state = "Gujarat"
+    tax_category.save()
+
+if not frappe.db.exists("Payment Term", "1 Day Test"):
+    payment_terms = frappe.new_doc("Payment Term")
+    payment_terms.payment_term_name = "1 Day Test"
+    payment_terms.invoice_portion = 100
+    payment_terms.save()
+
+if not frappe.db.exists("Payment Terms Template", "1 Day Test Payment Template"):
+    payment_terms_template = frappe.new_doc("Payment Terms Template")
+    payment_terms_template.template_name = "1 Day Test Payment Template"
+    payment_terms_template.append('terms', {
+        'payment_term': "1 Day Test"
+    })
+    payment_terms_template.save()
+
 #Create New Customer
 if not frappe.db.exists("Customer","Test_Customer_1"):
     customer_create = frappe.get_doc({
@@ -22,7 +43,9 @@ if not frappe.db.exists("Customer","Test_Customer_1"):
         "customer_name":"Test_Customer_1",
         "customer_type":"Company",
         "territory":"All Territories",
-        "customer_group":"All Customer Groups"
+        "customer_group":"All Customer Groups",
+        "tax_category": "Test Tax Category",
+        "payment_terms": "1 Day Test Payment Template"
     })
     customer_create.save()
 
@@ -40,6 +63,11 @@ if not frappe.db.exists("Supplier","Test_Supplier_1"):
 #Create New Item
 company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
 warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
+
+if not frappe.db.exists("UOM", "Kg"):
+    uom = frappe.new_doc("UOM")
+    uom.uom_name = "Kg"
+    uom.save()
     
 if not frappe.db.exists("Item","TEST_ITEM_1"):
     item_create = frappe.new_doc("Item")
@@ -50,6 +78,8 @@ if not frappe.db.exists("Item","TEST_ITEM_1"):
     item_create.include_item_in_manufacturing = 1
     item_create.has_batch_no = 1
     item_create.stock_uom = "Kg"
+    item_create.disabled = 0
+    item_create.create_new_batch = 1
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
     warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
@@ -70,6 +100,8 @@ if not frappe.db.exists("Item","TEST_ITEM_2"):
     item_create.has_batch_no = 1
     item_create.gst_hsn_code = "90319000"
     item_create.stock_uom = "Kg"
+    item_create.disabled = 0
+    item_create.create_new_batch = 1
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
@@ -87,6 +119,8 @@ if not frappe.db.exists("Item","TEST_ITEM_3"):
     item_create.has_batch_no = 1
     item_create.gst_hsn_code = "92092000"
     item_create.stock_uom = "Kg"
+    item_create.disabled = 0
+    item_create.create_new_batch = 1
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
@@ -105,6 +139,8 @@ if not frappe.db.exists("Item","TEST_ITEM_4"):
     item_create.has_batch_no = 1
     item_create.gst_hsn_code = "95030020"
     item_create.stock_uom = "Kg"
+    item_create.disabled = 0
+    item_create.create_new_batch = 1
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
     warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
@@ -125,6 +161,8 @@ if not frappe.db.exists("Item","FINISH_TEST_ITEM"):
     item_create.gst_hsn_code = "998942"
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
+    item_create.disabled = 0
+    item_create.create_new_batch = 1
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
@@ -143,6 +181,8 @@ if not frappe.db.exists("Item","SECOND_FINISH_TEST_ITEM"):
     item_create.gst_hsn_code = "91149091"
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
+    item_create.disabled = 0
+    item_create.create_new_batch = 1
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
     item_create.append("item_defaults",{
             "company":company,
@@ -162,6 +202,8 @@ if not frappe.db.exists("Item","AsIs_Finish_item"):
     item_create.gst_hsn_code = "90308400"
     item_create.stock_uom = "Kg"
     item_create.valuation_rate = 50
+    item_create.disabled = 0
+    item_create.create_new_batch = 1
     company =  frappe.db.get_value("Company",{},"company_name") #it will Fetch the First Name of the Company from the list
     warehouse =  frappe.db.get_value("Warehouse",{'company':company,"warehouse_name":"RAW MATERIAL"},"name") #it will Fetch the warehouse of the given Company
     default_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"RAW MATERIAL"},"name")
@@ -198,6 +240,7 @@ first_pr.posting_date  = frappe.utils.add_days(frappe.utils.nowdate(), -10)
 first_pr.company = company
 first_pr.set_warehouse = warehouse
 first_pr.rejected_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
+first_pr.is_quality_inspection_required = 0
 packaging_material = frappe.db.get_value("Packaging Material",{},"name")
 
 first_pr.append("items",{
@@ -293,6 +336,7 @@ second_pr.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -8)
 second_pr.company = company
 second_pr.set_warehouse = warehouse
 second_pr.rejected_warehouse =frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
+second_pr.is_quality_inspection_required = 0
 
 second_pr.append("items",{
         "item_code":"TEST_ITEM_1",
@@ -387,6 +431,7 @@ third_pr.set_posting_time = 1
 third_pr.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -5)
 third_pr.company = company
 third_pr.set_warehouse = warehouse
+third_pr.is_quality_inspection_required = 0
 
 third_pr.rejected_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
 
@@ -484,7 +529,7 @@ fourth_pr.posting_date = frappe.utils.add_days(frappe.utils.nowdate(), -5)
 fourth_pr.company = company
 fourth_pr.set_warehouse = warehouse
 fourth_pr.rejected_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
-
+fourth_pr.is_quality_inspection_required = 0
 fourth_pr.append("items",{
     "item_code":"TEST_ITEM_4",
     "item_name":"TEST_ITEM_4",
@@ -815,6 +860,7 @@ bom_create.is_multiple_item= 1
 bom_create.total_quantity = 1000
 bom_create.batch_yield= 10
 bom_create.concentration = 100
+bom_create.bom_type1 = "Production BOM"
 bom_create.append("items",{
     "item_code" : "TEST_ITEM_1",
     "item_name" : "TEST_ITEM_1",
@@ -892,6 +938,7 @@ bom2_create.is_multiple_item= 1
 bom2_create.total_quantity = 1000
 bom2_create.batch_yield= 10
 bom2_create.concentration = 100
+bom2_create.bom_type1 = "Production BOM"
 bom2_create.append("items",{
     "item_code" : "TEST_ITEM_1",
     "item_name" : "TEST_ITEM_1",
@@ -955,6 +1002,7 @@ bom3_create.is_multiple_item= 1
 bom3_create.total_quantity = 1000
 bom3_create.batch_yield= 10
 bom3_create.concentration = 100
+bom3_create.bom_type1 = "Production BOM"
 bom3_create.append("items",{
     "item_code" : "TEST_ITEM_1",
     "item_name" : "TEST_ITEM_1",
@@ -1020,7 +1068,7 @@ work_order_create.batch_yield = 10
 work_order_create.is_multiple_item = 1
 company =  frappe.db.get_value("Company",{},"company_name")
 work_order_create.wip_warehouse = frappe.db.get_value("Warehouse",{"company":company, "warehouse_name":"Work In Progress"},"name")
-work_order_create.fg_warehouse = "Finished Goods - CI"
+work_order_create.fg_warehouse = "Finished Goods - FIL"
 work_order_create.bom_no = "BOM-FINISH_TEST_ITEM-001"
 work_order_create.concentration = 0
 work_order_create.use_multi_level_bom = 1
