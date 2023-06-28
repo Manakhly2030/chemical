@@ -15,3 +15,7 @@ def set_create_new_batch():
         SET use_batchwise_valuation = 1
         WHERE use_batchwise_valuation = 0
     """)
+
+    frappe.db.set_value("Stock Settings","Stock Settings", "use_naming_series", 1)
+    frappe.db.get_value("Stock Settings","Stock Settings", "naming_series_prefix", "BTH-{{ posting_date }}-.###")
+    frappe.db.set_value("Stock Settings","Stock Settings", "exact_cost_valuation_for_batch_wise_items", 0)
