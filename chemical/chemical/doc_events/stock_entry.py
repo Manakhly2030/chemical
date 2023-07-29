@@ -591,6 +591,7 @@ def update_po_transfer_qty(self, po):
 				and entry.purpose = "Manufacture"
 				and entry.docstatus = 1
 				and detail.parent = entry.name
+				and detail.s_warehouse is NOT NULL
 				and detail.item_code = %s''', (po.name, d.item_code))[0]
 				
 		d.db_set('transferred_qty', flt(se_items_date[0]), update_modified = False)
