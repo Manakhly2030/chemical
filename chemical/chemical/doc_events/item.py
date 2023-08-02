@@ -23,6 +23,7 @@ def fill_customer_code(self):
 
 def validate(self, method):
 	no_change(self)
+	set_default(self)
 
 def no_change(self):
 	if not self.get("__islocal"):
@@ -34,3 +35,7 @@ def no_change(self):
 			
 			if self.check_if_linked_document_exists(field):
 				frappe.throw(("As there are existing transactions against item {0}, you can not change the value of {1}").format(self.name, frappe.bold(self.meta.get_label(field))))
+
+def set_default(self):
+	if self.has_batch_no:
+		self.create_new_batch = 1
