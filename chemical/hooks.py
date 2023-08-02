@@ -8,7 +8,7 @@ from . import __version__ as app_version
 # OpeningInvoiceCreationTool.get_invoice_dict = get_invoice_dict
 # OpeningInvoiceCreationTool.make_invoices = make_invoices
 
-# from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
+from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 
 #Chemical
@@ -19,7 +19,7 @@ from chemical.chemical.doc_events.work_order import get_status, update_work_orde
 # StockEntry.validate_finished_goods = validate_finished_goods #DONE
 # StockEntry.calculate_rate_and_amount = calculate_rate_and_amount #Done
 StockEntry.validate_fg_completed_qty = validate_fg_completed_quantity #done
-# WorkOrder.get_status = get_status #done
+WorkOrder.get_status = get_status #done
 # WorkOrder.update_work_order_qty = update_work_order_qty #done
 #WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_for_required_items #done
 # WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_required_items #done
