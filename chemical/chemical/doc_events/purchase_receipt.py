@@ -10,7 +10,7 @@ def onload(self,method):
 
 def before_validate(self,method):
 	quantity_price_to_qty_rate(self)
-	purchase_cal_rate_qty(self)
+	# purchase_cal_rate_qty(self)
 
 def before_save(self,method):
 	rename_po(self)

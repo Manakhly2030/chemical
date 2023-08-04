@@ -325,8 +325,7 @@ def purchase_cal_rate_qty(self):
 							d.doctype, d.idx
 						)
 					)
-				else:
-					frappe.throw("{} Row: {} Please add Qty".format(d.doctype, d.idx))
+				
 			if not d.concentration:
 				if hasattr(doc_items, "received_concentration"):
 					frappe.throw(
