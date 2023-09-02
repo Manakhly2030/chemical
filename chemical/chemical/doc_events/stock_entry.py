@@ -588,7 +588,7 @@ def update_po_transfer_qty(self, po):
 			from `tabStock Entry` entry, `tabStock Entry Detail` detail
 			where
 				entry.work_order = %s
-				and entry.purpose = "Manufacture"
+				and entry.purpose = "Material Transfer for Manufacture"
 				and entry.docstatus = 1
 				and detail.parent = entry.name
 				and detail.s_warehouse is NOT NULL
