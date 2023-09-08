@@ -200,6 +200,11 @@ StockEntry.validate_finished_goods = validate_finished_goods
 # after_migrate = [
 # 	'frappe.website.doctype.website_theme.website_theme.generate_theme_files_if_not_exist'
 # ]
+
+override_doctype_class = {
+	"Stock Entry": "chemical.chemical.doc_events.stock_entry.CustommStockEntry"
+}
+
 # override_doctype_class = {
 # 	"SubcontractingController" : "chemical.chemical.override_class.SubcontractingController.SubcontractingController",
 # 	"SellingController":"chemical.chemical.override_class.SellingController.SellingController",
@@ -376,10 +381,13 @@ StockController.make_batches = make_batches_api
 # from finbyz_dashboard.finbyz_dashboard.report.work_order_summary import work_order_summary
 # work_order_summary.execute = wos_execute
 
+from erpnext.stock.stock_ledger import update_entries_after
+from chemical.chemical.doc_events.stock_ledger import build
+update_entries_after.build = build
 
 # Chemical Overrides
 
-from chemical.batch_valuation_overrides import get_supplied_items_cost,set_incoming_rate_buying,set_incoming_rate_selling,get_rate_for_return,get_incoming_rate,process_sle,get_args_for_incoming_rate
+# from chemical.batch_valuation_overrides import get_supplied_items_cost,set_incoming_rate_buying,set_incoming_rate_selling,get_rate_for_return,get_incoming_rate,process_sle,get_args_for_incoming_rate
 
 # Buying controllers
 # from erpnext.controllers.buying_controller import BuyingController
