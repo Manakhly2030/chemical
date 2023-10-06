@@ -4,10 +4,12 @@ from frappe.utils import flt, cint
 from chemical.api import cal_rate_qty, quantity_price_to_qty_rate
 
 def onload(self,method):
-    quantity_price_to_qty_rate(self)
+	quantity_price_to_qty_rate(self)
 
 def validate(self,method):
-    cal_rate_qty(self)
+	cal_rate_qty(self)
+	cal_qty(self, method)
+
 	
 def dn_on_submit(self, method):
 	validate_customer_batch(self)
@@ -78,3 +80,15 @@ def validate_customer_batch(self):
 					frappe.msgprint(_("The batch selected doesn't have <strong>{}</strong> in row {}".format(self.customer,row.idx)))
 
 
+def cal_qty(self,method):
+	total_qty = 0.0
+	total_quantity = 0.0
+	
+	for row in self.items:
+		total_qty += row.qty
+		total_quantity += row.quantity
+	try:
+		self.total_qty = total_qty
+		self.total_quantity = total_quantity
+	except:
+		pass
