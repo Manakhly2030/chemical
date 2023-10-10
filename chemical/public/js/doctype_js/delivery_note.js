@@ -102,7 +102,11 @@ frappe.ui.form.on("Delivery Note", {
                     }
                 }
                 if (d.packing_size && d.no_of_packages) {
-                    frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
+                    if (frm.doc.is_return && d.packing_size > 0 && d.no_of_packages > 0){
+                        frappe.model.set_value(d.doctype, d.name, 'qty', flt(-1 * d.packing_size * d.no_of_packages));
+                    } else {
+                        frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
+                    }
                     if (r.maintain_as_is_stock) {
                         frappe.model.set_value(d.doctype, d.name, 'quantity',flt(d.qty * d.concentration / 100));
                         if (d.price) {
