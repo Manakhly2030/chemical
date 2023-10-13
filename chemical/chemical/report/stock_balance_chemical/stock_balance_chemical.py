@@ -101,7 +101,7 @@ def execute(filters=None):
 				onClick=view_batch_wise_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Batch Detail</button>"""
 			
 			report_data['stock_ledger'] = f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
-				target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date_fiscal}' to_date='{to_date}' warehouse='{warehouse}'
+				target="_blank" item_code='{item_code}' company='{filter_company}' from_date='{from_date}' to_date='{to_date}' warehouse='{warehouse}'
 				onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('warehouse'))>View Stock Ledger</button>"""
 
 			data.append(report_data)
