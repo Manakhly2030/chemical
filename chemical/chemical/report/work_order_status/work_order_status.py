@@ -248,12 +248,12 @@ def create_bom_for_all_row(doc,productionItemValue,finish_quantity):
         "item": productionItemValue,
         "quantity": int(finish_quantity),
         "is_multiple_item": 0,
-        "bom_type1": "Marketing BOM",
-        "items":bom_items
+        "items": bom_items
     })
-
+    new_bom.flags.ignore_mandatory = True
+    new_bom.flags.ignore_permissions = True
     # Insert the BOM document into the database
-    new_bom.insert(ignore_permissions=True, ignore_mandatory = True)
+    new_bom.insert()
     bom_url = get_url("/app/bom/" + new_bom.name)
     message = f"BOM  <strong><a href='{bom_url}'>{new_bom.name}</a></strong>  Created  from {list_length} Work Order"
     frappe.msgprint(_(message))
@@ -293,12 +293,12 @@ def create_bom(doc,productionItemValue,finish_quantity):
         "item": productionItemValue,
         "quantity": int(finish_quantity),
         "is_multiple_item": 0,
-        # "bom_type1": "Marketing BOM",
-        "items":bom_items
+        "items": bom_items
     })
-
+    new_bom.flags.ignore_mandatory = True
+    new_bom.flags.ignore_permissions = True
     # Insert the BOM document into the database
-    new_bom.insert(ignore_permissions=True, ignore_mandatory = True)
+    new_bom.insert()
     bom_url = get_url("/app/bom/" + new_bom.name)
     message = f"BOM  <strong><a href='{bom_url}'>{new_bom.name}</a></strong>  Created  from {list_length} Work Order"
     frappe.msgprint(_(message))
