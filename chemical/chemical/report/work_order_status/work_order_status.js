@@ -61,7 +61,6 @@ $(document).ready(function() {
 	// on clicking for all check reinitialize list
     $(document).on("click", ".dt-cell--header input[type='checkbox']", function() {
 		unhighlight_list=[]
-		console.log("reinitializing list")
     });
 
     $(document).on("click", ".dt-scrollable--highlight-all input[type='checkbox']", function() {
@@ -76,7 +75,6 @@ $(document).ready(function() {
 			// If the value is not in the list, push it
 			unhighlight_list.push(value);
 		}
-		console.log(unhighlight_list)
     });
 
 	frappe.query_report.page.set_primary_action('Create BOM', function () {
@@ -89,7 +87,6 @@ $(document).ready(function() {
 				var value = $(this).find("a").text();
 				checkedRowsData.push(value)
 			});
-			console.log(checkedRowsData)
 			var productionItemValue = frappe.query_report.get_filter_value('production_item');
 			var finish_quantity = frappe.query_report.get_filter_value('finish_quantity');
 			frappe.call({
@@ -124,7 +121,6 @@ $(document).ready(function() {
 					dict[$('.dt-row-header').find(header_value).text().trim()]=val.trim();
 					
 				}
-				console.log($(this).find(".dt-cell__content--col-1").text().trim())
 				checkedRowsData.push(dict)
 			});
 			var productionItemValue = frappe.query_report.get_filter_value('production_item');
