@@ -280,7 +280,6 @@ def create_bom(doc,productionItemValue,finish_quantity):
         new_dict[key]/=list_length
 
     # code for creating bom
-    based_on = frappe.db.get_value("Work Order", {'name', str(json_obj[0]["Name"])}, ['based_on'])
     bom_items=[]
     for key,value in new_dict.items():
         item_dict={}
@@ -294,7 +293,6 @@ def create_bom(doc,productionItemValue,finish_quantity):
         "item": productionItemValue,
         "quantity": int(finish_quantity),
         "is_multiple_item": 0,
-        "based_on": based_on,
         "items": bom_items
     })
     new_bom.flags.ignore_mandatory = True
