@@ -35,7 +35,8 @@ def execute(filters=None):
 						# 	flt(qty_dict.bal_qty, float_precision),
 						# 	 item_map[item]["stock_uom"]
 						# ])
-
+						if concentration == 0:
+							concentration = 1
 						if item_map[item]["maintain_as_is_stock"]:
 							data.append({
 								'item_code': item,
@@ -53,7 +54,7 @@ def execute(filters=None):
 								'bal_qty': flt(qty_dict.bal_qty*concentration/100, float_precision),
 								'amount': flt((qty_dict.bal_qty*concentration/100) * flt(valuation_rate*100/concentration) , float_precision),
 								'as_is_qty': flt(qty_dict.bal_qty, float_precision),
-								'valuation_rate':flt(valuation_rate*100/concentration,float_precision),
+								'valuation_rate':qty_dict_without_group.valuation_rate,
 								'uom': item_map[item]["stock_uom"],
 								'party_type':qty_dict_without_group.party_type,
 								'party':qty_dict_without_group.party,
@@ -301,7 +302,7 @@ def get_stock_ledger_entries_without_group(filters):
 
 	conditions = get_conditions(filters)
 	return frappe.db.sql("""
-		select sle.item_code, sle.batch_no, sle.warehouse, sle.posting_date,sle.company, sle.actual_qty, sle.voucher_type,sle.voucher_no %s
+		select sle.item_code, sle.batch_no, sle.warehouse, sle.posting_date,sle.company, sle.actual_qty, sle.voucher_type,sle.voucher_no, IF(sle.actual_qty > 0, sle.incoming_rate, 0) as valuation_rate %s
 		from `tabStock Ledger Entry` as sle %s
 		where sle.docstatus < 2 and sle.is_cancelled = 0 and ifnull(sle.batch_no, '') != '' and sle.actual_qty > 0 %s
 		order by sle.item_code, sle.warehouse,sle.batch_no""" %
@@ -314,13 +315,14 @@ def get_item_warehouse_batch_map_without_group(filters, float_precision):
 	for d in sle:
 		iwb_map_without_group.setdefault(d.company, {}).setdefault(d.item_code, {}).setdefault(d.warehouse, {})\
 			.setdefault(d.batch_no, frappe._dict({
-				"voucher_type":'',"voucher_no":''
+				"voucher_type":'',"voucher_no":'', "valuation_rate": 0
 			}))
 		qty_dict_without_group = iwb_map_without_group[d.company][d.item_code][d.warehouse][d.batch_no]
 		qty_dict_without_group.voucher_type = d.voucher_type
 		qty_dict_without_group.voucher_no = d.voucher_no
 		qty_dict_without_group.party_type = d.party_type
 		qty_dict_without_group.party = d.party
+		qty_dict_without_group.valuation_rate = d.valuation_rate
 
 	return iwb_map_without_group
 
