@@ -89,6 +89,9 @@ $(document).ready(function() {
 			});
 			var productionItemValue = frappe.query_report.get_filter_value('production_item');
 			var finish_quantity = frappe.query_report.get_filter_value('finish_quantity');
+			if (finish_quantity === undefined || finish_quantity === null || finish_quantity === 0) {
+				frappe.throw("Finish Quantity is required.");
+			} 
 			frappe.call({
 				method: "chemical.chemical.report.work_order_status.work_order_status.create_bom_for_all_row",
 				args: {
