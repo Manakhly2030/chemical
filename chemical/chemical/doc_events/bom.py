@@ -427,3 +427,4 @@ def get_rm_rate(self, arg):
 						.format(arg["item_code"]), alert=True)
 
 	return flt(rate) * flt(self.plc_conversion_rate or 1) / (self.conversion_rate or 1),flt(valuation_rate) * flt(self.plc_conversion_rate or 1) / (self.conversion_rate or 1),flt(last_purchase_rate) * flt(self.plc_conversion_rate or 1) / (self.conversion_rate or 1)
+	
