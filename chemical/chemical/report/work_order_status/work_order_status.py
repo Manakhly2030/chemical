@@ -139,6 +139,7 @@ def data_query(filters):
     FROM  `tabWork Order Item` as woi
     LEFT JOIN `tabWork Order` as wo ON woi.parent = wo.name 
     {}
+    and wo.docstatus = 1
     GROUP BY wo.name
     """.format(condition), as_dict=1)
 
@@ -185,13 +186,12 @@ def convert_to_float(value):
     try:
         return float(value.replace(',', '').strip()) if value else 0.0
     except ValueError:
-        frappe.throw("hello")
         return 0.0
 
 
 #create bom for all selecting row
 @frappe.whitelist()
-def create_bom_for_all_row(doc,productionItemValue,finish_quantity):  
+def create_bom_for_all_row(doc,productionItemValue,finish_quantity, rm_cost_as_per, price_list = None):
     global report_data
     # removing unselected data for all selecting all row
 
@@ -248,6 +248,8 @@ def create_bom_for_all_row(doc,productionItemValue,finish_quantity):
         "item": productionItemValue,
         "quantity": int(finish_quantity),
         "is_multiple_item": 0,
+        "rm_cost_as_per": rm_cost_as_per,
+        "price_list": price_list,
         "items": bom_items
     })
     new_bom.flags.ignore_mandatory = True
@@ -261,7 +263,7 @@ def create_bom_for_all_row(doc,productionItemValue,finish_quantity):
 
 # work only for selecting some row
 @frappe.whitelist()
-def create_bom(doc,productionItemValue,finish_quantity):
+def create_bom(doc,productionItemValue,finish_quantity, rm_cost_as_per, price_list = None):
     json_obj=json.loads(doc)
     new_dict={}
     list_length=len(json_obj)
@@ -286,13 +288,13 @@ def create_bom(doc,productionItemValue,finish_quantity):
         item_dict["item_code"]=key
         item_dict["qty"]=value
         bom_items.append(item_dict)
-    # Create a new BOM document
-    
     new_bom = frappe.get_doc({
         "doctype": "BOM",
         "item": productionItemValue,
         "quantity": int(finish_quantity),
         "is_multiple_item": 0,
+        "rm_cost_as_per": rm_cost_as_per,
+        "price_list": price_list,
         "items": bom_items
     })
     new_bom.flags.ignore_mandatory = True

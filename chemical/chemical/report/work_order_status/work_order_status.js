@@ -78,76 +78,107 @@ $(document).ready(function() {
     });
 
 	frappe.query_report.page.set_primary_action('Create BOM', function () {
-		var element = $('.dt-scrollable');
-		// work on when you select all the row option by checking all select checkbox
-		if (element.hasClass('dt-scrollable--highlight-all'))
-		{
-			checkedRowsData=[]
-			$(".dt-row--unhighlight").each(function() {
-				var value = $(this).find("a").text();
-				checkedRowsData.push(value)
-			});
-			var productionItemValue = frappe.query_report.get_filter_value('production_item');
-			var finish_quantity = frappe.query_report.get_filter_value('finish_quantity');
-			if (finish_quantity === undefined || finish_quantity === null || finish_quantity === 0) {
-				frappe.throw("Finish Quantity is required.");
-			} 
-			frappe.call({
-				method: "chemical.chemical.report.work_order_status.work_order_status.create_bom_for_all_row",
-				args: {
-					doc:unhighlight_list,
-					productionItemValue:productionItemValue,
-					finish_quantity:finish_quantity
-				},
-				callback: function(response) {
-					if (response.message== 'Successful') {
-						frappe.msgprint("BOM created successfully!");
-					}
-				}
-			});
-			checkedRowsData=[];
-			
-
-		}
-		else{
-			checkedRowsData=[]
-			$(".dt-row--highlight").each(function() {
-				var dict={}
-				var value = $(this).find("a").text();
-				dict[$('.dt-row-header').find(".dt-cell__content--header-2").text().trim()]=value.trim();
-				// traversing the rest column value
-				for(var i=3;i<column_length+2;i++)
+		let d = new frappe.ui.Dialog({
+			title: 'Enter Details',
+			fields: [
 				{
-					var header_value=".dt-cell__content--header-"+i
-					var selector = ".dt-cell__content--col-" + i;
-					var val= $(this).find(selector).text();
-					dict[$('.dt-row-header').find(header_value).text().trim()]=val.trim();
-					
-				}
-				checkedRowsData.push(dict)
-			});
-			var productionItemValue = frappe.query_report.get_filter_value('production_item');
-			var finish_quantity = frappe.query_report.get_filter_value('finish_quantity');
-			if (finish_quantity === undefined || finish_quantity === null || finish_quantity === 0) {
-				frappe.throw("Finish Quantity is required.");
-			} 
-			if (checkedRowsData.length === 0) {
-				frappe.throw("Please select at least one row to create a BOM.");
-			}
-			frappe.call({
-				method: "chemical.chemical.report.work_order_status.work_order_status.create_bom",
-				args: {
-					doc:checkedRowsData,
-					productionItemValue:productionItemValue,
-					finish_quantity:finish_quantity
+					label: 'Rate Of Materials Based On',
+					fieldname: 'rm_cost_as_per',
+					fieldtype: 'Select',
+					options: ["Valuation Rate", "Last Purchase Rate", "Price List"],
+					reqd: 1
 				},
-				callback: function(response) {
-					if (response.message== 'Successful') {
-						frappe.msgprint("BOM created successfully!");
-					}
+				{
+					label: 'Price List',
+					fieldname: 'price_list',
+					fieldtype: 'Link',
+					options: "Price List",
+					depends_on: 'eval:doc.rm_cost_as_per==="Price List"',
+					mandatory_depends_on: 'eval:doc.rm_cost_as_per==="Price List"'
 				}
-			});
-			checkedRowsData=[];
-		}
+			],
+			size: 'small', // small, large, extra-large 
+			primary_action_label: 'Create BOM',
+			primary_action(values) {
+				console.log(values)
+				var element = $('.dt-scrollable');
+				// work on when you select all the row option by checking all select checkbox
+				if (element.hasClass('dt-scrollable--highlight-all'))
+				{
+					checkedRowsData=[]
+					$(".dt-row--unhighlight").each(function() {
+						var value = $(this).find("a").text();
+						checkedRowsData.push(value)
+					});
+					var productionItemValue = frappe.query_report.get_filter_value('production_item');
+					var finish_quantity = frappe.query_report.get_filter_value('finish_quantity');
+					if (finish_quantity === undefined || finish_quantity === null || finish_quantity === 0) {
+						frappe.throw("Finish Quantity is required.");
+					} 
+					frappe.call({
+						method: "chemical.chemical.report.work_order_status.work_order_status.create_bom_for_all_row",
+						args: {
+							doc:unhighlight_list,
+							productionItemValue:productionItemValue,
+							finish_quantity:finish_quantity,
+							rm_cost_as_per:values.rm_cost_as_per,
+							price_list:values.price_list
+						},
+						callback: function(response) {
+							if (response.message== 'Successful') {
+								frappe.msgprint("BOM created successfully!");
+							}
+						}
+					});
+					checkedRowsData=[];
+				}
+				else {
+					checkedRowsData=[]
+					$(".dt-row--highlight").each(function() {
+						var dict={}
+						var value = $(this).find("a").text();
+						dict[$('.dt-row-header').find(".dt-cell__content--header-2").text().trim()]=value.trim();
+						// traversing the rest column value
+						for(var i=3;i<column_length+2;i++)
+						{
+							var header_value=".dt-cell__content--header-"+i
+							var selector = ".dt-cell__content--col-" + i;
+							var val= $(this).find(selector).text();
+							dict[$('.dt-row-header').find(header_value).text().trim()]=val.trim();
+							
+						}
+						checkedRowsData.push(dict)
+					});
+					var productionItemValue = frappe.query_report.get_filter_value('production_item');
+					var finish_quantity = frappe.query_report.get_filter_value('finish_quantity');
+					if (finish_quantity === undefined || finish_quantity === null || finish_quantity === 0) {
+						frappe.throw("Finish Quantity is required.");
+					} 
+					if (checkedRowsData.length === 0) {
+						frappe.throw("Please select at least one row to create a BOM.");
+					}
+					frappe.call({
+						method: "chemical.chemical.report.work_order_status.work_order_status.create_bom",
+						args: {
+							doc:checkedRowsData,
+							productionItemValue:productionItemValue,
+							finish_quantity:finish_quantity,
+							rm_cost_as_per:values.rm_cost_as_per,
+							price_list:values.price_list
+						},
+						callback: function(response) {
+							if (response.message== 'Successful') {
+								frappe.msgprint("BOM created successfully!");
+							}
+						}
+					});
+					checkedRowsData=[];
+				}
+				
+				d.hide();
+			}
+		});
+		
+		d.show();
 	})
 });
