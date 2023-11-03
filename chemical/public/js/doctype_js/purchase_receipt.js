@@ -39,25 +39,27 @@ cur_frm.fields_dict.taxes_and_charges.get_query = function(doc) {
 
 
 frappe.ui.form.on("Purchase Receipt", {
-    refresh: function(frm){
-        if (frm.doc.docstatus != 1)
-        {
-            frm.add_custom_button("Rename", function() {
-                frappe.call({
-                    method: "chemical.chemical.doc_events.purchase_receipt.rename_po",
-                    args:{
-                        "existing_name": cur_frm.doc.name,
-                        "series_value": cur_frm.doc.series_value
-                    },
-                    callback: function(r){
-                        if(r.message){
-                            frappe.set_route('Form', 'Purchase Receipt', r.message)
-                        }
-                    }
-                })
-            },)
-        }
-    },
+    // refresh: function(frm){
+    //     if (frm.doc.docstatus != 1)
+    //     {
+    //         console.log(frm.doc.name)
+    //         console.log(frm.doc.naming_series)
+    //         frm.add_custom_button("Rename", function() {
+    //             frappe.call({
+    //                 method: "chemical.chemical.doc_events.purchase_receipt.rename_po",
+    //                 args:{
+    //                     existing_name: cur_frm.doc.name,
+    //                     series_value: frm.doc.naming_series
+    //                 },
+    //                 callback: function(r){
+    //                     if(r.message){
+    //                         frappe.set_route('Form', 'Purchase Receipt', r.message)
+    //                     }
+    //                 }
+    //             })
+    //         },)
+    //     }
+    // },
     validate: function(frm) {
         frm.doc.items.forEach(function (d) {     
             var packing_size = 0;

@@ -94,7 +94,7 @@ def delete_auto_created_batches(self):
 	pass
 
 @frappe.whitelist()
-def rename_po(existing_name, series_value):
+def rename_po(existing_name,series_value):
 	new_name = re.findall("^(.*[\\\/])",existing_name)[0] # Before Slash
 	last_digits = re.findall("[^\/]+$",existing_name)[0] # After Slash
 	len_last_digits = len(last_digits) # After Slash
