@@ -48,19 +48,28 @@ def update_qc_reference(self):
 def update_qc(self, method):
 	if self._action == "submit":
 		doc = frappe.get_doc(self.reference_type, self.reference_name)
-		doc.db_set("quality_inspection", self.name)
+		meta = frappe.get_meta(self.reference_type)
+		if meta.has_field('quality_inspection'):
+			doc.db_set("quality_inspection", self.name)
 
 		if self.batch_no:
+			meta_batch = frappe.get_meta("Batch")
 			batch = frappe.get_doc("Batch", self.batch_no)
-			batch.db_set("quality_inspection", self.name)
+			if meta_batch.has_field('quality_inspection'):
+				batch.db_set("quality_inspection", self.name)
 
 	elif self._action == "cancel":
 		doc = frappe.get_doc(self.reference_type, self.reference_name)
-		doc.db_set("quality_inspection", "")
+		meta = frappe.get_meta(self.reference_type)
+		if meta.has_field('quality_inspection'):
+			doc.db_set("quality_inspection", self.name)
+		# doc.db_set("quality_inspection", "")
 				
 		if self.batch_no:
+			meta_batch = frappe.get_meta("Batch")
 			batch = frappe.get_doc("Batch", self.batch_no)
-			batch.db_set("quality_inspection", "")
+			if meta_batch.has_field('quality_inspection'):
+				batch.db_set("quality_inspection", "")
 	
 
 	
