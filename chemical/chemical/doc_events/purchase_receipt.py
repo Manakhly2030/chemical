@@ -12,8 +12,8 @@ def before_validate(self,method):
 	quantity_price_to_qty_rate(self)
 	# purchase_cal_rate_qty(self)
 
-def before_save(self,method):
-	rename_po(self)
+# def before_save(self,method):
+# 	rename_po(self)
 		
 def before_submit(self, method):
 	pr_update_status_updater_args(self)
@@ -93,22 +93,22 @@ def cal_total(self):
 def delete_auto_created_batches(self):
 	pass
 
-@frappe.whitelist()
-def rename_po(existing_name,series_value):
-	new_name = re.findall("^(.*[\\\/])",existing_name)[0] # Before Slash
-	last_digits = re.findall("[^\/]+$",existing_name)[0] # After Slash
-	len_last_digits = len(last_digits) # After Slash
-	if series_value:
-		if len(series_value) > 4:
-			frappe.throw("Please Enter 4 Digit Series Value")
-		temp_digits = last_digits.replace(last_digits,series_value)
-		if len(temp_digits)!=4:
-			temp_digits = temp_digits.rjust((4-len(temp_digits)) + len(temp_digits),'0')
-		new_name += temp_digits
-		if new_name != existing_name:
-			frappe.rename_doc("Purchase Receipt", existing_name, new_name, force=True)
-			frappe.db.set_value("Purchase Receipt",new_name,"series_value",series_value)
-			return new_name
+# @frappe.whitelist()
+# def rename_po(existing_name,series_value):
+# 	new_name = re.findall("^(.*[\\\/])",existing_name)[0] # Before Slash
+# 	last_digits = re.findall("[^\/]+$",existing_name)[0] # After Slash
+# 	len_last_digits = len(last_digits) # After Slash
+# 	if series_value:
+# 		if len(series_value) > 4:
+# 			frappe.throw("Please Enter 4 Digit Series Value")
+# 		temp_digits = last_digits.replace(last_digits,series_value)
+# 		if len(temp_digits)!=4:
+# 			temp_digits = temp_digits.rjust((4-len(temp_digits)) + len(temp_digits),'0')
+# 		new_name += temp_digits
+# 		if new_name != existing_name:
+# 			frappe.rename_doc("Purchase Receipt", existing_name, new_name, force=True)
+# 			frappe.db.set_value("Purchase Receipt",new_name,"series_value",series_value)
+# 			return new_name
 			#last_digits.replace(last_digits[-(len(series_value)):],series_value) 
 	# last_3_digit_remove = str(existing_name[:-4])
 	# len_after_slash = len(re.findall("[^\/]+$",existing_name)[0])
