@@ -60,7 +60,7 @@ def execute(filters=None):
 								'party':qty_dict_without_group.party,
 								'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
 											target="_blank" item_code='{item}' filter_company='{filter_company}'from_date='{from_date}'to_date='{to_date}' batch_no='{batch}' 
-											onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>""")
+											onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger Chemical</button>""")
 
 							})
 						else:
@@ -86,7 +86,7 @@ def execute(filters=None):
 								'party':qty_dict_without_group.party,
 								'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
 											target="_blank" item_code='{item}' filter_company='{filter_company}'from_date='{from_date}'to_date='{to_date}' batch_no='{batch}'
-											onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger</button>""")
+											onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger Chemical</button>""")
 
 							})
 
