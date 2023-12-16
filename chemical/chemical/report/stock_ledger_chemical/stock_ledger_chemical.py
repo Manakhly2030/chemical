@@ -27,22 +27,30 @@ def execute(filters=None):
 	actual_qty = stock_value = 0
 
 	available_serial_nos = {}
+
+	item_ware_house_in_qty = {}
+	
 	for sle in sl_entries:
 		item_detail = item_details[sle.item_code]
-
-		sle.update(item_detail)
-
 
 		concentration = sle.concentration or 100
 		
 		if item_detail.maintain_as_is_stock:
+			if not item_ware_house_in_qty.get(sle.item_code):
+				item_ware_house_in_qty[sle.item_code] = {}
+			
+			if not item_ware_house_in_qty.get(sle.item_code, {}).get(sle.warehouse):
+				item_ware_house_in_qty[sle.item_code][sle.warehouse] = 0
+			
+			item_ware_house_in_qty[sle.item_code][sle.warehouse] += (flt(sle.actual_qty) * flt(concentration))/100
+
 			sle.update({
 				'as_is_qty': flt(sle.actual_qty),
 				'actual_qty': (flt(sle.actual_qty) * flt(concentration))/100,
 				'incoming_rate': (flt(sle.incoming_rate) * 100)/flt(concentration),
 				'valuation_rate': (flt(sle.valuation_rate) * 100)/flt(concentration),
 				'as_is_balance_qty': flt(sle.qty_after_transaction),
-				'qty_after_transaction': flt(sle.qty_after_transaction * flt(concentration))/100
+				'qty_after_transaction': item_ware_house_in_qty[sle.item_code][sle.warehouse]
 			})
 		else:
 			sle.update({

@@ -17,8 +17,14 @@ frappe.ui.form.on("Batch", {
 		// 		frappe.set_route("query-report", "Stock Ledger Chemical");
 		// 	});
 		// }
-		$("div").remove(".form-dashboard-section.custom");
-		frm.trigger('_make_dashboard')
+	},
+	onload_post_render: function(frm) {
+		setTimeout( () => {
+			$("div").remove(".form-dashboard-section.custom");
+		}, 20)
+		setTimeout( () => {
+			frm.trigger('_make_dashboard')
+		}, 40)
 	},
 	_make_dashboard: (frm) => {
 		if(!frm.is_new()) {
