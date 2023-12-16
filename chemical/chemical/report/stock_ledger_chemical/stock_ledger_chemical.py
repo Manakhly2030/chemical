@@ -34,6 +34,7 @@ def execute(filters=None):
 		item_detail = item_details[sle.item_code]
 
 		concentration = sle.concentration or 100
+		out_concentration = (sle.out_concentration or 0)
 		
 		if item_detail.maintain_as_is_stock:
 			if not item_ware_house_in_qty.get(sle.item_code):
@@ -47,6 +48,7 @@ def execute(filters=None):
 			sle.update({
 				'as_is_qty': flt(sle.actual_qty),
 				'actual_qty': (flt(sle.actual_qty) * flt(concentration))/100,
+				"actual_out_qty": (flt(sle.actual_qty) * flt(out_concentration))/100,
 				'incoming_rate': (flt(sle.incoming_rate) * 100)/flt(concentration),
 				'valuation_rate': (flt(sle.valuation_rate) * 100)/flt(concentration),
 				'as_is_balance_qty': flt(sle.qty_after_transaction),
@@ -56,6 +58,7 @@ def execute(filters=None):
 			sle.update({
 				'as_is_qty': flt(sle.actual_qty),
 				'actual_qty': flt(sle.actual_qty),
+				'actual_out_qty': flt(sle.actual_qty),
 				'incoming_rate': flt(sle.incoming_rate),
 				'valuation_rate': flt(sle.valuation_rate),
 				'as_is_balance_qty': flt(sle.qty_after_transaction)
@@ -77,6 +80,7 @@ def execute(filters=None):
 		sle.update({
 			"in_qty": max(sle.actual_qty, 0),
 			"out_qty": min(sle.actual_qty, 0),
+			"out_display_qty": min(sle.actual_out_qty, 0),
 			"as_is_in_qty":max(sle.as_is_qty, 0),
 			"as_is_out_qty":min(sle.as_is_qty, 0),
 		})
@@ -156,7 +160,7 @@ def get_columns(filters):
 		{"label": _("Item"), "fieldname": "item_code", "fieldtype": "Link", "options": "Item", "width": 130},	
 		{"label": _("Warehouse"), "fieldname": "warehouse", "fieldtype": "Link", "options": "Warehouse", "width": 100},	
 		{"label": _("In Qty"), "fieldname": "in_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
-		{"label": _("Out Qty"), "fieldname": "out_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
+		{"label": _("Out Qty"), "fieldname": "out_display_qty", "fieldtype": "Float", "width": 80, "convertible": "qty"},
 		{"label": _("Balance Qty"), "fieldname": "qty_after_transaction", "fieldtype": "Float", "width": 100, "convertible": "qty"},
 		{"label": _("Incoming Rate"), "fieldname": "incoming_rate", "fieldtype": "Currency", "width": 110,
 			"options": "Company:company:default_currency", "convertible": "rate"},
@@ -222,13 +226,14 @@ def get_stock_ledger_entries(filters, items):
 	return frappe.db.sql("""select concat_ws(" ", sle.posting_date, sle.posting_time) as date,
 			sle.item_code, sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
 			sle.stock_value, sle.voucher_type, sle.voucher_no, sle.batch_no, sle.serial_no, sle.company, sle.project, sle.stock_value_difference,
-			b.lot_no, b.concentration,IFNULL(pr.supplier, IFNULL(pi.supplier,IFNULL(dn.customer,IFNULL(si.customer,se.stock_entry_type)))) as particular
+			b.lot_no, b.concentration,IFNULL(pr.supplier, IFNULL(pi.supplier,IFNULL(dn.customer,IFNULL(si.customer,se.stock_entry_type)))) as particular, dni.concentration as out_concentration
 			{show_party_select}{show_sales_lot_no}
 		from `tabStock Ledger Entry` sle 
 		left join `tabBatch` as b on sle.batch_no = b.name
 		LEFT JOIN `tabPurchase Receipt` as pr on pr.name = sle.voucher_no
 		LEFT JOIN `tabPurchase Invoice` as pi on pi.name = sle.voucher_no
 		LEFT JOIN `tabDelivery Note` as dn on dn.name = sle.voucher_no
+		LEFT JOIN `tabDelivery Note Item` as dni on sle.voucher_detail_no
 		LEFT JOIN `tabSales Invoice` as si on si.name = sle.voucher_no
 		LEFT JOIN `tabStock Entry` as se on se.name = sle.voucher_no{show_sales_lot_no_join}
 		where
