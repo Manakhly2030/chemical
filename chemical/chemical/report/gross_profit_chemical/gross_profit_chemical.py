@@ -654,6 +654,7 @@ class GrossProfitGenerator(object):
 			.on(purchase_invoice.name == purchase_invoice_item.parent)
 			.select(purchase_invoice_item.base_rate / purchase_invoice_item.conversion_factor)
 			.where(purchase_invoice.docstatus == 1)
+			.where(purchase_invoice.is_return != 1)
 			.where(purchase_invoice.posting_date <= self.filters.to_date)
 			.where(purchase_invoice_item.item_code == item_code)
 		)
