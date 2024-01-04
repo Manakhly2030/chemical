@@ -351,7 +351,8 @@ doc_events = {
 	},
     "Quality Inspection": {
        "on_submit": "chemical.chemical.doc_events.quality_inspection.validate",
-       "on_cancel": "chemical.chemical.doc_events.quality_inspection.on_cancel"
+       "on_cancel": "chemical.chemical.doc_events.quality_inspection.on_cancel",
+       "validate": "chemical.chemical.doc_events.quality_inspection.validate_qc"
 	},
 	("Outward Sample","Ball Mill Data Sheet","Outward Tracking"):{
 		"on_submit":"chemical.chemical.doc_events.outward_sample.on_submit",

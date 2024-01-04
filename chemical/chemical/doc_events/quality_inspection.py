@@ -3,6 +3,9 @@ import frappe
 def validate(self, method):
 	update_qc(self, method)
 
+def validate_qc(self, method):
+	set_details_in_qc(self, method)
+
 def on_cancel(self, method):
 	update_qc(self, method)
 
@@ -71,5 +74,14 @@ def update_qc(self, method):
 			if meta_batch.has_field('quality_inspection'):
 				batch.db_set("quality_inspection", "")
 	
-
-	
+def set_details_in_qc(self, method):
+	if self.reference_type == "Purchase Receipt":
+		doc = frappe.get_doc("Purchase Receipt", self.reference_name)
+		for row in doc.items:
+			if row.item_code == self.item_code:
+				self.lot_no = row.lot_no
+				self.packaging_material = row.packaging_material
+				self.concentration = row.concentration
+				self.packing_size = row.packing_size
+				self.no_of_packages = row.no_of_packages
+				self.qty = row.qty
