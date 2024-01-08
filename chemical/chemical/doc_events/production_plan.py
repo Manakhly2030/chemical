@@ -160,22 +160,22 @@ def get_so_items(self):
 		# 			and bom.is_active = 1) %s""" % \
 		# 	(", ".join(["%s"] * len(so_list)), item_condition), tuple(so_list), as_dict=1)
 
-				if self.item_code:
-					item_condition = ' and so_item.item_code = "{0}"'.format(frappe.db.escape(self.item_code))
+			if self.item_code:
+				item_condition = ' and so_item.item_code = "{0}"'.format(frappe.db.escape(self.item_code))
 
-				packed_items = frappe.db.sql("""select distinct pi.parent, pi.item_code, pi.warehouse as warehouse,
-					(((so_item.qty - so_item.work_order_qty) * pi.qty) / so_item.qty)
-						as pending_qty, pi.parent_item, so_item.name
-					from `tabSales Order Item` so_item, `tabPacked Item` pi
-					where so_item.parent = pi.parent and so_item.docstatus = 1
-					and pi.parent_item = so_item.item_code
-					and so_item.parent in (%s) and so_item.qty > so_item.work_order_qty
-					and exists (select name from `tabBOM` bom where bom.item=pi.item_code
-							and bom.is_active = 1) %s""" % \
-					(", ".join(["%s"] * len(so_list)), item_condition), tuple(so_list), as_dict=1)
+			packed_items = frappe.db.sql("""select distinct pi.parent, pi.item_code, pi.warehouse as warehouse,
+				(((so_item.qty - so_item.work_order_qty) * pi.qty) / so_item.qty)
+					as pending_qty, pi.parent_item, so_item.name
+				from `tabSales Order Item` so_item, `tabPacked Item` pi
+				where so_item.parent = pi.parent and so_item.docstatus = 1
+				and pi.parent_item = so_item.item_code
+				and so_item.parent in (%s) and so_item.qty > so_item.work_order_qty
+				and exists (select name from `tabBOM` bom where bom.item=pi.item_code
+						and bom.is_active = 1) %s""" % \
+				(", ".join(["%s"] * len(so_list)), item_condition), tuple(so_list), as_dict=1)
 
-				add_items(self,items + packed_items)
-				calculate_total_planned_qty(self)
+			add_items(self,items + packed_items)
+			calculate_total_planned_qty(self)
 
 def add_items(self, items):
 	# frappe.msgprint("call add")
