@@ -149,7 +149,7 @@ def get_so_items(self):
 							
 							item_details[row.item_code].planned_qty += (flt(quantity) * flt(row.quantity) * (row.concentration))/ (flt(sample_doc.total_qty)* (bom.concentration))
 
-			items = [values for values in item_details.values()]
+				items = [values for values in item_details.values()]
 			
 	# -----------------------	
 		# items = frappe.db.sql("""select distinct parent, item_code, warehouse,
