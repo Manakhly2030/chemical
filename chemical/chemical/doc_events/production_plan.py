@@ -63,7 +63,7 @@ def get_items_from_sample(self):
 def get_so_items(self):
 		so_list = [d.sales_order for d in self.get("sales_orders", []) if d.sales_order]
 		if not so_list:
-			msgprint(_("Please enter Sales Orders in the above table"))
+			frappe.msgprint(_("Please enter Sales Orders in the above table"))
 			return []
 		item_condition = ""
 		if self.item_code:
@@ -124,29 +124,30 @@ def get_so_items(self):
 			items = [values for values in item_details.values()]
 
 		else:		
-																						 #default
-			sample_list = [[d.outward_sample, d.quantity] for d in self.get("finish_items", []) if d.outward_sample]	
-			if not sample_list:
-				frappe.msgprint(_("Please Get Finished Items."))
-				return []	
-			item_details = frappe._dict()
-			for sample, quantity in sample_list:
-				sample_doc = frappe.get_doc("Outward Sample",sample)
+			 #default
+			if self.get_item_based_on_samples == 1:
+				sample_list = [[d.outward_sample, d.quantity] for d in self.get("finish_items", []) if d.outward_sample]	
+				if not sample_list:
+					frappe.msgprint(_("Please Get Finished Items."))
+					return []	
+				item_details = frappe._dict()
+				for sample, quantity in sample_list:
+					sample_doc = frappe.get_doc("Outward Sample",sample)
 
-				for row in sample_doc.details:
-					bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
-					if bom_no:
-						bom = frappe.get_doc("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
-						# frappe.msgprint(str(bom.name))
-					
-						item_details.setdefault(row.item_code, frappe._dict({
-							'planned_qty': 0.0,
-							'bom_no': bom.name,
-							'item_code': row.item_code,
-							'concentration' : bom.concentration
-						}))
+					for row in sample_doc.details:
+						bom_no = frappe.db.exists("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
+						if bom_no:
+							bom = frappe.get_doc("BOM", {'item':row.item_code,'is_active':1,'is_default':1,'docstatus':1})
+							# frappe.msgprint(str(bom.name))
 						
-						item_details[row.item_code].planned_qty += (flt(quantity) * flt(row.quantity) * (row.concentration))/ (flt(sample_doc.total_qty)* (bom.concentration))
+							item_details.setdefault(row.item_code, frappe._dict({
+								'planned_qty': 0.0,
+								'bom_no': bom.name,
+								'item_code': row.item_code,
+								'concentration' : bom.concentration
+							}))
+							
+							item_details[row.item_code].planned_qty += (flt(quantity) * flt(row.quantity) * (row.concentration))/ (flt(sample_doc.total_qty)* (bom.concentration))
 
 			items = [values for values in item_details.values()]
 			
