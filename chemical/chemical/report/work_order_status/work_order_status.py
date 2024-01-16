@@ -41,6 +41,8 @@ def get_columns(filters):
         {"label": _("Name"), "fieldname": "name", "fieldtype": "Link", "options": "Work Order", "width": 150},
         {"label": _("Date"), "fieldname": "planned_start_date", "fieldtype": "Date", "width": 150},
         {"label": _("Lot No"), "fieldname": "lot_no", "fieldtype": "Data", "width": 120},
+        {"label": _("Per Unit Price"), "fieldname": "per_unit_price", "fieldtype": "Data", "width": 100},
+        {"label": _("Basic Rate"), "fieldname": "basic_rate", "fieldtype": "Float", "width": 100},
         # {"label": _("Qty To Manufacture"), "fieldname": "qty", "fieldtype": "Float", "width": 100},
         {"label": _("As is Qty"), "fieldname": "produced_qty", "fieldtype": "Float", "width": 100},
         {"label": _("Manufactured Qty"), "fieldname": "real_produced_qty", "fieldtype": "Float", "width": 100},
@@ -131,6 +133,8 @@ def data_query(filters):
     wo.name,
     wo.qty,
     wo.lot_no,
+    se.total_additional_costs,
+    sum(sed.basic_rate),
     wo.produced_qty,
     wo.produced_quantity,
     wo.concentration,
@@ -138,13 +142,18 @@ def data_query(filters):
     wo.batch_yield
     FROM  `tabWork Order Item` as woi
     LEFT JOIN `tabWork Order` as wo ON woi.parent = wo.name 
+    LEFT JOIN `tabStock Entry` as se ON se.work_order = wo.name
+    LEFT JOIN `tabStock Entry Detail` as sed ON sed.parent = se.name
     {}
-    and wo.docstatus = 1
+    and wo.docstatus = 1 and se.purpose = 'Manufacture'
     GROUP BY wo.name
     """.format(condition), as_dict=1)
 
     # sub query to find transferred quantity of item used for manufacturing
     for item in data:
+        frappe.msgprint(str(item))
+        if finish_quantity is not None:
+            item['per_unit_price'] = item['total_additional_costs'] * finish_quantity
         produced_qty = item.get('produced_qty', 0)
         concentration = item.get('concentration', 0)
         name = item.get('name', '')

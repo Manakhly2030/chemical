@@ -61,18 +61,32 @@ def pi_update_status_updater_args(self):
 			})
 
 def update_item_price_history(self):
-	if self.items:
-		for item in self.items:
-			if item.item_code:
-				doc = frappe.new_doc("Item Price History")
-				doc.date = self.posting_date
-				doc.item_code = item.item_code
-				doc.price = item.price
-				doc.supplier = self.supplier
-				doc.buying = 1
-				doc.update_from = self.doctype
-				doc.docname = self.name
-				doc.save(ignore_permissions=True)
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		if self.items:
+			for item in self.items:
+				if item.item_code:
+					doc = frappe.new_doc("Item Price History")
+					doc.date = self.posting_date
+					doc.item_code = item.item_code
+					doc.price = item.price
+					doc.supplier = self.supplier
+					doc.buying = 1
+					doc.update_from = self.doctype
+					doc.docname = self.name
+					doc.save(ignore_permissions=True)
+	else:
+		if self.items:
+			for item in self.items:
+				if item.item_code:
+					doc = frappe.new_doc("Item Price History")
+					doc.date = self.posting_date
+					doc.item_code = item.item_code
+					doc.price = item.rate
+					doc.supplier = self.supplier
+					doc.buying = 1
+					doc.update_from = self.doctype
+					doc.docname = self.name
+					doc.save(ignore_permissions=True)
 
 def delete_item_price_history(self):
 	while frappe.db.exists("Item Price History",{"update_from":self.doctype,"docname":self.name}):

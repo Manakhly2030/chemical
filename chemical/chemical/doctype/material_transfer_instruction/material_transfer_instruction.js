@@ -289,12 +289,9 @@ frappe.ui.form.on('Material Transfer Instruction Detail', {
 	},
 });
 
-erpnext.stock.MaterialTransferInstruction = erpnext.stock.StockController.extend({
-	setup: function() {
-		var me = this;
-
+erpnext.stock.MaterialTransferInstruction = class MaterialTransferInstruction extends erpnext.stock.StockController {
+	setup() {		
 		this.setup_posting_date_time_check();
-
 		this.frm.fields_dict.bom_no.get_query = function() {
 			return {
 				filters:{
@@ -316,9 +313,9 @@ erpnext.stock.MaterialTransferInstruction = erpnext.stock.StockController.extend
 					return (doc.qty<=doc.actual_qty) ? "green" : "orange"
 				}
 			})
-	},
+	}
 
-	onload_post_render: function() {
+	onload_post_render() {
 		var me = this;
 
 		if(me.frm.doc.__islocal && me.frm.doc.company && !me.frm.doc.amended_from) {
@@ -327,33 +324,33 @@ erpnext.stock.MaterialTransferInstruction = erpnext.stock.StockController.extend
 		// if(!this.item_selector && false) {
 		// 	this.item_selector = new erpnext.ItemSelector({frm: this.frm});
 		// }
-	},
+	}
 
-	refresh: function() {
+	refresh() {
 		var me = this;
 		this.toggle_enable_bom();
 		erpnext.hide_company();
 		erpnext.utils.add_item(this.frm);
-	},
+	}
 
-	on_submit: function() {
+	on_submit() {
 		this.clean_up();
-	},
+	}
 
-	after_cancel: function() {
+	after_cancel() {
 		this.clean_up();
-	},
+	}
 
-	clean_up: function() {
+	clean_up() {
 		// Clear Work Order record from locals, because it is updated via Stock Entry
 		if(this.frm.doc.work_order &&
 				in_list(["Manufacture", "Material Transfer for Manufacture"], this.frm.doc.purpose)) {
 			frappe.model.remove_from_locals("Work Order",
 				this.frm.doc.work_order);
 		}
-	},
+	}
 
-	get_items: function() {
+	get_items() {
 		var me = this;
 		if(!this.frm.doc.fg_completed_qty || !this.frm.doc.bom_no)
 			//frappe.throw(__("BOM and Manufacturing Quantity are required"));
@@ -368,9 +365,9 @@ erpnext.stock.MaterialTransferInstruction = erpnext.stock.StockController.extend
 				}
 			});
 		}
-	},
+	}
 
-	work_order: function() {
+	work_order() {
 		var me = this;
 		this.toggle_enable_bom();
 		if(!me.frm.doc.work_order) {
@@ -392,22 +389,22 @@ erpnext.stock.MaterialTransferInstruction = erpnext.stock.StockController.extend
 				}
 			}
 		});
-	},
+	}
 
-	toggle_enable_bom: function() {
+	toggle_enable_bom() {
 		this.frm.toggle_enable("bom_no", !!!this.frm.doc.work_order);
-	},
+	}
 
-	items_add: function(doc, cdt, cdn) {
+	items_add(doc, cdt, cdn) {
 		var row = frappe.get_doc(cdt, cdn);
 
 		if(!row.s_warehouse) row.s_warehouse = this.frm.doc.from_warehouse;
-	},
+	}
 
-	items_on_form_rendered: function(doc, grid_row) {
+	items_on_form_rendered(doc, grid_row) {
 		erpnext.setup_serial_no();
-	},
-});
+	}
+};
 
 erpnext.stock.select_batch_and_serial_no = (frm, item) => {
 	let get_warehouse_type_and_name = (item) => {

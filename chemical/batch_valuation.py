@@ -184,7 +184,7 @@ def make_batches(self, warehouse_field):
 				batch.batch_yield = flt(row.batch_yield, 3)
 				batch.concentration = flt(row.concentration, 3)
 				batch.valuation_rate = flt(row.valuation_rate, 4)
-				batch.price = flt(row.price,2)
+				# batch.price = flt(row.price,2)
 
 				if self.doctype == "Stock Entry":
 					if self.stock_entry_type == "Manufacture" or self.stock_entry_type == "Material Receipt" :
