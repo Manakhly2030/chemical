@@ -85,23 +85,9 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 					'bom_no':bom,
 					'concentration':100
 				})
-		# if hasattr(work_order, 'second_item'):
-		# 	if work_order.second_item:
-		# 		bom = frappe.db.sql(''' select name from tabBOM where item = %s ''',work_order.second_item)
-		# 		if bom:
-		# 			bom = bom[0][0]
-		# 			stock_entry.append('items',{
-		# 				'item_code': work_order.second_item,
-		# 				't_warehouse': work_order.fg_warehouse,
-		# 				'qty': work_order.second_item_qty,
-		# 				'uom': frappe.db.get_value('Item',work_order.second_item,'stock_uom'),
-		# 				'stock_uom': frappe.db.get_value('Item',work_order.second_item,'stock_uom'),
-		# 				'conversion_factor': 1 ,
-		# 				'bom_no': bom
-		# 			})
-		# 		else:
-		# 			frappe.throw(_('Please create BOM for item {}'.format(work_order.second_item)))
+		
 	return stock_entry.as_dict()
+
 @frappe.whitelist()
 def get_items(self):
 	self.set('items', [])
@@ -185,33 +171,160 @@ def get_items(self):
 	self.calculate_rate_and_amount(raise_error_if_no_rate=False)
 
 def add_additional_cost(stock_entry,self,qty=None):
-	abbr = frappe.db.get_value("Company",self.company,'abbr')
-	bom = frappe.get_doc("BOM",self.bom_no)
-	for additional_cost in bom.additional_cost:
-		if additional_cost.uom == "FG QTY":
-			stock_entry.append("additional_costs",{
-				'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
-				'description': additional_cost.description,
-				'qty': stock_entry.fg_completed_quantity,
-				'rate': additional_cost.rate,
-				'amount': flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
-				'base_amount':flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
-				'uom':"FG QTY"
-			})
-		else:
-			stock_entry.append("additional_costs",{
-				'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
-				'description': additional_cost.description,
-				'qty': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity))),
-				'rate': additional_cost.rate,
-				'amount': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate),
-				'base_amount':(flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate)
-			})
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		abbr = frappe.db.get_value("Company",self.company,'abbr')
+		bom = frappe.get_doc("BOM",self.bom_no)
+		for additional_cost in bom.additional_cost:
+			if additional_cost.uom == "FG QTY":
+				stock_entry.append("additional_costs",{
+					'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
+					'description': additional_cost.description,
+					'qty': stock_entry.fg_completed_quantity,
+					'rate': additional_cost.rate,
+					'amount': flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
+					'base_amount':flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
+					'uom':"FG QTY"
+				})
+			else:
+				stock_entry.append("additional_costs",{
+					'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
+					'description': additional_cost.description,
+					'qty': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity))),
+					'rate': additional_cost.rate,
+					'amount': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate),
+					'base_amount':(flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate)
+				})
+	else:
+		abbr = frappe.db.get_value("Company",self.company,'abbr')
+		bom = frappe.get_doc("BOM",self.bom_no)
+		for additional_cost in bom.additional_cost:
+			if additional_cost.uom == "FG QTY":
+				stock_entry.append("additional_costs",{
+					'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
+					'description': additional_cost.description,
+					'qty': stock_entry.fg_completed_qty,
+					'rate': additional_cost.rate,
+					'amount': flt(additional_cost.rate) * flt(stock_entry.fg_completed_qty),
+					'base_amount':flt(additional_cost.rate) * flt(stock_entry.fg_completed_qty),
+					'uom':"FG QTY"
+				})
+			else:
+				stock_entry.append("additional_costs",{
+					'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
+					'description': additional_cost.description,
+					'qty': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.qty))),
+					'rate': additional_cost.rate,
+					'amount': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.qty)))*flt(additional_cost.rate),
+					'base_amount':(flt((flt(qty)*flt(additional_cost.qty))/flt(bom.qty)))*flt(additional_cost.rate)
+				})
 
 def get_transfered_raw_materials(self):
-	transferred_materials = frappe.db.sql("""
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		transferred_materials = frappe.db.sql("""
+			select
+				item_name, original_item, item_code, quantity, qty, sed.t_warehouse as warehouse, sed.s_warehouse as s_warehouse,
+				description, stock_uom, expense_account, cost_center, sed.batch_no
+			from `tabStock Entry` se,`tabStock Entry Detail` sed
+			where
+				se.name = sed.parent and se.docstatus=1 and se.purpose='Material Transfer for Manufacture'
+				and se.work_order= %s and ifnull(sed.t_warehouse, '') != ''
+		""", self.work_order, as_dict=1)
+
+		materials_already_backflushed = frappe.db.sql("""
+			select
+				item_code, sed.s_warehouse as warehouse, sum(qty) as qty
+			from
+				`tabStock Entry` se, `tabStock Entry Detail` sed
+			where
+				se.name = sed.parent and se.docstatus=1
+				and (se.purpose='Manufacture' or se.purpose='Material Consumption for Manufacture')
+				and se.work_order= %s and ifnull(sed.s_warehouse, '') != ''
+		""", self.work_order, as_dict=1)
+
+		backflushed_materials= {}
+		for d in materials_already_backflushed:
+			backflushed_materials.setdefault(d.item_code,[]).append({d.warehouse: d.qty})
+
+		po_qty = frappe.db.sql("""select qty, produced_qty, material_transferred_for_manufacturing from
+			`tabWork Order` where name=%s""", self.work_order, as_dict=1)[0]
+
+		manufacturing_qty = flt(po_qty.qty)
+		produced_qty = flt(po_qty.produced_qty)
+		trans_qty = flt(po_qty.material_transferred_for_manufacturing)
+
+		for item in transferred_materials:
+			qty= item.qty
+			item_code = item.original_item or item.item_code
+			req_items = frappe.get_all('Work Order Item',
+				filters={'parent': self.work_order,'item_code':item_code},
+				fields=["required_qty", "consumed_qty"]
+				)
+			if not req_items:
+				wo = frappe.get_doc("Work Order",self.work_order)
+				wo.append('required_items',{
+					'item_code': item.item_code,
+					'source_wareouse': item.s_warehouse
+				})
+				wo.save()
+				req_items = frappe.get_all('Work Order Item',
+					filters={'parent': self.work_order,'item_code':item_code},
+					fields=["required_qty", "consumed_qty"]
+				)
+				# frappe.msgprint(_("Did not found transfered item {0} in Work Order {1}, the item not added in Stock Entry")
+				# 	.format(item_code, self.work_order))
+
+
+			req_qty = flt(req_items[0].required_qty)
+			req_qty_each = flt(req_qty / manufacturing_qty)
+			consumed_qty = flt(req_items[0].consumed_qty)
+
+			if trans_qty and manufacturing_qty >= (produced_qty + flt(self.fg_completed_qty)):
+				# if qty >= req_qty:
+				# 	qty = (req_qty/trans_qty) * flt(self.fg_completed_qty)
+				# else:
+				qty = qty - consumed_qty
+
+				if self.purpose == 'Manufacture':
+					# If Material Consumption is booked, must pull only remaining components to finish product
+					if consumed_qty != 0:
+						remaining_qty = consumed_qty - (produced_qty * req_qty_each)
+						exhaust_qty = req_qty_each * produced_qty
+						if remaining_qty > exhaust_qty :
+							if (remaining_qty/(req_qty_each * flt(self.fg_completed_qty))) >= 1:
+								qty =0
+							else:
+								qty = (req_qty_each * flt(self.fg_completed_qty)) - remaining_qty
+					# else:
+					# 	qty = req_qty_each * flt(self.fg_completed_qty)
+
+
+			elif backflushed_materials.get(item.item_code):
+				for d in backflushed_materials.get(item.item_code):
+					if d.get(item.warehouse):
+						if (qty > req_qty):
+							qty = req_qty
+							qty-= d.get(item.warehouse)
+			
+			if qty > 0:
+				add_to_stock_entry_detail(self, {
+					item.item_code: {
+						"from_warehouse": item.warehouse,
+						"to_warehouse": "",
+						"qty": qty,
+						"quantity": item.quantity,
+						"item_name": item.item_name,
+						"description": item.description,
+						"stock_uom": item.stock_uom,
+						"expense_account": item.expense_account,
+						"cost_center": item.buying_cost_center,
+						"original_item": item.original_item,
+						"batch_no": item.batch_no
+					}
+				})
+	else:
+		transferred_materials = frappe.db.sql("""
 		select
-			item_name, original_item, item_code, quantity, qty, sed.t_warehouse as warehouse, sed.s_warehouse as s_warehouse,
+			item_name, original_item, item_code, qty, sed.t_warehouse as warehouse, sed.s_warehouse as s_warehouse,
 			description, stock_uom, expense_account, cost_center, sed.batch_no
 		from `tabStock Entry` se,`tabStock Entry Detail` sed
 		where
@@ -300,7 +413,6 @@ def get_transfered_raw_materials(self):
 					"from_warehouse": item.warehouse,
 					"to_warehouse": "",
 					"qty": qty,
-					"quantity": item.quantity,
 					"item_name": item.item_name,
 					"description": item.description,
 					"stock_uom": item.stock_uom,
@@ -347,158 +459,305 @@ def get_material_transfered_raw_materials(self):
 
 def add_to_stock_entry_detail(self, item_dict, bom_no=None):
 	cost_center = frappe.db.get_value("Company", self.company, 'cost_center')
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		for d in item_dict:
+			stock_uom = item_dict[d].get("stock_uom") or frappe.db.get_value("Item", d, "stock_uom")
 
-	for d in item_dict:
-		stock_uom = item_dict[d].get("stock_uom") or frappe.db.get_value("Item", d, "stock_uom")
+			se_child = self.append('items')
+			se_child.s_warehouse = item_dict[d].get("from_warehouse")
+			se_child.t_warehouse = item_dict[d].get("to_warehouse")
+			se_child.item_code = item_dict[d].get('item_code') or cstr(d)
+			se_child.item_name = item_dict[d]["item_name"]
+			se_child.description = item_dict[d]["description"]
+			se_child.uom = item_dict[d]["uom"] if item_dict[d].get("uom") else stock_uom
+			se_child.stock_uom = stock_uom
+			se_child.qty = flt(item_dict[d]["qty"], se_child.precision("qty"))
+			se_child.quantity = flt(item_dict[d]["quantity"], se_child.precision("quantity"))
+			se_child.expense_account = item_dict[d].get("expense_account")
+			se_child.cost_center = item_dict[d].get("cost_center") or cost_center
+			se_child.allow_alternative_item = item_dict[d].get("allow_alternative_item", 0)
+			se_child.subcontracted_item = item_dict[d].get("main_item_code")
+			se_child.original_item = item_dict[d].get("original_item")
+			se_child.batch_no = item_dict[d].get("batch_no")
 
-		se_child = self.append('items')
-		se_child.s_warehouse = item_dict[d].get("from_warehouse")
-		se_child.t_warehouse = item_dict[d].get("to_warehouse")
-		se_child.item_code = item_dict[d].get('item_code') or cstr(d)
-		se_child.item_name = item_dict[d]["item_name"]
-		se_child.description = item_dict[d]["description"]
-		se_child.uom = item_dict[d]["uom"] if item_dict[d].get("uom") else stock_uom
-		se_child.stock_uom = stock_uom
-		se_child.qty = flt(item_dict[d]["qty"], se_child.precision("qty"))
-		se_child.quantity = flt(item_dict[d]["quantity"], se_child.precision("quantity"))
-		se_child.expense_account = item_dict[d].get("expense_account")
-		se_child.cost_center = item_dict[d].get("cost_center") or cost_center
-		se_child.allow_alternative_item = item_dict[d].get("allow_alternative_item", 0)
-		se_child.subcontracted_item = item_dict[d].get("main_item_code")
-		se_child.original_item = item_dict[d].get("original_item")
-		se_child.batch_no = item_dict[d].get("batch_no")
+			if item_dict[d].get("idx"):
+				se_child.idx = item_dict[d].get("idx")
 
-		if item_dict[d].get("idx"):
-			se_child.idx = item_dict[d].get("idx")
+			if se_child.s_warehouse==None:
+				se_child.s_warehouse = self.from_warehouse
+			if se_child.t_warehouse==None:
+				se_child.t_warehouse = self.to_warehouse
 
-		if se_child.s_warehouse==None:
-			se_child.s_warehouse = self.from_warehouse
-		if se_child.t_warehouse==None:
-			se_child.t_warehouse = self.to_warehouse
-
-		# in stock uom
-		se_child.conversion_factor = flt(item_dict[d].get("conversion_factor")) or 1
-		se_child.transfer_qty = flt(item_dict[d]["quantity"]*se_child.conversion_factor, se_child.precision("quantity"))
+			# in stock uom
+			se_child.conversion_factor = flt(item_dict[d].get("conversion_factor")) or 1
+			se_child.transfer_qty = flt(item_dict[d]["quantity"]*se_child.conversion_factor, se_child.precision("quantity"))
 
 
-		# to be assigned for finished item
-		se_child.bom_no = bom_no
+			# to be assigned for finished item
+			se_child.bom_no = bom_no
+	else:
+		for d in item_dict:
+			stock_uom = item_dict[d].get("stock_uom") or frappe.db.get_value("Item", d, "stock_uom")
 
+			se_child = self.append('items')
+			se_child.s_warehouse = item_dict[d].get("from_warehouse")
+			se_child.t_warehouse = item_dict[d].get("to_warehouse")
+			se_child.item_code = item_dict[d].get('item_code') or cstr(d)
+			se_child.item_name = item_dict[d]["item_name"]
+			se_child.description = item_dict[d]["description"]
+			se_child.uom = item_dict[d]["uom"] if item_dict[d].get("uom") else stock_uom
+			se_child.stock_uom = stock_uom
+			se_child.qty = flt(item_dict[d]["qty"], se_child.precision("qty"))
+			# se_child.quantity = flt(item_dict[d]["quantity"], se_child.precision("quantity"))
+			se_child.expense_account = item_dict[d].get("expense_account")
+			se_child.cost_center = item_dict[d].get("cost_center") or cost_center
+			se_child.allow_alternative_item = item_dict[d].get("allow_alternative_item", 0)
+			se_child.subcontracted_item = item_dict[d].get("main_item_code")
+			se_child.original_item = item_dict[d].get("original_item")
+			se_child.batch_no = item_dict[d].get("batch_no")
+
+			if item_dict[d].get("idx"):
+				se_child.idx = item_dict[d].get("idx")
+
+			if se_child.s_warehouse==None:
+				se_child.s_warehouse = self.from_warehouse
+			if se_child.t_warehouse==None:
+				se_child.t_warehouse = self.to_warehouse
+
+			# in stock uom
+			se_child.conversion_factor = flt(item_dict[d].get("conversion_factor")) or 1
+			se_child.transfer_qty = flt(item_dict[d]["qty"]*se_child.conversion_factor, se_child.precision("qty"))
+
+
+			# to be assigned for finished item
+			se_child.bom_no = bom_no
+		
 #Work Order Override function
 def get_status(self, status=None):
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		'''Return the status based on stock entries against this Work Order'''
+		if not status:
+			status = self.status
 
-	'''Return the status based on stock entries against this Work Order'''
-	if not status:
-		status = self.status
+		if self.docstatus==0:
+			status = 'Draft'
+		elif self.docstatus==1:
+			if status != 'Stopped':
+				# Finbyz Changes: fg_completed_qty to fg_completed_quantity
+				stock_entries = frappe._dict(frappe.db.sql("""select purpose, sum(fg_completed_quantity)
+					from `tabStock Entry` where work_order=%s and docstatus=1
+					group by purpose""", self.name))
 
-	if self.docstatus==0:
-		status = 'Draft'
-	elif self.docstatus==1:
-		if status != 'Stopped':
-			# Finbyz Changes: fg_completed_qty to fg_completed_quantity
-			stock_entries = frappe._dict(frappe.db.sql("""select purpose, sum(fg_completed_quantity)
-				from `tabStock Entry` where work_order=%s and docstatus=1
-				group by purpose""", self.name))
+				status = "Not Started"
+				if stock_entries:
+					status = "In Process"
+					produced_qty = stock_entries.get("Manufacture")
+					
+					#Finbyz Changes: for under production allowance
+					under_production = flt(frappe.db.get_single_value("Manufacturing Settings", "under_production_allowance_percentage"))
+					allowed_qty = flt(self.qty) * (100 - under_production) / 100.0
 
-			status = "Not Started"
-			if stock_entries:
-				status = "In Process"
-				produced_qty = stock_entries.get("Manufacture")
-				
-				#Finbyz Changes: for under production allowance
-				under_production = flt(frappe.db.get_single_value("Manufacturing Settings", "under_production_allowance_percentage"))
-				allowed_qty = flt(self.qty) * (100 - under_production) / 100.0
-
-				if flt(produced_qty) >= abs(flt(allowed_qty)):
-					status = "Completed"
+					if flt(produced_qty) >= abs(flt(allowed_qty)):
+						status = "Completed"
+		else:
+			status = 'Cancelled'
+		return status
 	else:
-		status = 'Cancelled'
-	return status
+		'''Return the status based on stock entries against this Work Order'''
+		if not status:
+			status = self.status
 
+		if self.docstatus==0:
+			status = 'Draft'
+		elif self.docstatus==1:
+			if status != 'Stopped':
+				# Finbyz Changes: fg_completed_qty to fg_completed_quantity
+				stock_entries = frappe._dict(frappe.db.sql("""select purpose, sum(fg_completed_qty)
+					from `tabStock Entry` where work_order=%s and docstatus=1
+					group by purpose""", self.name))
+
+				status = "Not Started"
+				if stock_entries:
+					status = "In Process"
+					produced_qty = stock_entries.get("Manufacture")
+					
+					#Finbyz Changes: for under production allowance
+					under_production = flt(frappe.db.get_single_value("Manufacturing Settings", "under_production_allowance_percentage"))
+					allowed_qty = flt(self.qty) * (100 - under_production) / 100.0
+
+					if flt(produced_qty) >= abs(flt(allowed_qty)):
+						status = "Completed"
+		else:
+			status = 'Cancelled'
+		return status
+	
 def update_work_order_qty(self):
-	"""Update **Manufactured Qty** and **Material Transferred for Qty** in Work Order
-		based on Stock Entry"""
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		"""Update **Manufactured Qty** and **Material Transferred for Qty** in Work Order
+			based on Stock Entry"""
 
-	allowance_percentage = flt(frappe.db.get_single_value("Manufacturing Settings",
-		"overproduction_percentage_for_work_order"))
+		allowance_percentage = flt(frappe.db.get_single_value("Manufacturing Settings",
+			"overproduction_percentage_for_work_order"))
 
-	for purpose, fieldname in (("Manufacture", "produced_qty"),
-		("Material Transfer for Manufacture", "material_transferred_for_manufacturing")):
-		if (purpose == 'Material Transfer for Manufacture' and
-			self.operations and self.transfer_material_against == 'Job Card'):
-			continue
-		
-		#Finbyz Changes: changed from fg_completed_qty to fg_completed_quantity
-		qty = flt(frappe.db.sql("""select sum(fg_completed_quantity)
-			from `tabStock Entry` where work_order=%s and docstatus=1
-			and purpose=%s""", (self.name, purpose))[0][0])
+		for purpose, fieldname in (("Manufacture", "produced_qty"),
+			("Material Transfer for Manufacture", "material_transferred_for_manufacturing")):
+			if (purpose == 'Material Transfer for Manufacture' and
+				self.operations and self.transfer_material_against == 'Job Card'):
+				continue
+			
+			#Finbyz Changes: changed from fg_completed_qty to fg_completed_quantity
+			qty = flt(frappe.db.sql("""select sum(fg_completed_quantity)
+				from `tabStock Entry` where work_order=%s and docstatus=1
+				and purpose=%s""", (self.name, purpose))[0][0])
 
-		completed_qty = self.qty + (allowance_percentage/100 * self.qty)
+			completed_qty = self.qty + (allowance_percentage/100 * self.qty)
 
-		#Finbyz Changes: For multiple material transfer
-		if not self.skip_transfer:
-			if purpose == "Material Transfer for Manufacture":
-				qty = min(qty,self.qty)
-				
-		if qty > completed_qty:
-			frappe.throw(_("{0} ({1}) cannot be greater than planned quantity ({2}) in Work Order {3}").format(\
-				self.meta.get_label(fieldname), qty, completed_qty, self.name), StockOverProductionError)
-		
-		self.db_set(fieldname, qty)
+			#Finbyz Changes: For multiple material transfer
+			if not self.skip_transfer:
+				if purpose == "Material Transfer for Manufacture":
+					qty = min(qty,self.qty)
+					
+			if qty > completed_qty:
+				frappe.throw(_("{0} ({1}) cannot be greater than planned quantity ({2}) in Work Order {3}").format(\
+					self.meta.get_label(fieldname), qty, completed_qty, self.name), StockOverProductionError)
+			
+			self.db_set(fieldname, qty)
 
-		from erpnext.selling.doctype.sales_order.sales_order import update_produced_qty_in_so_item
+			from erpnext.selling.doctype.sales_order.sales_order import update_produced_qty_in_so_item
 
-		if self.sales_order and self.sales_order_item:
-			update_produced_qty_in_so_item(self.sales_order, self.sales_order_item)
+			if self.sales_order and self.sales_order_item:
+				update_produced_qty_in_so_item(self.sales_order, self.sales_order_item)
 
-	if self.production_plan:
-		self.update_production_plan_status()
+		if self.production_plan:
+			self.update_production_plan_status()
+	else:
+		"""Update **Manufactured Qty** and **Material Transferred for Qty** in Work Order
+			based on Stock Entry"""
+
+		allowance_percentage = flt(frappe.db.get_single_value("Manufacturing Settings",
+			"overproduction_percentage_for_work_order"))
+
+		for purpose, fieldname in (("Manufacture", "produced_qty"),
+			("Material Transfer for Manufacture", "material_transferred_for_manufacturing")):
+			if (purpose == 'Material Transfer for Manufacture' and
+				self.operations and self.transfer_material_against == 'Job Card'):
+				continue
+			
+			#Finbyz Changes: changed from fg_completed_qty to fg_completed_quantity
+			qty = flt(frappe.db.sql("""select sum(fg_completed_qty)
+				from `tabStock Entry` where work_order=%s and docstatus=1
+				and purpose=%s""", (self.name, purpose))[0][0])
+
+			completed_qty = self.qty + (allowance_percentage/100 * self.qty)
+
+			#Finbyz Changes: For multiple material transfer
+			if not self.skip_transfer:
+				if purpose == "Material Transfer for Manufacture":
+					qty = min(qty,self.qty)
+					
+			if qty > completed_qty:
+				frappe.throw(_("{0} ({1}) cannot be greater than planned quantity ({2}) in Work Order {3}").format(\
+					self.meta.get_label(fieldname), qty, completed_qty, self.name), StockOverProductionError)
+			
+			self.db_set(fieldname, qty)
+
+			from erpnext.selling.doctype.sales_order.sales_order import update_produced_qty_in_so_item
+
+			if self.sales_order and self.sales_order_item:
+				update_produced_qty_in_so_item(self.sales_order, self.sales_order_item)
+
+		if self.production_plan:
+			self.update_production_plan_status()
 
 
 #Work Order Override function
 def update_transaferred_qty_for_required_items(self):
-	''' Override for quantity remaining things are same
-		update transferred qty from submitted stock entries for that item against
-			the work order'''
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		''' Override for quantity remaining things are same
+			update transferred qty from submitted stock entries for that item against
+				the work order'''
 
-	for d in self.required_items:
-		# Finbyz Changes: changed qty to quantity
-		transferred_qty = frappe.db.sql('''select sum(quantity)
-			from `tabStock Entry` entry, `tabStock Entry Detail` detail
-			where
-				entry.work_order = %(name)s
-				and entry.purpose = "Material Transfer for Manufacture"
-				and entry.docstatus = 1
-				and detail.parent = entry.name
-				and (detail.item_code = %(item)s or detail.original_item = %(item)s)''', {
-					'name': self.name,
-					'item': d.item_code
-				})[0][0]
-		
+		for d in self.required_items:
+			# Finbyz Changes: changed qty to quantity
+			transferred_qty = frappe.db.sql('''select sum(quantity)
+				from `tabStock Entry` entry, `tabStock Entry Detail` detail
+				where
+					entry.work_order = %(name)s
+					and entry.purpose = "Material Transfer for Manufacture"
+					and entry.docstatus = 1
+					and detail.parent = entry.name
+					and (detail.item_code = %(item)s or detail.original_item = %(item)s)''', {
+						'name': self.name,
+						'item': d.item_code
+					})[0][0]
+			
 
-		d.db_set('transferred_qty', flt(transferred_qty), update_modified = False)
+			d.db_set('transferred_qty', flt(transferred_qty), update_modified = False)
+	else:
+		''' Override for quantity remaining things are same
+			update transferred qty from submitted stock entries for that item against
+				the work order'''
+
+		for d in self.required_items:
+			# Finbyz Changes: changed qty to quantity
+			transferred_qty = frappe.db.sql('''select sum(qty)
+				from `tabStock Entry` entry, `tabStock Entry Detail` detail
+				where
+					entry.work_order = %(name)s
+					and entry.purpose = "Material Transfer for Manufacture"
+					and entry.docstatus = 1
+					and detail.parent = entry.name
+					and (detail.item_code = %(item)s or detail.original_item = %(item)s)''', {
+						'name': self.name,
+						'item': d.item_code
+					})[0][0]
+			
+
+			d.db_set('transferred_qty', flt(transferred_qty), update_modified = False)
 
 #Work Order Override function
 def update_consumed_qty_for_required_items(self):
-	'''Override for quantity remaining things same
-	update consumed qty from submitted stock entries for that item against
-			the work order'''
-	for d in self.required_items:
-		#Finbyz Changes: changed qty to quantity
-		consumed_qty = frappe.db.sql('''select sum(quantity)
-			from `tabStock Entry` entry, `tabStock Entry Detail` detail
-			where
-				entry.work_order = %(name)s
-				and (entry.purpose = "Material Consumption for Manufacture"
-				or entry.purpose = "Manufacture")
-				and entry.docstatus = 1
-				and detail.parent = entry.name
-				and (detail.item_code = %(item)s or detail.original_item = %(item)s)''', {
-					'name': self.name,
-					'item': d.item_code
-				})[0][0]
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		'''Override for quantity remaining things same
+		update consumed qty from submitted stock entries for that item against
+				the work order'''
+		for d in self.required_items:
+			#Finbyz Changes: changed qty to quantity
+			consumed_qty = frappe.db.sql('''select sum(quantity)
+				from `tabStock Entry` entry, `tabStock Entry Detail` detail
+				where
+					entry.work_order = %(name)s
+					and (entry.purpose = "Material Consumption for Manufacture"
+					or entry.purpose = "Manufacture")
+					and entry.docstatus = 1
+					and detail.parent = entry.name
+					and (detail.item_code = %(item)s or detail.original_item = %(item)s)''', {
+						'name': self.name,
+						'item': d.item_code
+					})[0][0]
 
-		d.db_set('consumed_qty', flt(consumed_qty), update_modified = False)		
+			d.db_set('consumed_qty', flt(consumed_qty), update_modified = False)		
+	else:
+		'''Override for quantity remaining things same
+		update consumed qty from submitted stock entries for that item against
+				the work order'''
+		for d in self.required_items:
+			#Finbyz Changes: changed qty to quantity
+			consumed_qty = frappe.db.sql('''select sum(qty)
+				from `tabStock Entry` entry, `tabStock Entry Detail` detail
+				where
+					entry.work_order = %(name)s
+					and (entry.purpose = "Material Consumption for Manufacture"
+					or entry.purpose = "Manufacture")
+					and entry.docstatus = 1
+					and detail.parent = entry.name
+					and (detail.item_code = %(item)s or detail.original_item = %(item)s)''', {
+						'name': self.name,
+						'item': d.item_code
+					})[0][0]
+
+			d.db_set('consumed_qty', flt(consumed_qty), update_modified = False)		
+
 
 def validate_multiple_item_bom(self):
 	for item in self.finish_item:
