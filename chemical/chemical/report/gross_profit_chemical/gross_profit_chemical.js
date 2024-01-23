@@ -4,7 +4,7 @@
 frappe.query_reports["Gross Profit Chemical"] = {
 	"filters": [
 		{
-			"fieldname":"company",
+			"fieldname": "company",
 			"label": __("Company"),
 			"fieldtype": "Link",
 			"options": "Company",
@@ -12,37 +12,43 @@ frappe.query_reports["Gross Profit Chemical"] = {
 			"reqd": 1
 		},
 		{
-			"fieldname":"from_date",
+			"fieldname": "from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_start_date"),
 			"reqd": 1
 		},
 		{
-			"fieldname":"to_date",
+			"fieldname": "to_date",
 			"label": __("To Date"),
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_end_date"),
 			"reqd": 1
 		},
 		{
-			"fieldname":"sales_invoice",
+			"fieldname": "sales_invoice",
 			"label": __("Sales Invoice"),
 			"fieldtype": "Link",
 			"options": "Sales Invoice"
 		},
 		{
-			"fieldname":"group_by",
+			"fieldname": "group_by",
 			"label": __("Group By"),
 			"fieldtype": "Select",
-			"options": "Invoice\nItem Code\nItem Group\nBrand\nWarehouse\nCustomer\nCustomer Group\nTerritory\nSales Person\nProject",
+			"options": "Invoice\nItem Code\nItem Group\nBrand\nWarehouse\nCustomer\nCustomer Group\nTerritory\nSales Person\nProject\nMonthly\nPayment Term",
 			"default": "Invoice"
 		},
 		{
-			"fieldname":"show_return_entries",
-			"label": __("Show Return Entries"),
-			"fieldtype": "Check",
-			"default": 0
+			"fieldname": "item_group",
+			"label": __("Item Group"),
+			"fieldtype": "Link",
+			"options": "Item Group"
+		},
+		{
+			"fieldname": "sales_person",
+			"label": __("Sales Person"),
+			"fieldtype": "Link",
+			"options": "Sales Person"
 		},
 	],
 	"tree": true,
@@ -50,10 +56,10 @@ frappe.query_reports["Gross Profit Chemical"] = {
 	"parent_field": "parent_invoice",
 	"initial_depth": 3,
 	"formatter": function(value, row, column, data, default_formatter) {
-		if (column.fieldname == "sales_invoice" && column.options == "Item" && data.indent == 0) {
+		if (column.fieldname == "sales_invoice" && column.options == "Item" && data && data.indent == 0) {
 			column._options = "Sales Invoice";
 		} else {
-			column._options = "Item";
+			column._options = "";
 		}
 		value = default_formatter(value, row, column, data);
 
