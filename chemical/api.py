@@ -869,45 +869,50 @@ def get_fiscal(date):
 
 
 def quantity_price_to_qty_rate(self):
-	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
-		if self.items:
-			for item in self.items:
-				if item.item_code:
-					has_batch_no = frappe.db.get_value(
-						"Item", item.item_code, "has_batch_no"
-					)
-					maintain_as_is_stock = frappe.db.get_value(
-						"Item", item.item_code, "maintain_as_is_stock"
-					)
-					concentration = item.get("concentration") or 100
-					if item.qty and item.quantity == 0:
-						if maintain_as_is_stock:
-							item.db_set(
-								"quantity", flt(item.qty) * flt(concentration) / 100
-							)
-						else:
-							item.db_set("quantity", flt(item.qty))
-					if item.rate and item.price == 0:
-						if maintain_as_is_stock:
-							item.db_set("price", flt(item.rate) * 100 / concentration)
-						else:
-							item.db_set("price", flt(item.rate))
-	else:
-		for d in self.items:
-			maintain_as_is_stock = frappe.db.get_value(
-				"Item", d.item_code, "maintain_as_is_stock"
-			)
-			if maintain_as_is_stock:
-				if d.get('packing_size') and d.get("no_of_packages"):
-					if self.get("is_return"):
-						d.no_of_packages = -abs(d.no_of_packages)
-					d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
-			else:
-				if d.get("packing_size") and d.get("no_of_packages"):
-					if self.get("is_return"):
-						d.no_of_packages = -abs(d.no_of_packages)
-					d.qty = d.packing_size * d.no_of_packages
-					d.received_qty = d.packing_size * d.no_of_packages
+	meta = frappe.get_meta("Company")
+	field_name = "maintain_as_is_new"
+
+	if field_name in meta.fields:
+
+		if not frappe.db.get_value("Company", self.company, field_name):
+			if self.items:
+				for item in self.items:
+					if item.item_code:
+						has_batch_no = frappe.db.get_value(
+							"Item", item.item_code, "has_batch_no"
+						)
+						maintain_as_is_stock = frappe.db.get_value(
+							"Item", item.item_code, "maintain_as_is_stock"
+						)
+						concentration = item.get("concentration") or 100
+						if item.qty and item.quantity == 0:
+							if maintain_as_is_stock:
+								item.db_set(
+									"quantity", flt(item.qty) * flt(concentration) / 100
+								)
+							else:
+								item.db_set("quantity", flt(item.qty))
+						if item.rate and item.price == 0:
+							if maintain_as_is_stock:
+								item.db_set("price", flt(item.rate) * 100 / concentration)
+							else:
+								item.db_set("price", flt(item.rate))
+		else:
+			for d in self.items:
+				maintain_as_is_stock = frappe.db.get_value(
+					"Item", d.item_code, "maintain_as_is_stock"
+				)
+				if maintain_as_is_stock:
+					if d.get('packing_size') and d.get("no_of_packages"):
+						if self.get("is_return"):
+							d.no_of_packages = -abs(d.no_of_packages)
+						d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+				else:
+					if d.get("packing_size") and d.get("no_of_packages"):
+						if self.get("is_return"):
+							d.no_of_packages = -abs(d.no_of_packages)
+						d.qty = d.packing_size * d.no_of_packages
+						d.received_qty = d.packing_size * d.no_of_packages
 
 def get_due_date(term, posting_date=None, bill_date=None):
 	due_date = None

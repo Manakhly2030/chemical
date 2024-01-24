@@ -36,60 +36,112 @@ def execute(filters=None):
 						# 	 item_map[item]["stock_uom"]
 						# ])
 						if concentration == 0:
-							concentration = 1
-						if item_map[item]["maintain_as_is_stock"]:
-							data.append({
-								'item_code': item,
-								'item_group': item_map[item]["item_group"],
-								'warehouse': wh,
-								'batch_no': batch,
-								'lot_no': lot_no,
-								'voucher_type': qty_dict_without_group.voucher_type,
-								'voucher_no': qty_dict_without_group.voucher_no,
-								'concentration': concentration,
-								'packaging_material': packaging_material,
-								'packing_size': packing_size,
-								'company':qty_dict.company,
-								'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
-								'bal_qty': flt(qty_dict.bal_qty*concentration/100, float_precision),
-								'amount': flt((qty_dict.bal_qty*concentration/100) * flt(qty_dict_without_group.valuation_rate*100/concentration) , float_precision),
-								'as_is_qty': flt(qty_dict.bal_qty, float_precision),
-								'valuation_rate':flt(qty_dict_without_group.valuation_rate*100/concentration,float_precision),
-								'uom': item_map[item]["stock_uom"],
-								'party_type':qty_dict_without_group.party_type,
-								'party':qty_dict_without_group.party,
-								'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
-											target="_blank" item_code='{item}' filter_company='{filter_company}'from_date='{from_date}'to_date='{to_date}' batch_no='{batch}' 
-											onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger Chemical</button>""")
+							concentration = 100
+						if not frappe.db.get_value("Company", filter_company, "maintain_as_is_new"):
+							if item_map[item]["maintain_as_is_stock"]:
+								data.append({
+									'item_code': item,
+									'item_group': item_map[item]["item_group"],
+									'warehouse': wh,
+									'batch_no': batch,
+									'lot_no': lot_no,
+									'voucher_type': qty_dict_without_group.voucher_type,
+									'voucher_no': qty_dict_without_group.voucher_no,
+									'concentration': concentration,
+									'packaging_material': packaging_material,
+									'packing_size': packing_size,
+									'company':qty_dict.company,
+									'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
+									'bal_qty': flt(qty_dict.bal_qty*concentration/100, float_precision),
+									'amount': flt((qty_dict.bal_qty*concentration/100) * flt(qty_dict_without_group.valuation_rate*100/concentration) , float_precision),
+									'as_is_qty': flt(qty_dict.bal_qty, float_precision),
+									'valuation_rate':flt(qty_dict_without_group.valuation_rate*100/concentration,float_precision),
+									'uom': item_map[item]["stock_uom"],
+									'party_type':qty_dict_without_group.party_type,
+									'party':qty_dict_without_group.party,
+									'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
+												target="_blank" item_code='{item}' filter_company='{filter_company}'from_date='{from_date}'to_date='{to_date}' batch_no='{batch}' 
+												onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger Chemical</button>""")
 
-							})
+								})
+							else:
+								data.append({
+									'item_code': item,
+									'item_group': item_map[item]["item_group"],
+									'warehouse': wh,
+									'batch_no': batch,
+									'lot_no': lot_no,
+									'voucher_type': qty_dict_without_group.voucher_type,
+									'voucher_no': qty_dict_without_group.voucher_no,
+									'concentration': concentration,
+									'packaging_material': packaging_material,
+									'packing_size': packing_size,
+									'company':qty_dict.company,
+									'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
+									'bal_qty': flt(qty_dict.bal_qty, float_precision),
+									'amount': flt(qty_dict.bal_qty*qty_dict_without_group.valuation_rate, float_precision),
+									'as_is_qty': flt(qty_dict.bal_qty, float_precision),
+									'valuation_rate':qty_dict_without_group.valuation_rate,
+									'uom': item_map[item]["stock_uom"],
+									'party_type':qty_dict_without_group.party_type,
+									'party':qty_dict_without_group.party,
+									'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
+												target="_blank" item_code='{item}' filter_company='{filter_company}'from_date='{from_date}'to_date='{to_date}' batch_no='{batch}'
+												onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger Chemical</button>""")
+
+								})
 						else:
-							data.append({
-								'item_code': item,
-								'item_group': item_map[item]["item_group"],
-								'warehouse': wh,
-								'batch_no': batch,
-								'lot_no': lot_no,
-								'voucher_type': qty_dict_without_group.voucher_type,
-								'voucher_no': qty_dict_without_group.voucher_no,
-								'concentration': concentration,
-								'packaging_material': packaging_material,
-								'packing_size': packing_size,
-								'company':qty_dict.company,
-								'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
-								'bal_qty': flt(qty_dict.bal_qty, float_precision),
-								'amount': flt(qty_dict.bal_qty*qty_dict_without_group.valuation_rate, float_precision),
-								'as_is_qty': flt(qty_dict.bal_qty, float_precision),
-								'valuation_rate':qty_dict_without_group.valuation_rate,
-								'uom': item_map[item]["stock_uom"],
-								'party_type':qty_dict_without_group.party_type,
-								'party':qty_dict_without_group.party,
-								'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
-											target="_blank" item_code='{item}' filter_company='{filter_company}'from_date='{from_date}'to_date='{to_date}' batch_no='{batch}'
-											onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger Chemical</button>""")
+							if item_map[item]["maintain_as_is_stock"]:
+								data.append({
+									'item_code': item,
+									'item_group': item_map[item]["item_group"],
+									'warehouse': wh,
+									'batch_no': batch,
+									'lot_no': lot_no,
+									'voucher_type': qty_dict_without_group.voucher_type,
+									'voucher_no': qty_dict_without_group.voucher_no,
+									'concentration': concentration,
+									'packaging_material': packaging_material,
+									'packing_size': packing_size,
+									'company':qty_dict.company,
+									'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
+									'bal_qty': flt(qty_dict.bal_qty, float_precision),
+									'amount': flt(qty_dict.bal_qty*qty_dict_without_group.valuation_rate, float_precision),
+									'as_is_qty': flt(qty_dict.bal_qty / concentration, float_precision),
+									'valuation_rate':qty_dict_without_group.valuation_rate,
+									'uom': item_map[item]["stock_uom"],
+									'party_type':qty_dict_without_group.party_type,
+									'party':qty_dict_without_group.party,
+									'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
+												target="_blank" item_code='{item}' filter_company='{filter_company}'from_date='{from_date}'to_date='{to_date}' batch_no='{batch}'
+												onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger Chemical</button>""")
+								})
+							else:
+								data.append({
+									'item_code': item,
+									'item_group': item_map[item]["item_group"],
+									'warehouse': wh,
+									'batch_no': batch,
+									'lot_no': lot_no,
+									'voucher_type': qty_dict_without_group.voucher_type,
+									'voucher_no': qty_dict_without_group.voucher_no,
+									'concentration': concentration,
+									'packaging_material': packaging_material,
+									'packing_size': packing_size,
+									'company':qty_dict.company,
+									'packages': flt(qty_dict.bal_qty/packing_size,0) if packing_size else 0,
+									'bal_qty': flt(qty_dict.bal_qty, float_precision),
+									'amount': flt(qty_dict.bal_qty*qty_dict_without_group.valuation_rate, float_precision),
+									'as_is_qty': flt(qty_dict.bal_qty, float_precision),
+									'valuation_rate':qty_dict_without_group.valuation_rate,
+									'uom': item_map[item]["stock_uom"],
+									'party_type':qty_dict_without_group.party_type,
+									'party':qty_dict_without_group.party,
+									'stock_ledger': (f"""<button style='margin-left:5px;border:none;color: #fff; background-color: #1581e1; padding: 3px 5px;border-radius: 5px;'
+												target="_blank" item_code='{item}' filter_company='{filter_company}'from_date='{from_date}'to_date='{to_date}' batch_no='{batch}'
+												onClick=view_stock_leder_report(this.getAttribute('item_code'),this.getAttribute('filter_company'),this.getAttribute('from_date'),this.getAttribute('to_date'),this.getAttribute('batch_no'))>View Stock Ledger Chemical</button>""")
 
-							})
-
+								})
 	# for row in data:
 	# 	item_code = row['item_code']
 	# 	batch_no = row['batch_no']
