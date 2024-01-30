@@ -392,6 +392,8 @@ from chemical.chemical.doc_events.production_plan import get_open_sales_orders, 
 ProductionPlan.get_open_sales_orders = get_open_sales_orders
 ProductionPlan.get_items = get_items_from_sample
 ProductionPlan.create_work_order = create_work_order
+# ProductionPlan.show_list_created_message = show_list_created_message
+# ProductionPlan.make_work_order = make_work_order
 
 # Chemical Overrides
 

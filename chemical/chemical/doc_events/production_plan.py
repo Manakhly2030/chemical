@@ -1,9 +1,20 @@
 import frappe
-from frappe import _
+from frappe import _,msgprint
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
 from erpnext.manufacturing.doctype.work_order.work_order import get_item_details
 from pypika.terms import ExistsCriterion
+from frappe.utils import (
+	add_days,
+	ceil,
+	cint,
+	comma_and,
+	flt,
+	get_link_to_form,
+	getdate,
+	now_datetime,
+	nowdate,
+)
 
 #Override Production Plan Functions
 @frappe.whitelist()
@@ -11,11 +22,15 @@ def override_proplan_functions():
 
 	ProductionPlan.get_open_sales_orders = get_open_sales_orders
 	ProductionPlan.get_items = get_items_from_sample
+	# ProductionPlan.show_list_created_message = show_list_created_message
+	# ProductionPlan.make_work_order = make_work_order
+
 
 @frappe.whitelist()
 def create_work_order(self, item):
 	from erpnext.manufacturing.doctype.work_order.work_order import OverProductionError
-
+	
+	work_order_names = []
 	if flt(item.get("qty")) <= 0:
 		return
 
@@ -32,27 +47,27 @@ def create_work_order(self, item):
 			sales_order_qty -= wo_qty
 
 			# Create a new work order for each row in po_items
-			new_wo = frappe.new_doc("Work Order")
-			new_wo.update(item)
-			new_wo.planned_start_date = item.get("planned_start_date") or item.get("schedule_date")
+			wo = frappe.new_doc("Work Order")
+			wo.update(item)
+			wo.planned_start_date = item.get("planned_start_date") or item.get("schedule_date")
 
 			if item.get("warehouse"):
-				new_wo.fg_warehouse = item.get("warehouse")
+				wo.fg_warehouse = item.get("warehouse")
 
-			new_wo.set_work_order_operations()
-			new_wo.set_required_items()
-			new_wo.qty = wo_qty  # Set the calculated quantity for the work order
+			wo.set_work_order_operations()
+			wo.set_required_items()
+			wo.qty = wo_qty  # Set the calculated quantity for the work order
 
-			new_wo.flags.ignore_mandatory = True
-			# new_wo.flags.ignore_validate = True
-			new_wo.insert()
-			new_wo.save()
+			wo.flags.ignore_mandatory = True
+			# wo.flags.ignore_validate = True
+			wo.insert()
+			wo.save()
+			work_order_names.append(wo.name)
 
 		except OverProductionError:
 			pass
 
-	return new_wo.name  # You may want to return the last work order name outside the loop
-	
+	return work_order_names  # You may want to return the last work order name outside the loop
 
 
 def get_sales_orders(self):
