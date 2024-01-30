@@ -307,11 +307,7 @@ frappe.ui.form.on("Sales Invoice", {
                 });
             }
         });
-        frappe.db.get_value("Company", frm.doc.company, 'maintain_as_is_new', function (c) {
-            if(!c.maintain_as_is_new) {
-                frm.trigger("cal_total_quantity");
-            }
-        });
+        frm.trigger("cal_total_quantity");
     },
     cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
@@ -390,12 +386,18 @@ frappe.ui.form.on("Sales Invoice", {
 	},
     
     cal_total_quantity: function (frm) {
-		let total_quantity = 0.0;
-		
-		frm.doc.items.forEach(function (d) {
-			total_quantity += flt(d.quantity);
-		});
-		frm.set_value("total_quantity", total_quantity);
+        frappe.db.get_value("Company", frm.doc.company, 'maintain_as_is_new', function (r) {
+            if(!r.maintain_as_is_new) {
+                let total_quantity = 0.0;
+                
+                frm.doc.items.forEach(function (d) {
+                    total_quantity += flt(d.quantity);
+                });
+                frm.set_value("total_quantity", total_quantity);
+            } else {
+                //
+            }
+        });
 	},
 
     company: function (frm) {
