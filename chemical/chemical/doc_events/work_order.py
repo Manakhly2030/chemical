@@ -6,6 +6,8 @@ from frappe.utils import nowdate, flt, cint, cstr
 from six import itervalues
 from erpnext.manufacturing.doctype.work_order.work_order import StockOverProductionError
 
+class OverProductionError(frappe.ValidationError):
+	pass
 
 def validate(self,method):
 	set_batch_serial_check_box(self)
@@ -18,6 +20,40 @@ def set_batch_serial_check_box(self):
 def before_submit(self, method):
 	validate_multiple_item_bom(self)
 	# validate_finish_item_table(self)
+
+def validate_qty(self):
+		if not self.qty > 0:
+			frappe.throw(_("Quantity to Manufacture must be greater than 0."))
+
+		if (
+			self.production_plan
+			and self.production_plan_item
+			and not self.production_plan_sub_assembly_item
+		):
+			qty_dict = frappe.db.get_value(
+				"Production Plan Item", self.production_plan_item, ["planned_qty", "ordered_qty"], as_dict=1
+			)
+
+			if not qty_dict:
+				return
+
+			allowance_qty = (
+				flt(
+					frappe.db.get_single_value(
+						"Manufacturing Settings", "overproduction_percentage_for_work_order"
+					)
+				)
+				/ 100
+				* qty_dict.get("planned_qty", 0)
+			)
+
+			max_qty = qty_dict.get("planned_qty", 0) + allowance_qty - qty_dict.get("ordered_qty", 0)
+
+			if not max_qty > 0:
+				frappe.throw(
+					_("Cannot produce more item for {0}").format(self.production_item), OverProductionError
+				)
+			
 
 @frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):

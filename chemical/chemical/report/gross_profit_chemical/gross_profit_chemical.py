@@ -51,6 +51,7 @@ def execute(filters=None):
 				"base_amount",
 				"buying_amount",
 				"batch_no",
+				"lot_no",
 				"gross_profit",
 				"gross_profit_percent",
 				"project",
@@ -267,6 +268,7 @@ def get_columns(group_wise_columns, filters):
 			},
 			"qty": {"label": _("Qty"), "fieldname": "qty", "fieldtype": "Float", "width": 80},
 			"batch_no": {"label": _("Batch No"), "fieldname": "batch_no", "fieldtype": "Data", "width": 80},
+			"lot_no":{"label": _("Lot No"), "fieldname": "lot_no", "fieldtype": "Data", "width": 80},
 			"base_rate": {
 				"label": _("Avg. Selling Rate"),
 				"fieldname": "avg._selling_rate",
@@ -403,7 +405,8 @@ def get_column_names():
 			"gross_profit": "gross_profit",
 			"gross_profit_percent": "gross_profit_%",
 			"project": "project",
-			"batch_no":"batch_no"
+			"batch_no":"batch_no",
+			"lot_no":"lot_no"
 		}
 	)
 
@@ -840,6 +843,7 @@ class GrossProfitGenerator(object):
 				`tabSales Invoice Item`.cost_center,
 				`tabSales Invoice Item`.name as "si_detail",
 				`tabSales Invoice Item`.batch_no as batch_no,
+				`tabSales Invoice Item`.lot_no as lot_no,
 				item.has_batch_no
 				{sales_person_cols}
 				{payment_term_cols}
@@ -879,7 +883,8 @@ class GrossProfitGenerator(object):
 		dn_list = frappe.db.sql("""
 			select
 				`tabDelivery Note Item`.name, `tabDelivery Note Item`.item_code,
-				`tabDelivery Note Item`.batch_no, `tabDelivery Note Item`.si_detail
+				`tabDelivery Note Item`.batch_no, `tabDelivery Note Item`.si_detail,
+				`tabDelivery Note Item`.lot_no
 			from
 				`tabDelivery Note`
 				INNER JOIN `tabDelivery Note Item` on `tabDelivery Note Item`.parent = `tabDelivery Note`.name
@@ -895,19 +900,26 @@ class GrossProfitGenerator(object):
 		)
 	
 		batch_map={}
+		lot_map = {}
 		for each in dn_list:
 			batch_map.setdefault(each.si_detail,[])
 			batch_map[each.si_detail].append(each.get('batch_no'))
-		
+			lot_map.setdefault(each.si_detail,[])
+			if each.get('lot_no'):
+				lot_map[each.si_detail].append(each.get('lot_no'))
+				
 		for row in self.si_list:
 			if row.has_batch_no and not row.batch_no:
 				if batch_map.get(row.item_row):
 					row.batch_no = ' , '.join(list(set(batch_map.get(row.item_row))))
+					row.lot_no = ' , '.join(list(set(lot_map.get(row.item_row))))
 					filters = "batch_id="+quote(str(["in", list(set(batch_map.get(row.item_row)))]).replace(" ", "").replace("'", '"'))
 					url= f"/app/batch/view/list?{filters}"
 					row.batch_no = f'<a href={url} target="_blank">{row.batch_no}</a>'
 					row.batch_list = batch_map.get(row.item_row)
 					row.first_batch = batch_map.get(row.item_row)[0]
+			
+		
 
 	def get_delivery_notes(self):
 		self.delivery_notes = frappe._dict({})
