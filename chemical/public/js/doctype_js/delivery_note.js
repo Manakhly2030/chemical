@@ -178,7 +178,7 @@ frappe.ui.form.on("Delivery Note", {
                         } 
                         else {
                             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                                if (r.maintain_as_is_stock) {
+                                if (r.maintain_as_is_stock && d.packing_size && d.no_of_packages && d.concentration) {
                                     frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
                                 }
                                 else {

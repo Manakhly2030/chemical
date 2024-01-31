@@ -295,7 +295,7 @@ frappe.ui.form.on("Sales Invoice", {
                         } 
                         else {
                             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                                if (r.maintain_as_is_stock) {
+                                if (r.maintain_as_is_stock && d.packing_size && d.no_of_packages && d.concentration) {
                                     frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
                                 }
                                 else {
@@ -371,7 +371,7 @@ frappe.ui.form.on("Sales Invoice", {
                         } 
                         else {
                             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                                if (r.maintain_as_is_stock) {
+                                if (r.maintain_as_is_stock && d.packing_size && d.no_of_packages && d.concentration) {
                                     frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
                                 }
                                 else {
@@ -386,12 +386,16 @@ frappe.ui.form.on("Sales Invoice", {
 	},
     
     cal_total_quantity: function (frm) {
-		let total_quantity = 0.0;
-		
-		frm.doc.items.forEach(function (d) {
-			total_quantity += flt(d.quantity);
-		});
-		frm.set_value("total_quantity", total_quantity);
+        frappe.db.get_value("Company", frm.doc.company, "maintain_as_is_new", function(r){
+            if(!r.maintain_as_is_new) {
+                let total_quantity = 0.0;
+                
+                frm.doc.items.forEach(function (d) {
+                    total_quantity += flt(d.quantity);
+                });
+                frm.set_value("total_quantity", total_quantity);
+            }
+        });
 	},
 
     company: function (frm) {
