@@ -8,14 +8,14 @@ import frappe.defaults
 from frappe import _
 from frappe.utils import cstr, cint, flt, comma_or, getdate, nowdate, formatdate, format_time
 from erpnext.stock.utils import get_incoming_rate
-from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.stock_ledger import get_previous_sle, NegativeStockError, get_valuation_rate
+from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
 from erpnext.stock.get_item_details import get_bin_details, get_conversion_factor, get_default_cost_center
 from erpnext.stock.doctype.batch.batch import get_batch_no, set_batch_nos, get_batch_qty
 import json
-from six import iteritems
 
 from erpnext.controllers.stock_controller import StockController
+from six import string_types
 
 form_grid_templates = {
 	"items": "templates/form_grid/stock_entry_grid.html"
@@ -25,17 +25,7 @@ class MaterialTransferInstruction(StockController):
 	def onload(self):
 		for item in self.get("items"):
 			item.update(get_bin_details(item.item_code, item.s_warehouse))
-			
-	def before_save(self):
-		for row in self.items:
-			if row.concentration:
-				if row.packing_size:
-					row.qty_as_per_packing_size = flt((row.qty/(row.concentration/100))/row.packing_size)
-				else:
-					row.qty_as_per_packing_size = flt(row.qty/(row.concentration/100))
-			elif row.packing_size:
-				row.qty_as_per_packing_size = flt(row.qty/row.packing_size)
-				
+
 	def validate(self):
 		self.pro_doc = frappe._dict()
 		if self.work_order:
@@ -61,6 +51,7 @@ class MaterialTransferInstruction(StockController):
 
 	def on_submit(self):
 		self.update_work_order()
+		self.batch_validation()
 
 	def on_cancel(self):
 		self.check_stock_entries()
@@ -93,7 +84,7 @@ class MaterialTransferInstruction(StockController):
 
 			pro_doc.db_set('status', status)
 			pro_doc.save()
-			#frappe.db.commit()
+			frappe.db.commit()
 
 	def check_stock_entries(self):
 		stock_entries = frappe.get_list("Stock Entry", filters={
@@ -151,6 +142,12 @@ class MaterialTransferInstruction(StockController):
 				if expiry_date:
 					if getdate(self.posting_date) > getdate(expiry_date):
 						frappe.throw(_("Batch {0} of Item {1} has expired.").format(item.batch_no, item.item_code))
+						
+	def batch_validation(self):
+		for item in self.get("items"):
+			has_batch_no = frappe.db.get_value("Item",item.item_code,'has_batch_no')
+			if has_batch_no and not item.batch_no:
+				frappe.throw(_("Row: {} Please select the batch for item {}").format(item.idx, item.item_code))
 
 	def set_incoming_rate(self):
 		for d in self.items:
@@ -252,7 +249,7 @@ class MaterialTransferInstruction(StockController):
 			'description'		  	: item.description,
 			'image'					: item.image,
 			'item_name' 		  	: item.item_name,
-			'cost_center'			: get_default_cost_center(args, item, item_group_defaults, self.company),
+			'cost_center'			: item.get('buying_cost_center'),
 			'qty'					: args.get("qty"),
 			'transfer_qty'			: args.get('qty'),
 			'conversion_factor'		: 1,
@@ -323,7 +320,7 @@ class MaterialTransferInstruction(StockController):
 				self.bom_no = self.pro_doc.bom_no
 				self.production_item = self.pro_doc.production_item
 			else:
-				# invalid production order
+				# invalid Work Order
 				self.work_order = None
 
 	def get_pending_raw_materials(self):
@@ -333,7 +330,7 @@ class MaterialTransferInstruction(StockController):
 		"""
 		item_dict = self.get_pro_order_required_items()
 		max_qty = flt(self.pro_doc.qty)
-		for item, item_details in iteritems(item_dict):
+		for item, item_details in item_dict.items():
 			pending_to_issue = flt(item_details.required_qty) - flt(item_details.transferred_qty)
 			desire_to_transfer = flt(self.fg_completed_qty) * flt(item_details.required_qty) / max_qty
 
@@ -424,6 +421,7 @@ class MaterialTransferInstruction(StockController):
 
 		po_qty = frappe.db.sql("""select qty, produced_qty, material_transferred_for_manufacturing from
 			`tabWork Order` where name=%s""", self.work_order, as_dict=1)[0]
+
 		manufacturing_qty = flt(po_qty.qty)
 		produced_qty = flt(po_qty.produced_qty)
 		trans_qty = flt(po_qty.material_transferred_for_manufacturing)
@@ -493,7 +491,8 @@ def get_additional_costs(work_order=None, bom_no=None, fg_qty=None):
 
 		additional_costs.append({
 			"description": "Additional Operating Cost",
-			"amount": additional_operating_cost_per_unit * flt(fg_qty)
+			"amount": additional_operating_cost_per_unit * flt(fg_qty),
+			'expense_account': 'Spray Drying Cost - EG'
 		})
 
 	return additional_costs
@@ -538,7 +537,7 @@ def get_uom_details(item_code, uom, qty):
 
 @frappe.whitelist()
 def get_warehouse_details(args):
-	if isinstance(args, basestring):
+	if isinstance(args, string_types):
 		args = json.loads(args)
 
 	args = frappe._dict(args)
@@ -571,39 +570,39 @@ def make_material_transfer(work_order_id, qty=None):
 	return mti.as_dict()
 
 
-# @frappe.whitelist()
-# def get_raw_materials(work_order):
-# 	mti_data = frappe.db.sql("""select name
-# 		from `tabMaterial Transfer Instruction`
-# 		where docstatus = 1
-# 			and work_order = %s """, work_order, as_dict = 1)
+@frappe.whitelist()
+def get_raw_materials(work_order):
+	mti_data = frappe.db.sql("""select name
+		from `tabMaterial Transfer Instruction`
+		where docstatus = 1
+			and work_order = %s """, work_order, as_dict = 1)
 
-# 	if not mti_data:
-# 		frappe.msgprint(_("No Material Transfer Instruction found!"))
-# 		return
+	if not mti_data:
+		# frappe.msgprint(_("No Material Transfer Instruction found!"))
+		return
 
-# 	transfer_data = []
+	transfer_data = []
 
-# 	for mti in mti_data:
-# 		mti_doc = frappe.get_doc("Material Transfer Instruction", mti.name)
-# 		for row in mti_doc.items:
-# 			transfer_dict = {}
-# 			transfer_dict['item_code'] = row.item_code
-# 			transfer_dict['item_name'] = row.item_name
-# 			transfer_dict['description'] = row.description
-# 			transfer_dict['uom'] = row.uom
-# 			transfer_dict['stock_uom'] = row.stock_uom
-# 			transfer_dict['qty'] = row.qty
-# 			transfer_dict['batch_no'] = row.batch_no
-# 			transfer_dict['transfer_qty'] = row.transfer_qty
-# 			transfer_dict['conversion_factor'] = row.conversion_factor
-# 			transfer_dict['s_warehouse'] = row.s_warehouse
-# 			transfer_dict['bom_no'] = row.bom_no
-# 			transfer_dict['lot_no'] = row.lot_no
-# 			transfer_dict['packaging_material'] = row.packaging_material
-# 			transfer_dict['packing_size'] = row.packing_size
-# 			transfer_dict['batch_yield'] = row.batch_yield
-# 			transfer_dict['concentration'] = row.concentration
-# 			transfer_data.append(transfer_dict)
+	for mti in mti_data:
+		mti_doc = frappe.get_doc("Material Transfer Instruction", mti.name)
+		for row in mti_doc.items:
+			transfer_dict = {}
+			transfer_dict['item_code'] = row.item_code
+			transfer_dict['item_name'] = row.item_name
+			transfer_dict['description'] = row.description
+			transfer_dict['uom'] = row.uom
+			transfer_dict['stock_uom'] = row.stock_uom
+			transfer_dict['qty'] = row.qty
+			transfer_dict['batch_no'] = row.batch_no
+			transfer_dict['transfer_qty'] = row.transfer_qty
+			transfer_dict['conversion_factor'] = row.conversion_factor
+			transfer_dict['s_warehouse'] = row.s_warehouse
+			transfer_dict['bom_no'] = row.bom_no
+			transfer_dict['lot_no'] = row.lot_no
+			transfer_dict['packaging_material'] = row.packaging_material
+			transfer_dict['packing_size'] = row.packing_size
+			transfer_dict['batch_yield'] = row.batch_yield
+			transfer_dict['concentration'] = row.concentration
+			transfer_data.append(transfer_dict)
 
-# 	return transfer_data
+	return transfer_data

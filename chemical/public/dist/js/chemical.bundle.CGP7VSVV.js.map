@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../apps/chemical/chemical/public/js/get_company_and_item_defaults.js"],
+  "sourcesContent": ["frappe.provide(\"chemical\");\n\nchemical.CompanyAndItemDefaults = class StockController extends frappe.ui.form.Controller {\n    async setup() {\n        await this.get_maintain_as_is_new();\n    }\n\n    async get_maintain_as_is_new() {\n        this.frm.maintain_as_is_new = 0;\n        if (this.frm.doc.company){\n            await frappe.db.get_value(\"Company\", this.frm.doc.company, \"maintain_as_is_new\").then(\n                (response) => {\n                    var data = response['message'];\n                    this.frm.maintain_as_is_new = data['maintain_as_is_new'];\n                }\n            )\n        }\n    }\n}"],
+  "mappings": "MAAA,OAAO,QAAQ,UAAU,EAEzB,SAAS,uBAAyB,aAA8B,QAAO,GAAG,KAAK,UAAW,MAChF,QAAQ,CACV,KAAM,MAAK,uBAAuB,CACtC,MAEM,yBAAyB,CAC3B,KAAK,IAAI,mBAAqB,EAC1B,KAAK,IAAI,IAAI,SACb,KAAM,QAAO,GAAG,UAAU,UAAW,KAAK,IAAI,IAAI,QAAS,oBAAoB,EAAE,KAC7E,AAAC,GAAa,CACV,GAAI,GAAO,EAAS,QACpB,KAAK,IAAI,mBAAqB,EAAK,kBACvC,CACJ,CAER,CACJ",
+  "names": []
+}

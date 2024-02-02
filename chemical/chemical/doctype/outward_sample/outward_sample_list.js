@@ -22,5 +22,16 @@ frappe.listview_settings['Outward Sample'] = {
         else if(doc.status === "Under Process"){
             return [__("Under Process"), "orange", "status,=,Under Process"];
         }
-    }
+    },
+    onload: function(listview) {
+		if (listview.page.fields_dict.link_to) {
+			listview.page.fields_dict.link_to.get_query = function() {
+				return {
+					"filters": {
+						"name": ["in", ["Customer", "Supplier", "Lead"]],
+					}
+				};
+			};
+		}
+	}
 }

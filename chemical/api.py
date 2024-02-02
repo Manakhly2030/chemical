@@ -709,6 +709,20 @@ def se_cal_rate_qty(self):
 						d.basic_rate = d.price
 	else:
 		for d in self.items:
+<<<<<<< HEAD
+			maintain_as_is_stock = frappe.db.get_value(
+				"Item", d.item_code, "maintain_as_is_stock"
+			)
+			if maintain_as_is_stock:
+				if d.get('packing_size') and d.get("no_of_packages"):
+					if self.get("is_return"):
+						d.no_of_packages = -abs(d.no_of_packages)
+					d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+			else:
+				if d.get("packing_size") and d.get("no_of_packages"):
+					qty = cint(d.packing_size) * cint(d.no_of_packages)
+					d.receive_qty = d.packing_size * d.no_of_packages
+=======
 			if not d.get("ignore_calculation"):
 				maintain_as_is_stock = frappe.db.get_value(
 					"Item", d.item_code, "maintain_as_is_stock"
@@ -722,6 +736,7 @@ def se_cal_rate_qty(self):
 					if d.get("packing_size") and d.get("no_of_packages"):
 						d.qty = d.packing_size * d.no_of_packages
 						# d.receive_qty = d.packing_size * d.no_of_packages
+>>>>>>> 953baa18672595138c861709a3637fbb761edc3b
 
 def cal_actual_valuations(self):
 	for row in self.items:

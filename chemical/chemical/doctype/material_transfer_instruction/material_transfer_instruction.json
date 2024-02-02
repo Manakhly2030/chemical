@@ -264,10 +264,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-01-01 12:35:46.238918",
+ "modified": "2024-01-25 10:33:18.904324",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Material Transfer Instruction",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -287,5 +288,6 @@
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "title"
 }

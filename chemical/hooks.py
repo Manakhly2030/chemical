@@ -1,6 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from . import __version__ as app_version
+app_name = "chemical"
+app_title = "Chemical"
+app_publisher = "FinByz Tech Pvt. Ltd."
+app_description = "Custom App for chemical Industry"
+app_icon = "octicon octicon-beaker"
+app_color = "Orange"
+app_email = "info@finbyz.com"
+app_license = "GPL 3.0"
+
+from . import __version__ as app_version
 
 # from erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool import OpeningInvoiceCreationTool
 # from chemical.chemical.doc_events.opening_invoice_creation_tool import get_invoice_dict, make_invoices
@@ -44,14 +54,6 @@ from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityI
 from chemical.chemical.doc_events.quality_inspection import update_qc_reference #done
 QualityInspection.update_qc_reference = update_qc_reference #done
 
-app_name = "chemical"
-app_title = "Chemical"
-app_publisher = "FinByz Tech Pvt. Ltd."
-app_description = "Custom App for chemical Industry"
-app_icon = "octicon octicon-beaker"
-app_color = "Orange"
-app_email = "info@finbyz.com"
-app_license = "GPL 3.0"
 
 # Includes in <head>
 # ------------------
@@ -87,6 +89,7 @@ app_license = "GPL 3.0"
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
 doctype_js = {
+	"Production Plan": "public/js/doctype_js/production_plan.js",
 	"BOM": "public/js/doctype_js/bom.js",
 	"BOM Update Tool": "public/js/doctype_js/bom_update_tool.js",
 	"Stock Entry": "public/js/doctype_js/stock_entry.js",
@@ -99,7 +102,6 @@ doctype_js = {
 	"Address": "public/js/doctype_js/address.js",
 	"Customer": "public/js/doctype_js/customer.js",
 	"Supplier": "public/js/doctype_js/supplier.js",
-	"Production Plan": "public/js/doctype_js/production_plan.js",
 	"Purchase Receipt": "public/js/doctype_js/purchase_receipt.js",
 	"Item": "public/js/doctype_js/item.js",
 	"Batch": "public/js/doctype_js/batch.js",

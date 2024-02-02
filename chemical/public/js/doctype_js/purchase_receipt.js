@@ -203,49 +203,51 @@ frappe.ui.form.on("Purchase Receipt", {
 				});
 			} else {
 				frm.doc.items.forEach(function(d) {
-					if(!d.ignore_calculation) {
-						frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function(r) {
-							if(r.maintain_as_is_stock && d.packing_size && d.no_of_packages && d.concentration){
+					frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function(r) {
+						if(r.maintain_as_is_stock){
+							if (d.packing_size && d.no_of_packages && d.concentration) {
 								frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
 								frappe.model.set_value(d.doctype, d.name, 'received_qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
-							} else {
-								if (d.packing_size && d.no_of_packages) {
-									packing_size = d.packing_size
-									frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
-									frappe.model.set_value(d.doctype, d.name, 'received_qty', d.packing_size * d.no_of_packages);
-								}
 							}
-						});	
-					}	
+						} else {
+							if (d.packing_size && d.no_of_packages) {
+								frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
+								frappe.model.set_value(d.doctype, d.name, 'received_qty', d.packing_size * d.no_of_packages);
+							}
+						}
+					});
 				});
 			}
-		});
-
+		});	
     },
     before_save: function(frm) {
         frm.trigger("cal_total");
     },
     cal_total: function(frm) {
-        let total_quantity = 0;
-        let total_supplier_qty = 0;
-        let total_supplier_quantity = 0;
-        let total_packages = 0;
+		frappe.db.get_value("Company", frm.doc.company, 'maintain_as_is_new', function (c) {
+			if(!c.maintain_as_is_new) {
+				let total_quantity = 0;
+				let total_supplier_qty = 0;
+				let total_supplier_quantity = 0;
+				let total_packages = 0;
 
-        frm.doc.items.forEach(function(d) {
-            total_quantity += flt(d.quantity);
-            if (frappe.meta.get_docfield("Purchase Receipt Item", "supplier_qty")) {
-                total_supplier_qty += flt(d.supplier_qty);
-                total_supplier_quantity += flt(d.supplier_quantity);
-                total_packages += flt(d.no_of_packages);
-            }
+				frm.doc.items.forEach(function(d) {
+					total_quantity += flt(d.quantity);
+					if (frappe.meta.get_docfield("Purchase Receipt Item", "supplier_qty")) {
+						total_supplier_qty += flt(d.supplier_qty);
+						total_supplier_quantity += flt(d.supplier_quantity);
+						total_packages += flt(d.no_of_packages);
+					}
 
-        });
-        frm.set_value("total_quantity", total_quantity);
-        if (frappe.meta.get_docfield("Purchase Receipt", "total_supplier_qty")) {
-            frm.set_value("total_supplier_qty", total_supplier_qty);
-            frm.set_value("total_supplier_quantity", total_supplier_quantity);
-            frm.set_value("total_packages", total_packages);
-        }
+				});
+				frm.set_value("total_quantity", total_quantity);
+				if (frappe.meta.get_docfield("Purchase Receipt", "total_supplier_qty")) {
+					frm.set_value("total_supplier_qty", total_supplier_qty);
+					frm.set_value("total_supplier_quantity", total_supplier_quantity);
+					frm.set_value("total_packages", total_packages);
+				}
+			}
+		});
 
     },
 

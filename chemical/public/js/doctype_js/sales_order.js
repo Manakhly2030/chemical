@@ -85,8 +85,8 @@ frappe.ui.form.on("Sales Order", {
     },
     
     cal_total_quantity: function (frm) {
-        frappe.db.get_value("Company", frm.doc.company, "maintain_as_is_new", function(r){
-            if(!r.maintain_as_is_new){
+        frappe.db.get_value("Company", frm.doc.company, 'maintain_as_is_new', function (c) {
+            if(!c.maintain_as_is_new) {
                 let total_quantity = 0.0;
                 
                 frm.doc.items.forEach(function (d) {
@@ -94,7 +94,7 @@ frappe.ui.form.on("Sales Order", {
                 });
                 frm.set_value("total_quantity", total_quantity);
             }
-        })
+        });
 	},
     
     

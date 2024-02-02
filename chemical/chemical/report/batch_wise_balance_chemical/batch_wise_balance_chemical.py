@@ -9,6 +9,7 @@ from frappe.utils import flt, cint, getdate
 def execute(filters=None):
 	if not filters: filters = {}
 
+
 	float_precision = cint(frappe.db.get_default("float_precision")) or 3
 
 	columns = get_columns(filters)
