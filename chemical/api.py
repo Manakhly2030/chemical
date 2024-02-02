@@ -222,12 +222,21 @@ def cal_rate_qty(self):
 						d.rate = flt(d.price)
 	else:
 		for d in self.items:
-			frappe.throw(str(d.qty))
 			if not d.get("ignore_calculation"):
-				if d.get("packing_size") and d.get("no_of_packages"):
-					if self.get("is_return"):
-						d.no_of_packages = -abs(d.no_of_packages)
-					d.qty = d.packing_size * d.no_of_packages
+				maintain_as_is_stock = frappe.db.get_value(
+				"Item", d.item_code, "maintain_as_is_stock"
+				)
+				if maintain_as_is_stock:
+					if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
+						if self.get("is_return"):
+							d.no_of_packages = -abs(d.no_of_packages)
+						d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+				else:
+					if d.get("packing_size") and d.get("no_of_packages"):
+						if self.get("is_return"):
+							d.no_of_packages = -abs(d.no_of_packages)
+						d.qty = d.packing_size * d.no_of_packages
+						d.received_qty = d.packing_size * d.no_of_packages
 
 def purchase_cal_rate_qty(self):
 	if not frappe.get_value("Company", self.company, "maintain_as_is_new"):
@@ -908,7 +917,7 @@ def quantity_price_to_qty_rate(self):
 					"Item", d.item_code, "maintain_as_is_stock"
 					)
 					if maintain_as_is_stock:
-						if d.get('packing_size') and d.get("no_of_packages"):
+						if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
 							if self.get("is_return"):
 								d.no_of_packages = -abs(d.no_of_packages)
 							d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
