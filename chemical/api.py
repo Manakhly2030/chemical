@@ -222,6 +222,7 @@ def cal_rate_qty(self):
 						d.rate = flt(d.price)
 	else:
 		for d in self.items:
+			frappe.throw(str(d.qty))
 			if not d.get("ignore_calculation"):
 				if d.get("packing_size") and d.get("no_of_packages"):
 					if self.get("is_return"):
@@ -902,6 +903,7 @@ def quantity_price_to_qty_rate(self):
 								item.db_set("price", flt(item.rate))
 		else:
 			for d in self.items:
+				frappe.throw(str(d.qty))
 				if not d.get("ignore_calculation"):
 					maintain_as_is_stock = frappe.db.get_value(
 					"Item", d.item_code, "maintain_as_is_stock"
