@@ -222,7 +222,6 @@ def cal_rate_qty(self):
 						d.rate = flt(d.price)
 	else:
 		for d in self.items:
-			frappe.throw(str(d.qty))
 			if not d.get("ignore_calculation"):
 				if d.get("packing_size") and d.get("no_of_packages"):
 					if self.get("is_return"):
