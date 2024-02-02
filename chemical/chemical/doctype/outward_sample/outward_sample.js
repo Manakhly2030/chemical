@@ -22,6 +22,14 @@ cur_frm.fields_dict.details.grid.get_field("bom_no").get_query = function(doc) {
 	}
 };
 
+cur_frm.fields_dict.link_to.get_query = function (doc) {
+	return {
+		filters: {
+			"name": ['in', ['Lead', 'Customer', "Supplier"]],
+		}
+	}
+};
+
 // Add searchfield to customer  and Supplier and item query
 this.frm.cscript.onload = function (frm) {
 	// this.frm.set_query("product_name", function () {

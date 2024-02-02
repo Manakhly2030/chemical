@@ -127,9 +127,9 @@
   {
    "default": "Customer",
    "fieldname": "link_to",
-   "fieldtype": "Select",
+   "fieldtype": "Link",
    "label": "Link To",
-   "options": "\nLead\nCustomer\nSupplier",
+   "options": "DocType",
    "reqd": 1
   },
   {
@@ -373,10 +373,11 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2022-06-01 12:51:58.829341",
+ "modified": "2024-02-02 13:00:26.986539",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -437,6 +438,7 @@
  "search_fields": "ref_no",
  "sort_field": "modified",
  "sort_order": "ASC",
+ "states": [],
  "title_field": "ref_no",
  "track_changes": 1
 }

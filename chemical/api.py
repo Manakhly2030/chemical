@@ -715,8 +715,8 @@ def se_cal_rate_qty(self):
 					d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
 			else:
 				if d.get("packing_size") and d.get("no_of_packages"):
-					d.qty = d.packing_size * d.no_of_packages
-					# d.receive_qty = d.packing_size * d.no_of_packages
+					qty = cint(d.packing_size) * cint(d.no_of_packages)
+					d.receive_qty = d.packing_size * d.no_of_packages
 
 def cal_actual_valuations(self):
 	for row in self.items:
