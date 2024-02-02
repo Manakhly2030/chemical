@@ -23,13 +23,14 @@ from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 
 #Chemical
 from chemical.chemical.doc_events.stock_entry import validate_fg_completed_quantity, calculate_rate_and_amount, validate_finished_goods
-from chemical.chemical.doc_events.work_order import get_status, update_work_order_qty, update_transaferred_qty_for_required_items, update_consumed_qty_for_required_items
+from chemical.chemical.doc_events.work_order import get_status, update_work_order_qty, update_transaferred_qty_for_required_items, update_consumed_qty_for_required_items, validate_qty
 
 #Chemical
 # StockEntry.validate_finished_goods = validate_finished_goods #DONE
 # StockEntry.calculate_rate_and_amount = calculate_rate_and_amount #Done
 StockEntry.validate_fg_completed_qty = validate_fg_completed_quantity #done
 WorkOrder.get_status = get_status #done
+WorkOrder.validate_qty = validate_qty
 # WorkOrder.update_work_order_qty = update_work_order_qty #done
 #WorkOrder.update_transaferred_qty_for_required_items = update_transaferred_qty_for_required_items #done
 # WorkOrder.update_consumed_qty_for_required_items = update_consumed_qty_for_required_items #done
@@ -387,6 +388,14 @@ StockController.make_batches = make_batches_api
 from erpnext.stock.stock_ledger import update_entries_after
 from chemical.chemical.doc_events.stock_ledger import build
 update_entries_after.build = build
+
+from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
+from chemical.chemical.doc_events.production_plan import get_open_sales_orders, get_items_from_sample, create_work_order
+ProductionPlan.get_open_sales_orders = get_open_sales_orders
+ProductionPlan.get_items = get_items_from_sample
+ProductionPlan.create_work_order = create_work_order
+# ProductionPlan.show_list_created_message = show_list_created_message
+# ProductionPlan.make_work_order = make_work_order
 
 # Chemical Overrides
 

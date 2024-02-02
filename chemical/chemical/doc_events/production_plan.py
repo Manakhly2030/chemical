@@ -1,15 +1,74 @@
 import frappe
-from frappe import _
+from frappe import _,msgprint
 from frappe.utils import nowdate, flt, cint, cstr,now_datetime
 from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
 from erpnext.manufacturing.doctype.work_order.work_order import get_item_details
+from pypika.terms import ExistsCriterion
+from frappe.utils import (
+	add_days,
+	ceil,
+	cint,
+	comma_and,
+	flt,
+	get_link_to_form,
+	getdate,
+	now_datetime,
+	nowdate,
+)
 
-# Override Production Plan Functions
+#Override Production Plan Functions
 @frappe.whitelist()
 def override_proplan_functions():
-	
+
 	ProductionPlan.get_open_sales_orders = get_open_sales_orders
 	ProductionPlan.get_items = get_items_from_sample
+	# ProductionPlan.show_list_created_message = show_list_created_message
+	# ProductionPlan.make_work_order = make_work_order
+
+
+@frappe.whitelist()
+def create_work_order(self, item):
+	from erpnext.manufacturing.doctype.work_order.work_order import OverProductionError
+	
+	work_order_names = []
+	if flt(item.get("qty")) <= 0:
+		return
+
+	bom_quantity = frappe.get_value("BOM", item.get("bom_no"), "quantity")
+
+	if not bom_quantity or bom_quantity <= 0:
+		return
+
+	sales_order_qty = item.get("qty")
+	for row in self.po_items:
+		try:
+			# Calculate the quantity for each work order
+			wo_qty = min(sales_order_qty, bom_quantity)
+			sales_order_qty -= wo_qty
+
+			# Create a new work order for each row in po_items
+			wo = frappe.new_doc("Work Order")
+			wo.update(item)
+			wo.planned_start_date = item.get("planned_start_date") or item.get("schedule_date")
+
+			if item.get("warehouse"):
+				wo.fg_warehouse = item.get("warehouse")
+
+			wo.set_work_order_operations()
+			wo.set_required_items()
+			wo.qty = wo_qty  # Set the calculated quantity for the work order
+
+			wo.flags.ignore_mandatory = True
+			# wo.flags.ignore_validate = True
+			wo.insert()
+			wo.save()
+			work_order_names.append(wo.name)
+
+		except OverProductionError:
+			pass
+
+	return work_order_names  # You may want to return the last work order name outside the loop
+
 
 def get_sales_orders(self):
 	so_filter = item_filter = ""
@@ -56,11 +115,14 @@ def get_open_sales_orders(self):
 @frappe.whitelist()
 def get_items_from_sample(self):
 	if self.get_items_from == "Sales Order":
+		if self.based_on_sample == 1:
+			get_so_items_for_sample(self)
+		else:
 			get_so_items(self)
 	elif self.get_items_from == "Material Request":
 			self.get_mr_items()
 
-def get_so_items(self):
+def get_so_items_for_sample(self):
 		so_list = [d.sales_order for d in self.get("sales_orders", []) if d.sales_order]
 		if not so_list:
 			msgprint(_("Please enter Sales Orders in the above table"))
@@ -123,8 +185,8 @@ def get_so_items(self):
 							
 			items = [values for values in item_details.values()]
 
-		else:		
-																						 #default
+		elif self.based_on_sample == 1:		
+
 			sample_list = [[d.outward_sample, d.quantity] for d in self.get("finish_items", []) if d.outward_sample]	
 			if not sample_list:
 				frappe.msgprint(_("Please Get Finished Items."))
@@ -149,7 +211,8 @@ def get_so_items(self):
 						item_details[row.item_code].planned_qty += (flt(quantity) * flt(row.quantity) * (row.concentration))/ (flt(sample_doc.total_qty)* (bom.concentration))
 
 			items = [values for values in item_details.values()]
-			
+		else:
+			return	
 	# -----------------------	
 		# items = frappe.db.sql("""select distinct parent, item_code, warehouse,
 		# 	(qty - work_order_qty) * conversion_factor as pending_qty, name
@@ -173,10 +236,108 @@ def get_so_items(self):
 					and bom.is_active = 1) %s""" % \
 			(", ".join(["%s"] * len(so_list)), item_condition), tuple(so_list), as_dict=1)
 
-		add_items(self,items + packed_items)
+		add_items_for_sample(self,items + packed_items)
 		calculate_total_planned_qty(self)
 
-def add_items(self, items):
+def get_so_items(self):
+		# Check for empty table or empty rows
+		if not self.get("sales_orders") or not self.get_so_mr_list("sales_order", "sales_orders"):
+			frappe.throw(_("Please fill the Sales Orders table"), title=_("Sales Orders Required"))
+
+		so_list = self.get_so_mr_list("sales_order", "sales_orders")
+
+		bom = frappe.qb.DocType("BOM")
+		so_item = frappe.qb.DocType("Sales Order Item")
+
+		items_subquery = frappe.qb.from_(bom).select(bom.name).where(bom.is_active == 1)
+		items_query = (
+			frappe.qb.from_(so_item)
+			.select(
+				so_item.parent,
+				so_item.item_code,
+				so_item.warehouse,
+				(
+					(so_item.qty - so_item.work_order_qty - so_item.delivered_qty) * so_item.conversion_factor
+				).as_("pending_qty"),
+				so_item.description,
+				so_item.name,
+				so_item.bom_no,
+			)
+			.distinct()
+			.where(
+				(so_item.parent.isin(so_list))
+				& (so_item.docstatus == 1)
+				& (so_item.qty > so_item.work_order_qty)
+			)
+		)
+
+		if self.item_code and frappe.db.exists("Item", self.item_code):
+			items_query = items_query.where(so_item.item_code == self.item_code)
+			items_subquery = items_subquery.where(
+				self.get_bom_item_condition() or bom.item == so_item.item_code
+			)
+
+		items_query = items_query.where(ExistsCriterion(items_subquery))
+		items = items_query.run(as_dict=True)
+	
+		pi = frappe.qb.DocType("Packed Item")
+
+		packed_items_query = (
+			frappe.qb.from_(so_item)
+			.from_(pi)
+			.select(
+				pi.parent,
+				pi.item_code,
+				pi.warehouse.as_("warehouse"),
+				(((so_item.qty - so_item.work_order_qty) * pi.qty) / so_item.qty).as_("pending_qty"),
+				pi.parent_item,
+				pi.description,
+				so_item.name,
+			)
+			.distinct()
+			.where(
+				(so_item.parent == pi.parent)
+				& (so_item.docstatus == 1)
+				& (pi.parent_item == so_item.item_code)
+				& (so_item.parent.isin(so_list))
+				& (so_item.qty > so_item.work_order_qty)
+				& (
+					ExistsCriterion(
+						frappe.qb.from_(bom)
+						.select(bom.name)
+						.where((bom.item == pi.item_code) & (bom.is_active == 1))
+					)
+				)
+			)
+		)
+
+		if self.item_code:
+			packed_items_query = packed_items_query.where(so_item.item_code == self.item_code)
+
+		packed_items = packed_items_query.run(as_dict=True)
+		
+		all_items = items + packed_items
+		new_items = []
+
+		for item in all_items:
+			bom_quantity = frappe.get_value("BOM", item.get("bom_no"), "quantity")
+			if bom_quantity:
+				# Calculate the number of rows needed based on BOM quantity
+				pending_qty = item.get("pending_qty")
+				while pending_qty > 0:
+					qty_to_add = min(pending_qty, bom_quantity)
+					new_item = item.copy()
+					new_item["pending_qty"] = qty_to_add
+					new_items.append(new_item)
+					pending_qty -= qty_to_add
+			else:
+				new_items.append(item)
+
+		self.add_items(new_items)
+		# self.add_items(items + packed_items)
+		self.calculate_total_planned_qty()
+
+def add_items_for_sample(self, items):
 	# frappe.msgprint("call add")
 	self.set('po_items', [])
 	for data in items:
