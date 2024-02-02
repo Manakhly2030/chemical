@@ -159,22 +159,21 @@ frappe.ui.form.on("Sales Invoice", {
                 });
             } else {
                 frm.doc.items.forEach(function (d) {
-                    if (d.packing_size && d.no_of_packages) {   
-                        if (frm.doc.is_return && d.packing_size > 0 && d.no_of_packages > 0){
-                            frappe.model.set_value(d.doctype, d.name, 'qty', flt(-1 * d.packing_size * d.no_of_packages));
-                        } else {
-                            frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
+                    if(!d.ignore_calculation) {
+                        if (d.packing_size && d.no_of_packages) {
+                            if (frm.doc.is_return && d.packing_size > 0 && d.no_of_packages > 0){
+                                frappe.model.set_value(d.doctype, d.name, 'qty', flt(-1 * d.packing_size * d.no_of_packages));
+                            } else {
+                                frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.packing_size * d.no_of_packages));
+                            }
+                        } 
+                        else {
+                            frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
+                                if (r.maintain_as_is_stock && d.packing_size >0  && d.no_of_packages > 0 && d.concentration > 0) {
+                                    frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
+                                }
+                            })
                         }
-                    } 
-                    else {
-                        frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                            if (d.concentration) {
-                                frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
-                            }
-                            else {
-                                frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
-                            }
-                        })
                     }
                 });
             }
@@ -243,11 +242,8 @@ frappe.ui.form.on("Sales Invoice", {
                         } 
                         else {
                             frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function (r) {
-                                if (r.maintain_as_is_stock && d.packing_size && d.no_of_packages && d.concentration) {
+                                if (r.maintain_as_is_stock && d.packing_size >0  && d.no_of_packages > 0 && d.concentration > 0) {
                                     frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
-                                }
-                                else {
-                                    frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
                                 }
                             })
                         }
@@ -298,7 +294,7 @@ frappe.ui.form.on("Sales Invoice Item", {
         }
     },
     no_of_packages: function (frm, cdt, cdn) {
-        frm.events.cal_rate_qty(frm, cdt, cdn)
+        // frm.events.cal_rate_qty(frm, cdt, cdn)
     },
 
     batch_no: function (frm, cdt, cdn) {
@@ -311,7 +307,7 @@ frappe.ui.form.on("Sales Invoice Item", {
                 frappe.model.set_value(cdt, cdn, 'batch_yield', r.batch_yield);
                 frappe.model.set_value(cdt, cdn, 'concentration', r.concentration);
             });
-            frm.events.cal_rate_qty(frm,cdt,cdn)
+            // frm.events.cal_rate_qty(frm,cdt,cdn)
         }
     },
     discount_percentage:function(frm,cdt,cdn){
@@ -324,7 +320,7 @@ frappe.ui.form.on("Sales Invoice Item", {
             d.rate = flt(d.price_list_rate) - flt(d.discount_amount) 
             d.price = flt(d.rate)
             d.amount = flt(d.rate) * flt(d.quantity)
-            frm.events.cal_rate_qty(frm, cdt, cdn)
+            // frm.events.cal_rate_qty(frm, cdt, cdn)
         
     }
 

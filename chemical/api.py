@@ -236,7 +236,7 @@ def cal_rate_qty(self):
 						if self.get("is_return"):
 							d.no_of_packages = -abs(d.no_of_packages)
 						d.qty = d.packing_size * d.no_of_packages
-						d.received_qty = d.packing_size * d.no_of_packages
+						# d.received_qty = d.packing_size * d.no_of_packages
 
 def purchase_cal_rate_qty(self):
 	if not frappe.get_value("Company", self.company, "maintain_as_is_new"):
