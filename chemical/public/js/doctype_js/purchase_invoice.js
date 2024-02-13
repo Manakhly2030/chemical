@@ -208,6 +208,12 @@ frappe.ui.form.on("Purchase Invoice", {
                                 }
                             }
                         });
+                    } else {
+                        if(d.ignore_calculation){
+                            if (d.packing_size && d.no_of_packages) {
+                                frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
+                            }
+                        }
                     }
 				}); 
             }
@@ -410,6 +416,12 @@ frappe.ui.form.on("Purchase Invoice", {
                                 }
                             }
                         });
+                    } else {
+                        if(d.ignore_calculation){
+                            if (d.packing_size && d.no_of_packages) {
+                                frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
+                            }
+                        }
                     }
 				}); 
             }
