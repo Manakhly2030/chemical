@@ -1020,7 +1020,9 @@ def make_batches(self, warehouse_field):
 							lot_no = d.get("lot_no"),
 							valuation_rate = d.get("valuation_rate"),
 							packaging_material = d.get('packaging_material'),
-							packing_size = d.get('packing_size')
+							packing_size = d.get('packing_size'),
+							uv_value = d.get("uv_value"),
+							batch_yield = d.get("batch_yield")
 						)
 					)
 					.insert()
