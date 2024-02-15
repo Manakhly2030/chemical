@@ -237,6 +237,9 @@ def cal_rate_qty(self):
 							d.no_of_packages = -abs(d.no_of_packages)
 						d.qty = d.packing_size * d.no_of_packages
 						# d.received_qty = d.packing_size * d.no_of_packages
+			else:
+				if d.get("packing_size") and d.get("no_of_packages"):
+					d.qty = d.packing_size * d.no_of_packages
 
 def purchase_cal_rate_qty(self):
 	if not frappe.get_value("Company", self.company, "maintain_as_is_new"):
@@ -435,6 +438,10 @@ def purchase_cal_rate_qty(self):
 							d.no_of_packages = -abs(d.no_of_packages)
 						d.qty = d.packing_size * d.no_of_packages
 						d.receive_qty = d.packing_size * d.no_of_packages
+			else:
+				if d.get("packing_size") and d.get("no_of_packages"):
+					d.qty = d.packing_size * d.no_of_packages
+
 
 def se_repack_cal_rate_qty(self):
 	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
@@ -666,6 +673,9 @@ def se_repack_cal_rate_qty(self):
 					if d.get("packing_size") and d.get("no_of_packages"):
 						d.qty = d.packing_size * d.no_of_packages
 						d.receive_qty = d.packing_size * d.no_of_packages
+			else:
+				if d.get("packing_size") and d.get("no_of_packages"):
+						d.qty = d.packing_size * d.no_of_packages
 
 
 def se_cal_rate_qty(self):
@@ -718,18 +728,22 @@ def se_cal_rate_qty(self):
 						d.basic_rate = d.price
 	else:
 		for d in self.items:
-			maintain_as_is_stock = frappe.db.get_value(
-				"Item", d.item_code, "maintain_as_is_stock"
-			)
-			if maintain_as_is_stock:
-				if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
-					if self.get("is_return"):
-						d.no_of_packages = -abs(d.no_of_packages)
-					d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+			if not d.get("ignore_calculation"):
+				maintain_as_is_stock = frappe.db.get_value(
+					"Item", d.item_code, "maintain_as_is_stock"
+				)
+				if maintain_as_is_stock:
+					if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
+						if self.get("is_return"):
+							d.no_of_packages = -abs(d.no_of_packages)
+						d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+				else:
+					if d.get("packing_size") and d.get("no_of_packages"):
+						d.qty = cint(d.packing_size) * cint(d.no_of_packages)
+						d.receive_qty = d.packing_size * d.no_of_packages
 			else:
 				if d.get("packing_size") and d.get("no_of_packages"):
-					qty = cint(d.packing_size) * cint(d.no_of_packages)
-					d.receive_qty = d.packing_size * d.no_of_packages
+					d.qty = cint(d.packing_size) * cint(d.no_of_packages)
 
 def cal_actual_valuations(self):
 	for row in self.items:
@@ -926,6 +940,9 @@ def quantity_price_to_qty_rate(self):
 								d.no_of_packages = -abs(d.no_of_packages)
 							d.qty = d.packing_size * d.no_of_packages
 							d.received_qty = d.packing_size * d.no_of_packages
+				else:
+					if d.get("packing_size") and d.get("no_of_packages"):
+						d.qty = d.packing_size * d.no_of_packages
 
 def get_due_date(term, posting_date=None, bill_date=None):
 	due_date = None

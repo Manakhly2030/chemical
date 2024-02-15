@@ -203,19 +203,27 @@ frappe.ui.form.on("Purchase Receipt", {
 				});
 			} else {
 				frm.doc.items.forEach(function(d) {
-					frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function(r) {
-						if(r.maintain_as_is_stock){
-							if (d.packing_size && d.no_of_packages && d.concentration) {
-								frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
-								frappe.model.set_value(d.doctype, d.name, 'received_qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
+					if(!d.ignore_calculation) {
+						frappe.db.get_value("Item", d.item_code, 'maintain_as_is_stock', function(r) {
+							if(r.maintain_as_is_stock){
+								if (d.packing_size && d.no_of_packages && d.concentration) {
+									frappe.model.set_value(d.doctype, d.name, 'qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
+									frappe.model.set_value(d.doctype, d.name, 'received_qty', (d.packing_size * d.no_of_packages * d.concentration) / 100.0);
+								}
+							} else {
+								if (d.packing_size && d.no_of_packages) {
+									frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
+									frappe.model.set_value(d.doctype, d.name, 'received_qty', d.packing_size * d.no_of_packages);
+								}
 							}
-						} else {
-							if (d.packing_size && d.no_of_packages) {
-								frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
-								frappe.model.set_value(d.doctype, d.name, 'received_qty', d.packing_size * d.no_of_packages);
-							}
-						}
-					});
+						});
+					} else {
+                        if(d.ignore_calculation){
+                            if (d.packing_size && d.no_of_packages) {
+                                frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
+                            }
+                        }
+                    }
 				});
 			}
 		});	
@@ -424,7 +432,13 @@ frappe.ui.form.on("Purchase Receipt", {
 								}
 							}
 						});
-					}
+					} else {
+                        if(d.ignore_calculation){
+                            if (d.packing_size && d.no_of_packages) {
+                                frappe.model.set_value(d.doctype, d.name, 'qty', d.packing_size * d.no_of_packages);
+                            }
+                        }
+                    }
 				});
 			}
 		});
