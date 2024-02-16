@@ -1,3 +1,2 @@
-chemical.patch.add_fifo_based_batch_field
 chemical.patch.update_batch_posting_date
 chemical.patch.set_in_item_v14
