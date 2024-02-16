@@ -142,3 +142,11 @@ def cal_qty(self,method):
 			self.total_quantity = total_quantity
 		except:
 			pass
+	else:
+		total_qty = 0.0
+		for row in self.items:
+			total_qty += row.qty
+		try:
+			self.total_qty = total_qty
+		except:
+			pass

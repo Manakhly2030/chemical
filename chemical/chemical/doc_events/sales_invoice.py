@@ -50,6 +50,15 @@ def validate(self,method):
 			self.total_quantity = total_quantity
 		except:
 			pass
+	else:
+		total_qty = 0.0
+		
+		for row in self.items:
+			total_qty += row.qty
+		try:
+			self.total_qty = total_qty
+		except:
+			pass
 
 def si_update_status_updater_args(self):
 	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
