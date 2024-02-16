@@ -190,7 +190,8 @@ class BallMillDataSheet(Document):
 					'basic_rate': self.per_unit_amount,
 					'valuation_rate': self.per_unit_amount,
 					'basic_amount': flt(d.qty * self.per_unit_amount),
-					'cost_center': cost_center
+					'cost_center': cost_center,
+					'uv_value':self.get("weighted_average_uv_value")
 				})
 			for d in self.ball_mill_additional_cost:	
 				se.append('additional_costs',{
