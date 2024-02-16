@@ -111,7 +111,7 @@ frappe.ui.form.on("Delivery Note", {
        
     },
     
-    validate: function(frm) {
+    before_validate: function(frm) {
         frappe.db.get_value("Company", frm.doc.company, 'maintain_as_is_new', function (c) {
             if(!c.maintain_as_is_new) {
                 frm.doc.items.forEach(function (d) {

@@ -326,7 +326,7 @@ doc_events = {
 		"before_cancel": "chemical.chemical.doc_events.delivery_note.before_cancel",
 		"before_submit": "chemical.chemical.doc_events.delivery_note.before_submit",
 
-		"validate": "chemical.chemical.doc_events.delivery_note.validate",
+		"before_validate": "chemical.chemical.doc_events.delivery_note.validate",
 	},
 	"Sales Invoice": {
 		"onload":"chemical.chemical.doc_events.sales_invoice.onload",
