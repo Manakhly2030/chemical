@@ -688,9 +688,15 @@ class GrossProfitGenerator(object):
 					parenttype, parent = "Delivery Note", row.delivery_note
 
 				dn = self.delivery_notes.get((row.parent, row.item_code, row.si_detail))
+				
+				if not dn:
+					item_row=[]
+				else:
+					item_row=dn['item_rows']
+
 
 				return self.calculate_buying_amount_from_sle(
-					row, my_sle, parenttype, parent, dn['item_rows'], item_code
+					row, my_sle, parenttype, parent, item_row, item_code
 				)
 			elif self.delivery_notes.get((row.parent, row.item_code, row.si_detail), None):
 				#  check if Invoice has delivery notes

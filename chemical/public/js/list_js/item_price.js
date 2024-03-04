@@ -30,9 +30,9 @@ frappe.listview_settings['Item Price'] = {
                 method: "erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost",
                 freeze: true,
                 callback: result => {
-                    if (result && result.message && !result.exc) {
-                        frm.events.confirm_job_start(frm, result.message);
-                    }
+                    // if (result && result.message && !result.exc) {
+                    //     frm.events.confirm_job_start(frm, result.message);
+                    // }
                 }
             });
         }, {btn_class: "btn-primary"});

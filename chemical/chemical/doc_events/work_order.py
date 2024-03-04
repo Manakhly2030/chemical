@@ -48,11 +48,10 @@ def validate_qty(self):
 			)
 
 			max_qty = qty_dict.get("planned_qty", 0) + allowance_qty - qty_dict.get("ordered_qty", 0)
-
-			if not max_qty > 0:
-				frappe.throw(
-					_("Cannot produce more item for {0}").format(self.production_item), OverProductionError
-				)
+			# if not max_qty > 0:
+			# 	frappe.throw(
+			# 		_("Cannot produce more item for {0}").format(self.production_item), OverProductionError
+			# 	)
 			
 
 @frappe.whitelist()

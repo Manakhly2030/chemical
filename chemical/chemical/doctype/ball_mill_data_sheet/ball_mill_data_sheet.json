@@ -49,11 +49,6 @@
   "total_packing_quantity",
   "2",
   "strength",
-  "da",
-  "db",
-  "column_break_31",
-  "cmc",
-  "abs_at_lmax",
   "more_info_break",
   "stock_entry",
   "fiscal",
@@ -259,30 +254,6 @@
    "label": "Strength"
   },
   {
-   "fieldname": "da",
-   "fieldtype": "Float",
-   "label": "DA"
-  },
-  {
-   "fieldname": "db",
-   "fieldtype": "Float",
-   "label": "DB"
-  },
-  {
-   "fieldname": "column_break_31",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "cmc",
-   "fieldtype": "Data",
-   "label": "CMC"
-  },
-  {
-   "fieldname": "abs_at_lmax",
-   "fieldtype": "Data",
-   "label": "ABS at Lmax"
-  },
-  {
    "collapsible": 1,
    "fieldname": "more_info_break",
    "fieldtype": "Section Break",
@@ -361,10 +332,11 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-06-22 17:57:46.686074",
+ "modified": "2024-02-24 13:57:58.685854",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
+ "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -415,6 +387,7 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "title_field": "product_name",
  "track_changes": 1
 }
