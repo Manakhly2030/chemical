@@ -205,7 +205,8 @@ StockEntry.validate_finished_goods = validate_finished_goods
 # ]
 
 override_doctype_class = {
-	"Stock Entry": "chemical.chemical.doc_events.stock_entry.CustommStockEntry"
+	"Stock Entry": "chemical.chemical.doc_events.stock_entry.CustommStockEntry",
+    "Production Plan":"chemical.chemical.doc_events.production_plan.CustomProductionPlan"
 }
 
 # override_doctype_class = {
@@ -390,10 +391,10 @@ from chemical.chemical.doc_events.stock_ledger import build
 update_entries_after.build = build
 
 from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
-from chemical.chemical.doc_events.production_plan import get_open_sales_orders, get_items_from_sample, create_work_order
+from chemical.chemical.doc_events.production_plan import get_open_sales_orders, get_items_from_sample
 ProductionPlan.get_open_sales_orders = get_open_sales_orders
 ProductionPlan.get_items = get_items_from_sample
-ProductionPlan.create_work_order = create_work_order
+# ProductionPlan.create_work_order = create_work_order
 # ProductionPlan.show_list_created_message = show_list_created_message
 # ProductionPlan.make_work_order = make_work_order
 

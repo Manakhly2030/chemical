@@ -15,6 +15,48 @@ from frappe.utils import (
 	now_datetime,
 	nowdate,
 )
+from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
+
+class CustomProductionPlan(ProductionPlan):
+	def get_production_items(self):
+		item_dict = {}
+		for d in self.po_items:
+			item_details = {
+				"production_item": d.item_code,
+				"use_multi_level_bom": d.include_exploded_items,
+				"sales_order": d.sales_order,
+				"sales_order_item": d.sales_order_item,
+				"material_request": d.material_request,
+				"material_request_item": d.material_request_item,
+				"bom_no": d.bom_no,
+				"description": d.description,
+				"stock_uom": d.stock_uom,
+				"company": self.company,
+				"fg_warehouse": d.warehouse,
+				"production_plan": self.name,
+				"production_plan_item": d.name,
+				"product_bundle_item": d.product_bundle_item,
+				"planned_start_date": d.planned_start_date,
+				"project": self.project,
+			}
+
+			key = (d.item_code, d.sales_order, d.warehouse, d.name)
+			if not d.sales_order:
+				key = (d.name, d.item_code, d.warehouse, d.name)
+
+			if not item_details["project"] and d.sales_order:
+				item_details["project"] = frappe.get_cached_value("Sales Order", d.sales_order, "project")
+
+			if self.get_items_from == "Material Request":
+				item_details.update({"qty": d.planned_qty})
+				item_dict[(d.item_code, d.material_request_item, d.warehouse)] = item_details
+			else:
+				item_details.update(
+					{"qty": flt(item_dict.get(key, {}).get("qty")) + (flt(d.planned_qty) - flt(d.ordered_qty))}
+				)
+				item_dict[key] = item_details
+
+		return item_dict
 
 #Override Production Plan Functions
 @frappe.whitelist()
@@ -26,48 +68,48 @@ def override_proplan_functions():
 	# ProductionPlan.make_work_order = make_work_order
 
 
-@frappe.whitelist()
-def create_work_order(self, item):
-	from erpnext.manufacturing.doctype.work_order.work_order import OverProductionError
+# @frappe.whitelist()
+# def create_work_order(self, item):
+# 	from erpnext.manufacturing.doctype.work_order.work_order import OverProductionError
 	
-	work_order_names = []
-	if flt(item.get("qty")) <= 0:
-		return
+# 	work_order_names = []
+# 	if flt(item.get("qty")) <= 0:
+# 		return
 
-	bom_quantity = frappe.get_value("BOM", item.get("bom_no"), "quantity")
+# 	bom_quantity = frappe.get_value("BOM", item.get("bom_no"), "quantity")
 
-	if not bom_quantity or bom_quantity <= 0:
-		return
+# 	if not bom_quantity or bom_quantity <= 0:
+# 		return
 
-	sales_order_qty = item.get("qty")
-	for row in self.po_items:
-		try:
-			# Calculate the quantity for each work order
-			wo_qty = min(sales_order_qty, bom_quantity)
-			sales_order_qty -= wo_qty
+# 	sales_order_qty = item.get("qty")
+# 	for row in self.po_items:
+# 		try:
+# 			# Calculate the quantity for each work order
+# 			wo_qty = min(sales_order_qty, bom_quantity)
+# 			sales_order_qty -= wo_qty
 
-			# Create a new work order for each row in po_items
-			wo = frappe.new_doc("Work Order")
-			wo.update(item)
-			wo.planned_start_date = item.get("planned_start_date") or item.get("schedule_date")
+# 			# Create a new work order for each row in po_items
+# 			wo = frappe.new_doc("Work Order")
+# 			wo.update(item)
+# 			wo.planned_start_date = item.get("planned_start_date") or item.get("schedule_date")
 
-			if item.get("warehouse"):
-				wo.fg_warehouse = item.get("warehouse")
+# 			if item.get("warehouse"):
+# 				wo.fg_warehouse = item.get("warehouse")
 
-			wo.set_work_order_operations()
-			wo.set_required_items()
-			wo.qty = wo_qty  # Set the calculated quantity for the work order
+# 			wo.set_work_order_operations()
+# 			wo.set_required_items()
+# 			wo.qty = wo_qty  # Set the calculated quantity for the work order
 
-			wo.flags.ignore_mandatory = True
-			# wo.flags.ignore_validate = True
-			wo.insert()
-			wo.save()
-			work_order_names.append(wo.name)
+# 			wo.flags.ignore_mandatory = True
+# 			wo.flags.ignore_validate = True
+# 			wo.insert()
+# 			# wo.save()
+# 			work_order_names.append(wo.name)
 
-		except OverProductionError:
-			pass
+# 		except OverProductionError:
+# 			pass
 
-	return work_order_names  # You may want to return the last work order name outside the loop
+# 	return work_order_names  # You may want to return the last work order name outside the loop
 
 
 def get_sales_orders(self):
