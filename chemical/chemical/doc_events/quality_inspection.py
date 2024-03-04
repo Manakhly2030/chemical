@@ -85,3 +85,25 @@ def set_details_in_qc(self, method):
 				self.packing_size = row.packing_size
 				self.no_of_packages = row.no_of_packages
 				self.qty = row.qty
+	
+	if self.reference_type == "Delivery Note":
+		doc = frappe.get_doc("Delivery Note", self.reference_name)
+		for row in doc.items:
+			if row.item_code == self.item_code:
+				self.lot_no = row.lot_no
+				self.packaging_material = row.packaging_material
+				self.concentration = row.concentration
+				self.packing_size = row.packing_size
+				self.no_of_packages = row.no_of_packages
+				self.qty = row.qty
+	
+	if self.reference_type == "Stock Entry":
+		doc = frappe.get_doc("Stock Entry", self.reference_name)
+		for row in doc.items:
+			if row.item_code == self.item_code:
+				self.lot_no = row.lot_no
+				self.packaging_material = row.packaging_material
+				self.concentration = row.concentration
+				self.packing_size = row.packing_size
+				self.no_of_packages = row.no_of_packages
+				self.qty = row.qty
