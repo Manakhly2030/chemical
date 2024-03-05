@@ -110,7 +110,7 @@ def cost_calculation(self):
 
 def multiple_finish_item(self):
 	if (self.is_multiple_item):
-		if(self.multiple_finish_item == [] and self.item):
+		if(not self.multiple_finish_item and self.item):
 			self.append("multiple_finish_item",{
 				"item_code": self.item,
 				"qty": self.quantity,
@@ -118,6 +118,10 @@ def multiple_finish_item(self):
 				"qty_ratio": 100,
 				"batch_yield": 0
 			})
+
+		if not any(item.item_code == self.item for item in self.multiple_finish_item or []):
+			frappe.throw(f"At least one Finish Item in Multiple Finish Items must be <b>{self.item}<b>")
+
 	else:
 		self.multiple_finish_item = []
 		self.total_quantity = self.quantity
