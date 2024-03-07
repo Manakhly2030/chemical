@@ -5,7 +5,7 @@ cur_frm.add_fetch("sample_ref", "product_name", "item");
 cur_frm.add_fetch("sample_ref", "ref_no", "ref_no");
 // cur_frm.add_fetch("sample_ref", "batch_size", "pss_qty");
 cur_frm.add_fetch("sample_ref", "po_no", "po_no");
-cur_frm.add_fetch("sample_ref", "supply_site", "supply_site");
+// cur_frm.add_fetch("sample_ref", "supply_site", "supply_site");
 
 cur_frm.fields_dict.sample_items.grid.get_field("sample_ref").get_query = function (doc) {
 	return {
