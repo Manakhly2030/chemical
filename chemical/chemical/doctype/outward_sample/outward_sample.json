@@ -48,7 +48,8 @@
   "per_unit_price",
   "amended_from",
   "company_series",
-  "fiscal"
+  "fiscal",
+  "party_alias"
  ],
  "fields": [
   {
@@ -342,11 +343,17 @@
    "fieldtype": "Small Text",
    "hidden": 1,
    "label": "Fiscal"
+  },
+  {
+   "fieldname": "party_alias",
+   "fieldtype": "Data",
+   "label": "Party Alias",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-04 16:44:15.032648",
+ "modified": "2024-03-07 15:35:15.611544",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",
