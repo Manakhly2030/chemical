@@ -363,3 +363,16 @@ frappe.ui.form.on('Ball Mill Packaging', {
 		refresh_field("packaging");
 	},
 });
+
+frappe.ui.form.on('Ball Mill Additional Cost', {
+    ball_mill_additional_cost_add: function (frm, cdt, cdn) {
+        setTimeout(function() {
+            frappe.db.get_value("Company", frm.doc.company, "expenses_included_in_valuation", function(r) {
+                if (r.expenses_included_in_valuation) {
+                    console.log(r.expenses_included_in_valuation);
+                    frappe.model.set_value(cdt, cdn, "expense_account", r.expenses_included_in_valuation);
+                }
+            });
+        }, 500);
+    },
+});

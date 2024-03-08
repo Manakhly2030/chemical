@@ -152,6 +152,13 @@ frappe.ui.form.on('Outward Sample', {
 			frm.set_value("status", '');
 		}
 	},
+	against: function (frm) {
+		frappe.db.get_value("Inward Sample",frm.doc.against, 'party', function (r) {
+			var party_ = r.party
+			console.log(party_)
+			frappe.model.set_value(frm.doc.doctype, frm.doc.name, 'party',party_);	
+		});
+	},
 	total_amount: function (frm) {
 		frm.trigger("cal_per_unit_price");
 	},

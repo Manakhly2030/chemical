@@ -312,6 +312,10 @@ def get_so_items(self):
 				& (so_item.qty > so_item.work_order_qty)
 			)
 		)
+		if self.from_delivery_date and self.to_delivery_date:
+			items_query = items_query.where(
+				(so_item.delivery_date >= self.from_delivery_date) & (so_item.delivery_date <= self.to_delivery_date)
+			)
 
 		if self.item_code and frappe.db.exists("Item", self.item_code):
 			items_query = items_query.where(so_item.item_code == self.item_code)

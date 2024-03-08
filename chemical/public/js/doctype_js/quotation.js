@@ -1,5 +1,13 @@
 frappe.ui.form.on("Quotation", {
-    get_approved: function(frm){
+    conversion_rate: function(frm) {
+            let conversion_rate = frm.doc.conversion_rate;
+            frm.doc.items.forEach(function(item) {
+                let new_cost = item.cost / conversion_rate;
+                frappe.model.set_value(item.doctype, item.name, 'cost', new_cost);
+            });
+            frm.refresh_field('items');
+        },
+        get_approved: function(frm){
         if(frm.doc.quotation_to=="Customer" && frm.doc.party_name){
             frappe.call({
                 method:"chemical.chemical.doc_events.quotation.get_approved_outward_sample_list",
@@ -50,9 +58,9 @@ frappe.ui.form.on("Quotation", {
     cal_margin: function(frm,cdt,cdn)
     {
         let d = locals[cdt][cdn];
-        if (frappe.meta.get_docfield("Quotation Item", "base_cost")){
-            if (d.base_cost){
-                frappe.model.set_value(d.doctype,d.name,'margin_with_rmc',flt(d.rate - d.base_cost))
+        if (frappe.meta.get_docfield("Quotation Item", "cost")){
+            if (d.cost){
+                frappe.model.set_value(d.doctype,d.name,'margin_with_rmc',flt(d.rate - d.cost))
             }
         }
     }

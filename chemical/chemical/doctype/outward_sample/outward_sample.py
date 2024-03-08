@@ -159,13 +159,19 @@ class OutwardSample(Document):
 
 @frappe.whitelist()
 def make_quotation(source_name, target_doc=None):
-	def postprocess(source, target):
+	def set_missing_values(source, target):
+		conversion_rate = target.conversion_rate if target.conversion_rate else 1
+		description = frappe.db.get_value("Item", source.product_name, "description")
+		uom = frappe.db.get_value("Item", source.product_name, "stock_uom")
 		target.append('items', {
 			'item_code': source.product_name,
 			'item_name': source.product_name,
 			'outward_sample':source.name,
+			'uom': uom,
+			'description': description,
 			'sample_ref_no':source.ref_no,
-			'base_cost' : source.per_unit_price
+			'base_cost' : source.per_unit_price,
+			'cost': source.per_unit_price/conversion_rate,
 			})
 
 	doclist = get_mapped_doc("Outward Sample" , source_name,{
@@ -177,7 +183,7 @@ def make_quotation(source_name, target_doc=None):
 				"date" : "transaction_date" ,
 			},
 		}
-	},target_doc, postprocess)
+	},target_doc, set_missing_values)
 
 	return doclist
 

@@ -2,7 +2,5 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Ball Mill Additional Cost', {
-	// refresh: function(frm) {
-
-	// }
+	
 });
