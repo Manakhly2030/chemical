@@ -266,6 +266,9 @@ doc_events = {
 			# "chemical.batch_valuation.stock_entry_on_submit",
 			"chemical.chemical.doc_events.stock_entry.stock_entry_on_submit",
 		],
+        "after_submit": [
+			"chemical.chemical.doc_events.stock_entry.stock_entry_after_submit",
+		],
 		"before_cancel":[
 			"chemical.chemical.doc_events.stock_entry.se_before_cancel",
 			"chemical.api.stock_entry_before_cancel",

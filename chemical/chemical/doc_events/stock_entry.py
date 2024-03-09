@@ -14,6 +14,9 @@ def onload(self,method):
 	pass
 	#quantity_price_to_qty_rate(self)
 
+def stock_entry_after_submit(self, method):
+	set_batch_qc(self)
+
 def before_validate(self,method):
 	update_item_batches_based_on_fifo(self)
 	for idx, item in enumerate(self.items):
@@ -64,6 +67,8 @@ def se_before_submit(self, method):
 
 def stock_entry_on_submit(self, method):
 	update_po(self)
+	# frappe.throw("After submit event chal raha hai")
+	set_batch_qc(self)
 
 def se_before_cancel(self, method):
 	StockEntry.delete_auto_created_batches = delete_auto_created_batches
@@ -254,7 +259,7 @@ def cal_target_yield_cons(self):
 					# 		cal_yield = flt(item_yield) * flt(last_row.qty / item_map[self.based_on]['quantity']) # Last row qty / sum of items of based_on item from map variable
 					# 	else:
 					cal_yield =  flt(last_row.qty / item_map[self.based_on]['quantity'])
-				last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)		
+				last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)
 		else:
 			for d in self.items:
 				if d.t_warehouse:
@@ -287,7 +292,7 @@ def cal_target_yield_cons(self):
 					# 		cal_yield = flt(item_yield) * flt(last_row.qty / item_map[self.based_on]['quantity']) # Last row qty / sum of items of based_on item from map variable
 					# 	else:
 					cal_yield =  flt(last_row.qty / item_map[self.based_on]['qty'])
-				last_row.batch_yield = flt(cal_yield) * (flt(last_row.concentration) / 100.0)		
+				last_row.batch_yield = flt(cal_yield)
 
 def cal_validate_additional_cost_qty(self):
 	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
@@ -899,7 +904,12 @@ def update_yield(self):
 		po.db_set("batch_yield", flt(batch_yield/count))
 		po.db_set("concentration", flt(concentration/count))
 		
-			
+def set_batch_qc(self):
+	# frappe.throw("SUBMIT HO GAYA HAI")
+	for row in self.items:
+		if row.quality_inspection:
+			qi_doc = frappe.get_doc("Quality Inspection",row.quality_inspection)
+			qi_doc.db_set("batch_no", row.batch_no, update_modified=False)	
 
 	
 def update_item_batches_based_on_fifo(self):

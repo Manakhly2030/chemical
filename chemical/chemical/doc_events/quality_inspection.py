@@ -8,6 +8,7 @@ def validate_qc(self, method):
 
 def on_cancel(self, method):
 	update_qc(self, method)
+	
 
 def update_qc_reference(self):
 	quality_inspection = self.name if self.docstatus == 1 else ""
@@ -49,34 +50,34 @@ def update_qc_reference(self):
 			
 
 def update_qc(self, method):
-	if self._action == "submit":
-		doc = frappe.get_doc(self.reference_type, self.reference_name)
-		for row in doc.items:
-			if row.item_code == self.item_code:
-				frappe.throw(str(row.item_code))
-				row.db_set("concentration", self.concentration)
-		meta = frappe.get_meta(self.reference_type)
-		if meta.has_field('quality_inspection'):
-			doc.db_set("quality_inspection", self.name)
+	if self.reference_type == "Stock Entry":
+		if self._action == "submit":
+			doc = frappe.get_doc(self.reference_type, self.reference_name)
+			for row in doc.items:
+				if row.item_code == self.item_code:
+					row.db_set("concentration", self.concentration)
+			meta = frappe.get_meta(self.reference_type)
+			if meta.has_field('quality_inspection'):
+				doc.db_set("quality_inspection", self.name)
 
-		if self.batch_no:
-			meta_batch = frappe.get_meta("Batch")
-			batch = frappe.get_doc("Batch", self.batch_no)
-			if meta_batch.has_field('quality_inspection'):
-				batch.db_set("quality_inspection", self.name)
+			if self.batch_no:
+				meta_batch = frappe.get_meta("Batch")
+				batch = frappe.get_doc("Batch", self.batch_no)
+				if meta_batch.has_field('quality_inspection'):
+					batch.db_set("quality_inspection", self.name)
 
-	elif self._action == "cancel":
-		doc = frappe.get_doc(self.reference_type, self.reference_name)
-		meta = frappe.get_meta(self.reference_type)
-		if meta.has_field('quality_inspection'):
-			doc.db_set("quality_inspection", self.name)
-		# doc.db_set("quality_inspection", "")
-				
-		if self.batch_no:
-			meta_batch = frappe.get_meta("Batch")
-			batch = frappe.get_doc("Batch", self.batch_no)
-			if meta_batch.has_field('quality_inspection'):
-				batch.db_set("quality_inspection", "")
+		elif self._action == "cancel":
+			doc = frappe.get_doc(self.reference_type, self.reference_name)
+			meta = frappe.get_meta(self.reference_type)
+			if meta.has_field('quality_inspection'):
+				doc.db_set("quality_inspection", self.name)
+			# doc.db_set("quality_inspection", "")
+					
+			if self.batch_no:
+				meta_batch = frappe.get_meta("Batch")
+				batch = frappe.get_doc("Batch", self.batch_no)
+				if meta_batch.has_field('quality_inspection'):
+					batch.db_set("quality_inspection", "")
 	
 def set_details_in_qc(self, method):
 	if self.reference_type == "Purchase Receipt":
@@ -111,3 +112,5 @@ def set_details_in_qc(self, method):
 				self.packing_size = row.packing_size
 				self.no_of_packages = row.no_of_packages
 				self.qty = row.qty
+
+				
