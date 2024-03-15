@@ -15,7 +15,8 @@ def onload(self,method):
 	#quantity_price_to_qty_rate(self)
 
 def stock_entry_after_submit(self, method):
-	set_batch_qc(self)
+	pass
+	# set_batch_qc(self)
 
 def before_validate(self,method):
 	update_item_batches_based_on_fifo(self)

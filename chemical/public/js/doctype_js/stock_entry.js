@@ -830,7 +830,7 @@ frappe.ui.form.on("Stock Entry", {
     cal_qty: function (frm) {
         let qty = 0;
         frm.doc.items.forEach(function (d) {
-            if (d.batch_no) {
+            if (d.batch_no && d.s_warehouse) {
                 frappe.db.get_value("Batch", d.batch_no, ['packaging_material', 'packing_size', 'lot_no', 'batch_yield', 'concentration'], function (r) {
                     frappe.model.set_value(d.doctype, d.name, 'packaging_material', r.packaging_material);
                     frappe.model.set_value(d.doctype, d.name, 'packing_size', r.packing_size);

@@ -1004,11 +1004,20 @@ from frappe.utils import (
 
 import datetime
 def before_naming(self , method):
-	data = frappe.db.get_value(self.reference_doctype, self.reference_name, "posting_date")
-	try:
-		self.posting_date = datetime.datetime.strptime(data, "%Y-%m-%d").strftime("%y%m%d")
-	except:
-		self.posting_date = data.strftime("%y%m%d")
+	meta = frappe.get_meta("Work Order")
+	field_name = "posting_date"
+
+	if field_name in meta.fields:
+		data = frappe.db.get_value(self.reference_doctype, self.reference_name, "posting_date")
+		try:
+			self.posting_date = datetime.datetime.strptime(data, "%Y-%m-%d").strftime("%y%m%d")
+		except:
+			self.posting_date = data.strftime("%y%m%d")
+	else:
+		if field_name not in meta.fields:
+			# if not frappe.db.get_value("Work Order", self.reference_name, field_name):
+			self.posting_date = datetime.datetime.now().date()
+			self.formatted_posting_date = now_datetime()
 
 
 def make_batches(self, warehouse_field):
@@ -1024,7 +1033,16 @@ def make_batches(self, warehouse_field):
 			has_batch_no, create_new_batch = frappe.db.get_value(
 				"Item", d.item_code, ["has_batch_no", "create_new_batch"]
 			)
-			if has_batch_no and create_new_batch:
+			if has_batch_no and create_new_batch and d.batch_no:
+				batch = frappe.get_doc("Batch", d.batch_no)
+				batch.db_set("concentration", d.get("concentration"))
+				batch.db_set("lot_no", d.get("lot_no"))
+				batch.db_set("valuation_rate", d.get("valuation_rate"))
+				batch.db_set("packaging_material", d.get("packaging_material"))
+				batch.db_set("packing_size", d.get("packing_size"))
+				batch.db_set("batch_yield", d.get("batch_yield"))
+
+			if has_batch_no and create_new_batch and not d.batch_no:
 				d.batch_no = (
 					frappe.get_doc(
 						dict(
