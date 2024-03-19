@@ -122,6 +122,10 @@ def get_sales_orders(self):
 		so_filter += " and so.customer = %(customer)s"
 	if self.project:
 		so_filter += " and so.project = %(project)s"
+	if self.from_delivery_date:
+		item_filter += " and so_item.delivery_date >= %(from_delivery_date)s"
+	if self.to_delivery_date:
+		item_filter += " and so_item.delivery_date <= %(to_delivery_date)s"
 
 	if self.item_code:
 		item_filter += " and so_item.item_code = %(item)s"
@@ -140,7 +144,9 @@ def get_sales_orders(self):
 			"customer": self.customer,
 			"project": self.project,
 			"item": self.item_code,
-			"company": self.company
+			"company": self.company,
+			"from_delivery_date": self.from_delivery_date,
+			"to_delivery_date": self.to_delivery_date
 
 		}, as_dict=1)
 
