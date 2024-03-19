@@ -49,7 +49,7 @@ class CustomProductionPlan(ProductionPlan):
 
 			if self.get_items_from == "Material Request":
 				item_details.update({"qty": d.planned_qty})
-				item_dict[(d.item_code, d.material_request_item, d.warehouse)] = item_details
+				item_dict[(d.item_code, d.name, d.warehouse)] = item_details
 			else:
 				item_details.update(
 					{"qty": flt(item_dict.get(key, {}).get("qty")) + (flt(d.planned_qty) - flt(d.ordered_qty))}
@@ -168,7 +168,7 @@ def get_items_from_sample(self):
 		else:
 			get_so_items(self)
 	elif self.get_items_from == "Material Request":
-			self.get_mr_items()
+			get_mr_items(self)
 
 def get_so_items_for_sample(self):
 		so_list = [d.sales_order for d in self.get("sales_orders", []) if d.sales_order]
@@ -388,6 +388,72 @@ def get_so_items(self):
 		self.add_items(new_items)
 		# self.add_items(items + packed_items)
 		self.calculate_total_planned_qty()
+
+def get_mr_items(self):
+		# Check for empty table or empty rows
+		if not self.get("material_requests") or not self.get_so_mr_list(
+			"material_request", "material_requests"
+		):
+			frappe.throw(
+				_("Please fill the Material Requests table"), title=_("Material Requests Required")
+			)
+
+		mr_list = self.get_so_mr_list("material_request", "material_requests")
+
+		bom = frappe.qb.DocType("BOM")
+		mr_item = frappe.qb.DocType("Material Request Item")
+
+		items_query = (
+			frappe.qb.from_(mr_item)
+			.select(
+				mr_item.parent,
+				mr_item.name,
+				mr_item.item_code,
+				mr_item.warehouse,
+				mr_item.description,
+				mr_item.bom_no,
+				((mr_item.qty - mr_item.ordered_qty) * mr_item.conversion_factor).as_("pending_qty"),
+			)
+			.distinct()
+			.where(
+				(mr_item.parent.isin(mr_list))
+				& (mr_item.docstatus == 1)
+				& (mr_item.qty > mr_item.ordered_qty)
+				& (
+					ExistsCriterion(
+						frappe.qb.from_(bom)
+						.select(bom.name)
+						.where((bom.item == mr_item.item_code) & (bom.is_active == 1))
+					)
+				)
+			)
+		)
+
+		if self.item_code:
+			items_query = items_query.where(mr_item.item_code == self.item_code)
+
+		items = items_query.run(as_dict=True)
+		all_items = items
+		new_items = []
+
+		for item in all_items:
+			bom_quantity = frappe.get_value("BOM", item.get("bom_no"), "quantity")
+			if bom_quantity:
+				# Calculate the number of rows needed based on BOM quantity
+				pending_qty = item.get("pending_qty")
+				while pending_qty > 0:
+					qty_to_add = min(pending_qty, bom_quantity)
+					new_item = item.copy()
+					new_item["pending_qty"] = qty_to_add
+					new_items.append(new_item)
+					pending_qty -= qty_to_add
+			else:
+				new_items.append(item)
+
+		self.add_items(new_items)
+
+		self.calculate_total_planned_qty()
+
 
 def add_items_for_sample(self, items):
 	# frappe.msgprint("call add")
