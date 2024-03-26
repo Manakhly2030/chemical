@@ -232,14 +232,14 @@ doc_events = {
 	"Item Price": {
 		"before_save": "chemical.chemical.doc_events.item_price.before_save",
 	},
-	"Customer":{
-		"before_rename": "chemical.chemical.doc_events.customer.customer_override_after_rename",
-		"autoname": "chemical.chemical.doc_events.customer.customer_auto_name",
-	},
-	"Supplier":{
-		"before_rename": "chemical.chemical.doc_events.supplier.supplier_override_after_rename",
-		"autoname": "chemical.chemical.doc_events.supplier.supplier_auto_name",
-	},
+	# "Customer":{
+	# 	"before_rename": "chemical.chemical.doc_events.customer.customer_override_after_rename",
+	# 	"autoname": "chemical.chemical.doc_events.customer.customer_auto_name",
+	# },
+	# "Supplier":{
+	# 	"before_rename": "chemical.chemical.doc_events.supplier.supplier_override_after_rename",
+	# 	"autoname": "chemical.chemical.doc_events.supplier.supplier_auto_name",
+	# },
 	"Item": {
 		"validate": "chemical.chemical.doc_events.item.item_validate",
 	},
