@@ -3,7 +3,6 @@ from frappe.utils import flt
 
 
 def make_batches(self, warehouse_field):
-    frappe.throw('test1')
     """Create batches if required. Called before submit"""
     for d in self.items:
         if self.doctype == 'Stock Entry' and self.purpose in ['Material Transfer', 'Material Transfer for Manufacture']:
