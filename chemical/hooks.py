@@ -206,7 +206,13 @@ StockEntry.validate_finished_goods = validate_finished_goods
 
 override_doctype_class = {
 	"Stock Entry": "chemical.chemical.doc_events.stock_entry.CustommStockEntry",
-    "Production Plan":"chemical.chemical.doc_events.production_plan.CustomProductionPlan"
+    "Production Plan":"chemical.chemical.doc_events.production_plan.CustomProductionPlan",
+    # "erpnext.controllers.stock_controller.StockController": "chemical.api.CustomStockController",
+    "Stock Entry": "chemical.chemical.override.doctype.stock_entry.StockEntry",
+    "Purchase Receipt": "chemical.chemical.override.doctype.purchase_receipt.PurchaseReceipt",
+    "Purchase Invoice": "chemical.chemical.override.doctype.purchase_invoice.PurchaseInvoice",
+    "Stock Reconciliation": "chemical.chemical.override.doctype.stock_reconciliation.StockReconciliation",
+    "Subcontracting Receipt": "chemical.chemical.override.doctype.subcontracting_receipt.SubcontractingReceipt",
 }
 
 # override_doctype_class = {
@@ -381,9 +387,9 @@ override_doctype_dashboards = {
 	"Quotation": "chemical.chemical.dashboard.quotation.get_data",
 	"Lead": "chemical.chemical.dashboard.lead.get_data"
 }
-from erpnext.controllers.stock_controller import StockController
-from chemical.api import make_batches as make_batches_api
-StockController.make_batches = make_batches_api
+# from erpnext.controllers.stock_controller import StockController
+# from chemical.api import make_batches as make_batches_api
+# StockController.make_batches = make_batches_api
 #Work Order Summary Report Override From Finbyz Dashboard For Chart
 # from chemical.chemical.report.work_order_summary import execute as wos_execute
 # from finbyz_dashboard.finbyz_dashboard.report.work_order_summary import work_order_summary

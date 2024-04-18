@@ -178,7 +178,7 @@ def make_batches(self, warehouse_field):
 					row.db_set('old_batch_no', row.batch_no)
 
 						
-
+				frappe.throw('test')
 				batch = frappe.new_doc("Batch")
 				batch.item = row.item_code
 				batch.supplier = getattr(self, 'supplier', None)
