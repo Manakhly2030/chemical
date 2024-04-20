@@ -28,16 +28,17 @@ def validate(self, method):
     set_default(self)
 
 def no_change(self):
-    if not self.get("__islocal"):
-        field = "maintain_as_is_stock"
+    if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+        if not self.get("__islocal"):
+            field = "maintain_as_is_stock"
 
-        values = frappe.db.get_value("Item", self.name, field, as_dict=True)
-    
-        if cstr(self.get(field)) != cstr(values.get(field)):
-            
-            link_fields=get("Item",self.name)
-            if link_fields:
-                frappe.throw(("As there are existing transactions against item {0}, you can not change the value of {1}").format(self.name, frappe.bold(self.meta.get_label(field))))
+            values = frappe.db.get_value("Item", self.name, field, as_dict=True)
+        
+            if cstr(self.get(field)) != cstr(values.get(field)):
+                
+                link_fields=get("Item",self.name)
+                if link_fields:
+                    frappe.throw(("As there are existing transactions against item {0}, you can not change the value of {1}").format(self.name, frappe.bold(self.meta.get_label(field))))
 
 
 def set_default(self):
