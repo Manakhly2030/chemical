@@ -61,6 +61,9 @@ QualityInspection.update_qc_reference = update_qc_reference #done
 # include js, css files in header of desk.html
 # app_include_css = "/assets/chemical/css/chemical.css"
 # app_include_js = "/assets/chemical/js/chemical.js"
+app_include_js = [
+	"chemical.bundle.js"
+]
 
 # app_include_js = [
 # 	"assets/js/summernote.min.js",
@@ -220,7 +223,8 @@ override_doctype_class = {
 
 override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
-	"erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.get_stock_balance_for": "chemical.chemical.doc_events.stock_reconciliation.get_stock_balance_for"
+	"erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.get_stock_balance_for": "chemical.chemical.doc_events.stock_reconciliation.get_stock_balance_for",
+    "erpnext.controllers.stock_controller.make_quality_inspections":"chemical.chemical.overrides.whitelisted_methods.stock_controller.make_quality_inspections",
 }
 
 doc_events = {
