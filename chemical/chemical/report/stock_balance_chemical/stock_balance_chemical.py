@@ -238,13 +238,15 @@ def get_stock_ledger_entries(filters, items):
 
 	conditions = get_conditions(filters)
 
+	# `tabStock Ledger Entry` sle force index (posting_sort_index) remove index # TODO: add index in patch
+
 	raw_sle = frappe.db.sql("""
 		select
 			sle.item_code, warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
 			sle.company, sle.voucher_type, sle.qty_after_transaction, sle.stock_value_difference,
 			sle.item_code as name, sle.voucher_no,  bt.concentration, i.maintain_as_is_stock
 		from
-			`tabStock Ledger Entry` sle force index (posting_sort_index) 
+			`tabStock Ledger Entry` as sle
 		JOIN `tabItem` as i ON i.name = sle.item_code
 		LEFT JOIN `tabBatch` as bt ON bt.name = sle.batch_no 
 		where sle.is_cancelled = 0 and sle.docstatus < 2 %s %s
