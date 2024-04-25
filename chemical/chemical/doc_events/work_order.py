@@ -507,7 +507,7 @@ def add_to_stock_entry_detail(self, item_dict, bom_no=None):
 			se_child.uom = item_dict[d]["uom"] if item_dict[d].get("uom") else stock_uom
 			se_child.stock_uom = stock_uom
 			se_child.qty = flt(item_dict[d]["qty"], se_child.precision("qty"))
-			se_child.quantity = flt(item_dict[d]["quantity"], se_child.precision("quantity"))
+			# se_child.quantity = flt(item_dict[d]["quantity"], se_child.precision("quantity"))
 			se_child.expense_account = item_dict[d].get("expense_account")
 			se_child.cost_center = item_dict[d].get("cost_center") or cost_center
 			se_child.allow_alternative_item = item_dict[d].get("allow_alternative_item", 0)
@@ -525,7 +525,7 @@ def add_to_stock_entry_detail(self, item_dict, bom_no=None):
 
 			# in stock uom
 			se_child.conversion_factor = flt(item_dict[d].get("conversion_factor")) or 1
-			se_child.transfer_qty = flt(item_dict[d]["quantity"]*se_child.conversion_factor, se_child.precision("quantity"))
+			# se_child.transfer_qty = flt(item_dict[d]["quantity"]*se_child.conversion_factor, se_child.precision("quantity"))
 
 
 			# to be assigned for finished item

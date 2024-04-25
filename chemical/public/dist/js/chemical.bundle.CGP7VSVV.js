@@ -1,2 +1,0 @@
-(()=>{frappe.provide("chemical");chemical.CompanyAndItemDefaults=class extends frappe.ui.form.Controller{async setup(){await this.get_maintain_as_is_new()}async get_maintain_as_is_new(){this.frm.maintain_as_is_new=0,this.frm.doc.company&&await frappe.db.get_value("Company",this.frm.doc.company,"maintain_as_is_new").then(a=>{var i=a.message;this.frm.maintain_as_is_new=i.maintain_as_is_new})}};})();
-//# sourceMappingURL=chemical.bundle.CGP7VSVV.js.map
