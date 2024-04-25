@@ -210,7 +210,6 @@ StockEntry.validate_finished_goods = validate_finished_goods
 override_doctype_class = {
 	"Stock Entry": "chemical.chemical.doc_events.stock_entry.CustommStockEntry",
     "Production Plan":"chemical.chemical.doc_events.production_plan.CustomProductionPlan",
-    # "erpnext.controllers.stock_controller.StockController": "chemical.api.CustomStockController",
     "Stock Entry": "chemical.chemical.override.doctype.stock_entry.StockEntry",
     "Purchase Receipt": "chemical.chemical.override.doctype.purchase_receipt.PurchaseReceipt",
     "Purchase Invoice": "chemical.chemical.override.doctype.purchase_invoice.PurchaseInvoice",
@@ -292,9 +291,9 @@ doc_events = {
 			"chemical.chemical.doc_events.stock_entry.on_update_after_submit",
 		]
 	},
-	 "Batch":{
-    		"before_naming":"chemical.api.before_naming"
-	},
+	# "Batch":{
+	# 	"before_naming":"chemical.api.before_naming"
+	# },
 	"Purchase Receipt": {
 		"onload":"chemical.chemical.doc_events.purchase_receipt.onload",
 		"before_validate": "chemical.chemical.doc_events.purchase_receipt.before_validate",

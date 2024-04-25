@@ -30,6 +30,7 @@ def make_batches(self, warehouse_field):
                     posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
                 except:
                     posting_date = self.posting_date.strftime("%y%m%d")
+                
                 d.batch_no = (
                     frappe.get_doc(
                         dict(

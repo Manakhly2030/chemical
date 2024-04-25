@@ -178,7 +178,7 @@ def make_batches(self, warehouse_field):
 					row.db_set('old_batch_no', row.batch_no)
 
 						
-				frappe.throw('test')
+				# frappe.throw('test')
 				batch = frappe.new_doc("Batch")
 				batch.item = row.item_code
 				batch.supplier = getattr(self, 'supplier', None)
@@ -197,17 +197,6 @@ def make_batches(self, warehouse_field):
 					batch.posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
 				except:
 					batch.posting_date = self.posting_date.strftime("%y%m%d")
-				try:
-					# from datetime 
-					# batch.formatted_posting_date = datetime.datetime.combine(datetime.strptime(
-					# 	self.posting_date, "%Y-%m-%d"), datetime.strptime(self.posting_time,"%H:%M:%S").time())
-					batch.formatted_posting_date = datetime.datetime.combine(datetime.datetime.strptime(
-                        str(self.posting_date), "%Y-%m-%d"), datetime.datetime.strptime(str(self.posting_time),"%H:%M:%S.%f").time())
-				except:
-					# from datetime 
-					# batch.formatted_posting_date = datetime.datetime.combine(self.posting_date.strptime(
-					# 	"%Y-%m-%d"), self.posting_time.strptime("%H:%M:%S"))
-					batch.formatted_posting_date = datetime.datetime.combine(datetime.datetime.strptime(str(self.posting_date), "%Y-%m-%d"), datetime.datetime.strptime(str(self.posting_time),"%H:%M:%S").time())
 				batch.actual_quantity = flt(row.qty * row.conversion_factor)
 				batch.reference_doctype = self.doctype
 				batch.reference_name = self.name
