@@ -230,7 +230,7 @@ def cal_rate_qty(self):
 					if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
 						if self.get("is_return"):
 							d.no_of_packages = -abs(d.no_of_packages)
-						d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+						d.qty = (flt(d.packing_size) * flt(d.no_of_packages) * flt(d.concentration)) / 100.0
 				else:
 					if d.get("packing_size") and d.get("no_of_packages"):
 						if self.get("is_return"):
@@ -431,7 +431,7 @@ def purchase_cal_rate_qty(self):
 					if d.get('packing_size') and d.get("no_of_packages"):
 						if self.get("is_return"):
 							d.no_of_packages = -abs(d.no_of_packages)
-						d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+						d.qty = (flt(d.packing_size) * flt(d.no_of_packages) * flt(d.concentration)) / 100.0
 				else:
 					if d.get("packing_size") and d.get("no_of_packages"):
 						if self.get("is_return"):
@@ -668,7 +668,7 @@ def se_repack_cal_rate_qty(self):
 					if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
 						if self.get("is_return"):
 							d.no_of_packages = -abs(d.no_of_packages)
-						d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+						d.qty = (flt(d.packing_size) * flt(d.no_of_packages) * flt(d.concentration)) / 100.0
 				else:
 					if d.get("packing_size") and d.get("no_of_packages"):
 						d.qty = d.packing_size * d.no_of_packages
@@ -736,7 +736,7 @@ def se_cal_rate_qty(self):
 					if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
 						if self.get("is_return"):
 							d.no_of_packages = -abs(d.no_of_packages)
-						d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+						d.qty = (flt(d.packing_size) * flt(d.no_of_packages) * flt(d.concentration)) / 100.0
 				else:
 					if d.get("packing_size") and d.get("no_of_packages"):
 						d.qty = cint(d.packing_size) * cint(d.no_of_packages)
@@ -933,7 +933,7 @@ def quantity_price_to_qty_rate(self):
 						if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
 							if self.get("is_return"):
 								d.no_of_packages = -abs(d.no_of_packages)
-							d.qty = (d.packing_size * d.no_of_packages * d.concentration) / 100.0
+							d.qty = (flt(d.packing_size) * flt(d.no_of_packages) * flt(d.concentration)) / 100.0
 					else:
 						if d.get("packing_size") and d.get("no_of_packages"):
 							if self.get("is_return"):
