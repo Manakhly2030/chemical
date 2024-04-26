@@ -44,7 +44,7 @@ WorkOrder.validate_qty = validate_qty
 # overide reason bcz raw material changes on change event of fg_completed_qty
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 from chemical.chemical.doc_events.work_order import get_items
-StockEntry.get_items = get_items
+# StockEntry.get_items = get_items
 
 # import erpnext
 # erpnext.stock.utils.get_incoming_rate = my_incoming_rate
