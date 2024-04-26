@@ -1,10 +1,59 @@
 import frappe
-from frappe.utils import cint
+from frappe.utils import cint, flt
 from frappe import _
 
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry as _StockEntry
-from erpnext.manufacturing.doctype.bom.bom import add_additional_cost
+# from erpnext.manufacturing.doctype.bom.bom import add_additional_cost # TODO: Check This
 from chemical.chemical.override.utils import make_batches
+
+
+def add_additional_cost(stock_entry,self,qty=None):
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		abbr = frappe.db.get_value("Company",self.company,'abbr')
+		bom = frappe.get_doc("BOM",self.bom_no)
+		for additional_cost in bom.additional_cost:
+			if additional_cost.uom == "FG QTY":
+				stock_entry.append("additional_costs",{
+					'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
+					'description': additional_cost.description,
+					'qty': stock_entry.fg_completed_quantity,
+					'rate': additional_cost.rate,
+					'amount': flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
+					'base_amount':flt(additional_cost.rate) * flt(stock_entry.fg_completed_quantity),
+					'uom':"FG QTY"
+				})
+			else:
+				stock_entry.append("additional_costs",{
+					'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
+					'description': additional_cost.description,
+					'qty': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity))),
+					'rate': additional_cost.rate,
+					'amount': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate),
+					'base_amount':(flt((flt(qty)*flt(additional_cost.qty))/flt(bom.quantity)))*flt(additional_cost.rate)
+				})
+	else:
+		abbr = frappe.db.get_value("Company",self.company,'abbr')
+		bom = frappe.get_doc("BOM",self.bom_no)
+		for additional_cost in bom.additional_cost:
+			if additional_cost.uom == "FG QTY":
+				stock_entry.append("additional_costs",{
+					'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
+					'description': additional_cost.description,
+					'qty': stock_entry.fg_completed_qty,
+					'rate': additional_cost.rate,
+					'amount': flt(additional_cost.rate) * flt(stock_entry.fg_completed_qty),
+					'base_amount':flt(additional_cost.rate) * flt(stock_entry.fg_completed_qty),
+					'uom':"FG QTY"
+				})
+			else:
+				stock_entry.append("additional_costs",{
+					'expense_account': 'Expenses Included In Valuation - {}'.format(abbr),
+					'description': additional_cost.description,
+					'qty': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.qty))),
+					'rate': additional_cost.rate,
+					'amount': (flt((flt(qty)*flt(additional_cost.qty))/flt(bom.qty)))*flt(additional_cost.rate),
+					'base_amount':(flt((flt(qty)*flt(additional_cost.qty))/flt(bom.qty)))*flt(additional_cost.rate)
+				})
 
 
 class StockEntry(_StockEntry):
@@ -110,7 +159,7 @@ class StockEntry(_StockEntry):
 			# fetch the serial_no of the first stock entry for the second stock entry
 			if self.work_order and self.purpose == "Manufacture":
 				work_order = frappe.get_doc("Work Order", self.work_order)
-				add_additional_cost(self, work_order)
+				add_additional_cost(self, work_order, self.fg_completed_qty) # Finbyz Changes
 
 			# add finished goods item
 			if self.purpose in ("Manufacture", "Repack"):
