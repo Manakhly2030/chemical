@@ -26,30 +26,19 @@ def make_batches(self, warehouse_field):
                 batch.db_set("batch_yield", d.get("batch_yield"))
 
             if has_batch_no and create_new_batch and not d.batch_no:
-                try:
-                    posting_date = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d").strftime("%y%m%d")
-                except:
-                    posting_date = self.posting_date.strftime("%y%m%d")
+                doc = frappe.new_doc("Batch")
+                doc.item = d.item_code
+                doc.supplier = getattr(self, "supplier", None)
+                doc.reference_doctype = self.doctype
+                doc.reference_name = self.name
+                doc.concentration = d.get("concentration")
+                doc.lot_no = d.get("lot_no")
+                doc.valuation_rate = d.get("valuation_rate")
+                doc.packaging_material = d.get("packaging_material")
+                doc.packing_size = d.get("packing_size")
+                doc.uv_value = d.get("uv_value")
+                doc.batch_yield = d.get("batch_yield")
+                doc.manufacturing_date = self.posting_date
+                doc.save()
                 
-                d.batch_no = (
-                    frappe.get_doc(
-                        dict(
-                            doctype="Batch",
-                            item=d.item_code,
-                            supplier=getattr(self, "supplier", None),
-                            reference_doctype=self.doctype,
-                            reference_name=self.name,
-                            concentration = d.get("concentration"),
-                            lot_no = d.get("lot_no"),
-                            valuation_rate = d.get("valuation_rate"),
-                            packaging_material = d.get('packaging_material'),
-                            packing_size = d.get('packing_size'),
-                            uv_value = d.get("uv_value"),
-                            batch_yield = d.get("batch_yield"),
-                            manufacturing_date = self.posting_date,
-                            posting_date=posting_date,
-                        )
-                    )
-                    .insert()
-                    .name
-                )
+                d.batch_no = doc.name

@@ -233,6 +233,11 @@ override_whitelisted_methods = {
 }
 
 doc_events = {
+    # Finbyz Check Start
+    "Batch": {
+        "before_naming": "chemical.chemical.override.doc_events.batch.before_naming",
+	},
+	# Finbyz Check End
 	"BOM": {
 		"before_save": "chemical.chemical.doc_events.bom.bom_before_save",
 		"validate": "chemical.chemical.doc_events.bom.bom_validate",
