@@ -4,14 +4,31 @@ import datetime
 
 
 def make_batches(self, warehouse_field):
-    """Create batches if required. Called before submit"""
     for d in self.items:
-        if self.doctype == 'Stock Entry' and self.purpose in ['Material Transfer', 'Material Transfer for Manufacture']:
+        if self.doctype == "Stock Entry" and self.purpose in [
+            "Material Transfer",
+            "Material Transfer for Manufacture",
+        ]:
             continue
-        if d.batch_no and flt(d.valuation_rate,4) == flt(frappe.db.get_value("Stock Ledger Entry", {'is_cancelled':0,'company':self.company,'warehouse':d.get(warehouse_field),'batch_no':d.batch_no,'incoming_rate':('!=', 0)},'incoming_rate'),4):
-            continue
+        # TODO: Check if this is needed (commented all code below)
+        # if d.batch_no and flt(d.valuation_rate, 4) == flt(
+        #     frappe.db.get_value(
+        #         "Stock Ledger Entry",
+        #         {
+        #             "is_cancelled": 0,
+        #             "company": self.company,
+        #             "warehouse": d.get(warehouse_field),
+        #             "batch_no": d.batch_no,
+        #             "incoming_rate": ("!=", 0),
+        #         },
+        #         "incoming_rate",
+        #     ),
+        #     4,
+        # ):
+        #     continue
+        # TODO: Check if this is needed (commented all code below)
         if d.batch_no and self.doctype == "Stock Entry":
-            d.db_set('old_batch_no', d.batch_no)
+            d.db_set("old_batch_no", d.batch_no)
         if d.get(warehouse_field):
             has_batch_no, create_new_batch = frappe.db.get_value(
                 "Item", d.item_code, ["has_batch_no", "create_new_batch"]
@@ -40,5 +57,5 @@ def make_batches(self, warehouse_field):
                 doc.batch_yield = d.get("batch_yield")
                 doc.manufacturing_date = self.posting_date
                 doc.save()
-                
+
                 d.batch_no = doc.name
