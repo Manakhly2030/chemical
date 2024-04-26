@@ -89,6 +89,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 			# stock_entry.set("additional_costs", additional_costs)
 
 	stock_entry.set_stock_entry_type()
+	stock_entry.get_items()
 	# get_items(stock_entry)
 	if purpose=='Manufacture':
 		if work_order.is_multiple_item and work_order.bom_no:
