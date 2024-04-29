@@ -28,13 +28,13 @@ erpnext.work_order.make_se = function(frm, purpose) {
 		}, __("Select Quantity"), __("Make"));
 }
 
-this.frm.add_fetch('bom_no', 'based_on', 'based_on');
-this.frm.add_fetch('bom_no', 'batch_yield', 'batch_yield');
-this.frm.add_fetch('bom_no', 'is_multiple_item', 'is_multiple_item');
+cur_frm.add_fetch('bom_no', 'based_on', 'based_on');
+cur_frm.add_fetch('bom_no', 'batch_yield', 'batch_yield');
+cur_frm.add_fetch('bom_no', 'is_multiple_item', 'is_multiple_item');
 
 
-if(this.frm.doc.skip_transfer && !this.frm.doc.__islocal){
-	this.frm.dashboard.add_transactions({
+if(cur_frm.doc.skip_transfer && !cur_frm.doc.__islocal){
+	cur_frm.dashboard.add_transactions({
 		'label': '',
 		'items': ['Material Transfer Instruction']
 	});
