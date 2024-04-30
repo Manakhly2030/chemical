@@ -8,10 +8,11 @@ erpnext.work_order.make_se = function (frm, purpose) {
 	}
 
 	max = flt(max, precision("qty"));
-	frappe.prompt({
-		fieldtype: "Float", label: __("Qty for {0}", [purpose]), fieldname: "qty",
-		description: __("Max: {0}", [max]), 'default': max
-	},
+	frappe.prompt(
+		{
+			fieldtype: "Float", label: __("Qty for {0}", [purpose]), fieldname: "qty",
+			description: __("Max: {0}", [max]), 'default': max
+		},
 		function (data) {
 			frappe.call({
 				method: "chemical.chemical.override.doctype.work_order.make_stock_entry",
@@ -25,7 +26,8 @@ erpnext.work_order.make_se = function (frm, purpose) {
 					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 				}
 			});
-		}, __("Select Quantity"), __("Make"));
+		}, __("Select Quantity"), __("Make")
+	);
 }
 
 cur_frm.add_fetch('bom_no', 'based_on', 'based_on');
