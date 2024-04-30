@@ -54,6 +54,7 @@ override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
 	"erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.get_stock_balance_for": "chemical.chemical.doc_events.stock_reconciliation.get_stock_balance_for",
     "erpnext.controllers.stock_controller.make_quality_inspections":"chemical.chemical.overrides.whitelisted_methods.stock_controller.make_quality_inspections",
+    "erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry": "chemical.chemical.override.doctype.work_order.make_stock_entry",
 }
 
 doc_events = {
