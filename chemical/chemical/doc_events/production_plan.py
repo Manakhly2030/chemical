@@ -68,49 +68,6 @@ def override_proplan_functions():
 	# ProductionPlan.make_work_order = make_work_order
 
 
-# @frappe.whitelist()
-# def create_work_order(self, item):
-# 	from erpnext.manufacturing.doctype.work_order.work_order import OverProductionError
-	
-# 	work_order_names = []
-# 	if flt(item.get("qty")) <= 0:
-# 		return
-
-# 	bom_quantity = frappe.get_value("BOM", item.get("bom_no"), "quantity")
-
-# 	if not bom_quantity or bom_quantity <= 0:
-# 		return
-
-# 	sales_order_qty = item.get("qty")
-# 	for row in self.po_items:
-# 		try:
-# 			# Calculate the quantity for each work order
-# 			wo_qty = min(sales_order_qty, bom_quantity)
-# 			sales_order_qty -= wo_qty
-
-# 			# Create a new work order for each row in po_items
-# 			wo = frappe.new_doc("Work Order")
-# 			wo.update(item)
-# 			wo.planned_start_date = item.get("planned_start_date") or item.get("schedule_date")
-
-# 			if item.get("warehouse"):
-# 				wo.fg_warehouse = item.get("warehouse")
-
-# 			wo.set_work_order_operations()
-# 			wo.set_required_items()
-# 			wo.qty = wo_qty  # Set the calculated quantity for the work order
-
-# 			wo.flags.ignore_mandatory = True
-# 			wo.flags.ignore_validate = True
-# 			wo.insert()
-# 			# wo.save()
-# 			work_order_names.append(wo.name)
-
-# 		except OverProductionError:
-# 			pass
-
-# 	return work_order_names  # You may want to return the last work order name outside the loop
-
 
 def get_sales_orders(self):
 	so_filter = item_filter = ""

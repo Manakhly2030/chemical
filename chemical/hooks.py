@@ -40,10 +40,10 @@ doctype_js = {
 }
 
 override_doctype_class = {
-	"Stock Entry": "chemical.chemical.doc_events.stock_entry.CustommStockEntry",
-    "Work Order": "chemical.chemical.override.doctype.work_order.WorkOrder",
-    "Production Plan":"chemical.chemical.doc_events.production_plan.CustomProductionPlan",
     "Stock Entry": "chemical.chemical.override.doctype.stock_entry.StockEntry",
+    "Work Order": "chemical.chemical.override.doctype.work_order.WorkOrder",
+    "Quality Inspection": "chemical.chemical.override.doctype.quality_inspection.QualityInspection",
+    "Production Plan":"chemical.chemical.override.doctype.production_plan.ProductionPlan",
     "Purchase Receipt": "chemical.chemical.override.doctype.purchase_receipt.PurchaseReceipt",
     "Purchase Invoice": "chemical.chemical.override.doctype.purchase_invoice.PurchaseInvoice",
     "Stock Reconciliation": "chemical.chemical.override.doctype.stock_reconciliation.StockReconciliation",
@@ -75,33 +75,18 @@ doc_events = {
 		"before_cancel": "chemical.chemical.override.doc_events.stock_entry.before_cancel",
 		"on_cancel": "chemical.chemical.override.doc_events.stock_entry.on_cancel",
 	},
+	"Item Price": {
+		"before_save": "chemical.chemical.override.doc_events.item_price.before_save",
+	},
 	# Finbyz Check End
 	"BOM": {
 		"before_save": "chemical.chemical.doc_events.bom.bom_before_save",
 		"validate": "chemical.chemical.doc_events.bom.bom_validate",
 		"on_submit":"chemical.chemical.doc_events.bom.on_submit"
 	},
-	"Item Price": {
-		"before_save": "chemical.chemical.doc_events.item_price.before_save",
-	},
-	# "Customer":{
-	# 	"before_rename": "chemical.chemical.doc_events.customer.customer_override_after_rename",
-	# 	"autoname": "chemical.chemical.doc_events.customer.customer_auto_name",
-	# },
-	# "Supplier":{
-	# 	"before_rename": "chemical.chemical.doc_events.supplier.supplier_override_after_rename",
-	# 	"autoname": "chemical.chemical.doc_events.supplier.supplier_auto_name",
-	# },
 	"Item": {
 		"validate": "chemical.chemical.doc_events.item.item_validate",
 	},
-	"Work Order":{
-		"validate":"chemical.chemical.doc_events.work_order.validate",
-		"before_submit": "chemical.chemical.doc_events.work_order.before_submit",
-	},
-	# "Batch":{
-	# 	"before_naming":"chemical.api.before_naming"
-	# },
 	"Purchase Receipt": {
 		"onload":"chemical.chemical.doc_events.purchase_receipt.onload",
 		"before_validate": "chemical.chemical.doc_events.purchase_receipt.before_validate",
@@ -202,13 +187,3 @@ override_doctype_dashboards = {
 from erpnext.stock.stock_ledger import update_entries_after
 from chemical.chemical.doc_events.stock_ledger import build
 update_entries_after.build = build
-
-from erpnext.manufacturing.doctype.production_plan.production_plan import ProductionPlan
-from chemical.chemical.doc_events.production_plan import get_open_sales_orders, get_items_from_sample
-ProductionPlan.get_open_sales_orders = get_open_sales_orders
-ProductionPlan.get_items = get_items_from_sample
-
-#quality inspection override for sample
-from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection #done
-from chemical.chemical.doc_events.quality_inspection import update_qc_reference #done
-QualityInspection.update_qc_reference = update_qc_reference #done
