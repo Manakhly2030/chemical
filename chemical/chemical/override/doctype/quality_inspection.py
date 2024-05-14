@@ -1,5 +1,5 @@
 from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection as _QualityInspection
-
+import frappe
 
 class QualityInspection(_QualityInspection):
 	# TODO: check required

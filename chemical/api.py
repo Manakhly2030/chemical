@@ -227,7 +227,7 @@ def cal_rate_qty(self):
 				"Item", d.item_code, "maintain_as_is_stock"
 				)
 				if maintain_as_is_stock:
-					if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
+					if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration") and not d.calculate_qty_manually:
 						if self.get("is_return"):
 							d.no_of_packages = -abs(d.no_of_packages)
 						d.qty = (flt(d.packing_size) * flt(d.no_of_packages) * flt(d.concentration)) / 100.0
@@ -930,7 +930,7 @@ def quantity_price_to_qty_rate(self):
 					"Item", d.item_code, "maintain_as_is_stock"
 					)
 					if maintain_as_is_stock:
-						if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration"):
+						if d.get('packing_size') and d.get("no_of_packages") and d.get("concentration") and not d.calculate_qty_manually:
 							if self.get("is_return"):
 								d.no_of_packages = -abs(d.no_of_packages)
 							d.qty = (flt(d.packing_size) * flt(d.no_of_packages) * flt(d.concentration)) / 100.0
