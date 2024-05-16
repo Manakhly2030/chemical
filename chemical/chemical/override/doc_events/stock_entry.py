@@ -576,7 +576,7 @@ def cal_rate_for_finished_item(self):
 
 					item_map[d.item_code]["qty"] += flt(d.qty)
 					item_map[d.item_code]["yield_weights"] += flt(d.batch_yield) * flt(
-						d.quantity
+						d.qty
 					)
 
 					bom_cost_list = []
