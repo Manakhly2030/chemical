@@ -1033,30 +1033,56 @@ def update_po_transfer_qty(self, po):
 
 def update_po_items(self, po):
 	from erpnext.stock.utils import get_latest_stock_qty
+		
+	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
+		for row in self.items:
+			if row.s_warehouse and not row.t_warehouse:
+				item = [d.name for d in po.required_items if d.item_code == row.item_code]
 
-	for row in self.items:
-		if row.s_warehouse and not row.t_warehouse:
-			item = [d.name for d in po.required_items if d.item_code == row.item_code]
+				if not item:
+					po.append(
+						"required_items",
+						{
+							"item_code": row.item_code,
+							"item_name": row.item_name,
+							"description": row.description,
+							"source_warehouse": row.s_warehouse,
+							"required_qty": row.qty,
+							"transferred_qty": row.quantity,
+							"valuation_rate": row.valuation_rate,
+							"available_qty_at_source_warehouse": get_latest_stock_qty(
+								row.item_code, row.s_warehouse
+							),
+						},
+					)
 
-			if not item:
-				po.append(
-					"required_items",
-					{
-						"item_code": row.item_code,
-						"item_name": row.item_name,
-						"description": row.description,
-						"source_warehouse": row.s_warehouse,
-						"required_qty": row.qty,
-						"transferred_qty": row.quantity,
-						"valuation_rate": row.valuation_rate,
-						"available_qty_at_source_warehouse": get_latest_stock_qty(
-							row.item_code, row.s_warehouse
-						),
-					},
-				)
+		for child in po.required_items:
+			child.db_update()
+	else:
+		for row in self.items:
+			if row.s_warehouse and not row.t_warehouse:
+				item = [d.name for d in po.required_items if d.item_code == row.item_code]
 
-	for child in po.required_items:
-		child.db_update()
+				if not item:
+					po.append(
+						"required_items",
+						{
+							"item_code": row.item_code,
+							"item_name": row.item_name,
+							"description": row.description,
+							"source_warehouse": row.s_warehouse,
+							"required_qty": row.qty,
+							"transferred_qty": row.qty,
+							"valuation_rate": row.valuation_rate,
+							"available_qty_at_source_warehouse": get_latest_stock_qty(
+								row.item_code, row.s_warehouse
+							),
+						},
+					)
+
+		for child in po.required_items:
+			child.db_update()
+
 
 
 def set_batch_qc(self):
