@@ -77,15 +77,20 @@ frappe.ui.form.on("Work Order", {
 		$("button[data-label='Start']").css({ 'display': 'none' })
 
 		if (frm.doc.skip_transfer && frm.doc.docstatus == 1 && frm.doc.status == "Not Started") {
-			if (flt(frm.doc.material_transferred_for_instruction) < flt(frm.doc.qty)) {
-				frm.has_start_btn = true;
-				var start_btn = frm.add_custom_button(__('Start'), function () {
-					frm.events.make_transfer(frm);
-				});
-				start_btn.addClass('btn-primary');
-				frm.remove_custom_button('Finish');
-				frm.remove_custom_button('Make Timesheet');
-			}
+			frappe.db.get_value("Manufacturing Settings", "Manufacturing Settings", "enable_material_instruction", function (r) {
+				if (r.enable_material_instruction == 1) {
+					if (flt(frm.doc.material_transferred_for_instruction) < flt(frm.doc.qty)) {
+						frm.has_start_btn = true;
+						var start_btn = frm.add_custom_button(__('Start'), function () {
+							frm.events.make_transfer(frm);
+						});
+						start_btn.addClass('btn-primary');
+						frm.remove_custom_button('Finish');
+						frm.remove_custom_button('Make Timesheet');
+					}
+				}				
+			});
+			
 		}
 
 		if (frm.doc.status == "Closed" || frm.doc.status == "Completed") {
