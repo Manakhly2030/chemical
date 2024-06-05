@@ -303,8 +303,10 @@ class StockEntry(_StockEntry):
 	
 	def add_to_stock_entry_detail(self, item_dict, bom_no=None):
 		maintain_as_is_new = frappe.db.get_value("Company", self.company, "maintain_as_is_new")
+		# frappe.throw(str(item_dict))
 		for d in item_dict:
 			item_row = item_dict[d]
+			# frappe.throw(str(item_row))
 			stock_uom = item_row.get("stock_uom") or frappe.db.get_value("Item", d, "stock_uom")
 
 			se_child = self.append("items")
@@ -371,6 +373,7 @@ class StockEntry(_StockEntry):
 			to_warehouse = self.to_warehouse
 
 		item = get_item_defaults(item_code, self.company)
+		# frappe.throw(str(item))
 
 		if not self.work_order and not to_warehouse:
 			# in case of BOM
@@ -383,7 +386,7 @@ class StockEntry(_StockEntry):
 			"description": item.description,
 			"stock_uom": item.stock_uom,
 			"expense_account": item.get("expense_account"),
-			"cost_center": item.get("buying_cost_center"),
+			"cost_center": item.get("buying_cost_center") or item.get("selling_cost_center"),
 			"is_finished_item": 1,
 		}
 
