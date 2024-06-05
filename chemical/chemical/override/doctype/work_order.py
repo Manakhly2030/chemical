@@ -233,6 +233,5 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 					'batch_yield':finish_items.batch_yield,
 					'bom_no':bom,
 					'concentration':100
-				})
-		
+				})	
 	return stock_entry.as_dict()

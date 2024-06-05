@@ -1,4 +1,4 @@
-from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import PurchaseInvoice as _PurchaseInvoice
+from finbyzerp.finbyzerp.override.purchase_invoice import PurchaseInvoice as _PurchaseInvoice
 from chemical.chemical.override.utils import make_batches
 
 

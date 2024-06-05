@@ -234,11 +234,13 @@ class StockEntry(_StockEntry):
 							batch_quantity = quantity
 
 						item.batch_no = batch_no
+						# frappe.throw(str(item)+"4")
 						self.update_item_in_stock_entry_detail(row, item, quantity=batch_quantity)
 
 						row.batch_details[batch_no] -= batch_quantity
 						quantity -= batch_quantity
 				else:
+					# frappe.throw(str(item)+"3")
 					self.update_item_in_stock_entry_detail(row, item, quantity=quantity)
 
 			else:
@@ -253,17 +255,18 @@ class StockEntry(_StockEntry):
 							batch_qty = qty
 
 						item.batch_no = batch_no
+						# frappe.throw(str(item)+"2")
 						self.update_item_in_stock_entry_detail(row, item, qty=batch_qty)
 
 						row.batch_details[batch_no] -= batch_qty
 						qty -= batch_qty
 				else:
+					# frappe.throw(str(item)+"1")
 					self.update_item_in_stock_entry_detail(row, item, qty=qty)
 	
 	def update_item_in_stock_entry_detail(self, row, item, qty=None, quantity=None) -> None:
 		if not (qty or quantity):
 			return
-
 		ste_item_details = {
 			"from_warehouse": item.warehouse,
 			"to_warehouse": "",
@@ -272,7 +275,7 @@ class StockEntry(_StockEntry):
 			"description": item.description,
 			"stock_uom": item.stock_uom,
 			"expense_account": item.expense_account,
-			"cost_center": item.buying_cost_center,
+			"cost_center": item.cost_center,
 			"original_item": item.original_item,
 		}
 
