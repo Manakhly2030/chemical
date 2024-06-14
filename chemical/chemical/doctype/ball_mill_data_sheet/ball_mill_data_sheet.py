@@ -11,6 +11,7 @@ from erpnext.stock.stock_ledger import get_valuation_rate
 from frappe.model.mapper import get_mapped_doc
 from finbyzerp.api import get_fiscal, naming_series_name
 import datetime
+from erpnext.stock.doctype.item.item import get_item_defaults
 
 class BallMillDataSheet(Document):
 
@@ -154,6 +155,7 @@ class BallMillDataSheet(Document):
 				se.party = self.party
 
 			for row in self.items:
+				item = get_item_defaults(row.item_name, self.company)
 				se.append('items',{
 					'item_code': row.item_name,
 					's_warehouse': row.source_warehouse,
@@ -165,7 +167,7 @@ class BallMillDataSheet(Document):
 					'uom':frappe.db.get_value("Item",row.item_name,"stock_uom"),
 					'stock_uom':frappe.db.get_value("Item",self.product_name,"stock_uom"),
 					'basic_amount': row.basic_amount,
-					'cost_center': cost_center,
+					'cost_center': item.get("buying_cost_center") or item.get("selling_cost_center") or cost_center,
 					'batch_no': row.batch_no,
 					'concentration':row.concentration,
 					'packaging_material':row.packaging_material,
@@ -174,6 +176,7 @@ class BallMillDataSheet(Document):
 				})
 
 			for d in self.packaging:	
+				item = get_item_defaults(self.product_name, self.company)
 				se.append('items',{
 					'item_code': self.product_name,
 					't_warehouse': d.warehouse or self.warehouse,
@@ -190,7 +193,7 @@ class BallMillDataSheet(Document):
 					'basic_rate': self.per_unit_amount,
 					'valuation_rate': self.per_unit_amount,
 					'basic_amount': flt(d.qty * self.per_unit_amount),
-					'cost_center': cost_center,
+					'cost_center': item.get("buying_cost_center") or item.get("selling_cost_center") or cost_center,
 					'uv_value':self.get("weighted_average_uv_value")
 				})
 			for d in self.ball_mill_additional_cost:	
