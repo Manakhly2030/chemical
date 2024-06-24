@@ -3,9 +3,9 @@ from frappe import _
 def get_data():
 	return {
 		'fieldname': 'outward_sample',
-		'non_standard_fieldnames': {
-			'Quality Inspection': 'reference_name',
-			'Quotation': 'outward_sample'
+		"internal_links": {
+			"Quality Inspection": ["items", "outward_sample"],
+			"Quotation": ["items", "outward_sample"],
 		},
 		'transactions': [
 			{	

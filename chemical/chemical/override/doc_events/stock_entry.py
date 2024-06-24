@@ -652,18 +652,20 @@ def calculate_multiple_repack_valuation(self):
 				total_outgoing_value += flt(row.basic_amount)
 			if row.t_warehouse:
 				qty += row.qty
-				quantity += row.quantity
+				if  not frappe.db.get_value("Company",self.company,"maintain_as_is_new"):
+					quantity += row.quantity
 			if row.is_scrap_item:
 				scrap_total += flt(row.basic_amount)
 		total_outgoing_value = flt(total_outgoing_value) - flt(scrap_total)
 		for row in self.items:
 			if row.t_warehouse:
-				row.basic_amount = (
-					flt(total_outgoing_value) * flt(row.quantity) / quantity
-				)
-				row.additional_cost = (
-					flt(self.total_additional_costs) * flt(row.quantity) / quantity
-				)
+				if  not frappe.db.get_value("Company",self.company,"maintain_as_is_new"):
+					row.basic_amount = (
+						flt(total_outgoing_value) * flt(row.quantity) / quantity
+					)
+					row.additional_cost = (
+						flt(self.total_additional_costs) * flt(row.quantity) / quantity
+					)
 				row.basic_rate = flt(row.basic_amount / row.qty)
 
 

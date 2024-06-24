@@ -23,21 +23,19 @@
   "lot_no",
   "default_source_warehouse",
   "company",
+  "branch",
   "section_break_6",
   "items",
   "section_break_15",
   "total_qty",
   "concentration",
   "actual_qty",
-  "actual_quantity",
   "total_sub_loat",
   "remarks",
   "amount",
   "column_break_11",
-  "total_quantity",
   "handling_loss",
   "per_unit_amount",
-  "price",
   "amended_from",
   "section_break_27",
   "ball_mill_additional_cost",
@@ -46,7 +44,6 @@
   "section_break_34",
   "total_packing_qty",
   "column_break_36",
-  "total_packing_quantity",
   "2",
   "strength",
   "more_info_break",
@@ -91,6 +88,7 @@
    "reqd": 1
   },
   {
+   "default": "100",
    "fieldname": "concentration",
    "fieldtype": "Percent",
    "label": "Concentration"
@@ -281,24 +279,6 @@
    "label": "Company Series"
   },
   {
-   "fieldname": "total_quantity",
-   "fieldtype": "Float",
-   "label": "Total Quantity",
-   "read_only": 1
-  },
-  {
-   "fieldname": "price",
-   "fieldtype": "Currency",
-   "label": "Price",
-   "read_only": 1
-  },
-  {
-   "fieldname": "actual_quantity",
-   "fieldtype": "Float",
-   "label": "Actual Quantity",
-   "read_only": 1
-  },
-  {
    "fieldname": "section_break_34",
    "fieldtype": "Section Break"
   },
@@ -306,12 +286,6 @@
    "fieldname": "total_packing_qty",
    "fieldtype": "Float",
    "label": "Total Packing Qty",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_packing_quantity",
-   "fieldtype": "Float",
-   "label": "Total Packing Quantity",
    "read_only": 1
   },
   {
@@ -327,12 +301,18 @@
   {
    "fieldname": "section_break_35_section",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-02-24 13:57:58.685854",
+ "modified": "2024-06-21 13:34:02.404912",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
