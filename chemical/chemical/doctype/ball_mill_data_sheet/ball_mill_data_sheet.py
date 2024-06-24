@@ -9,8 +9,9 @@ from frappe.model.document import Document
 from frappe.utils import nowtime, flt, cint, getdate, get_fullname, get_url_to_form
 from erpnext.stock.stock_ledger import get_valuation_rate
 from frappe.model.mapper import get_mapped_doc
-from finbyzerp.api import get_fiscal, naming_series_name
+from finbyzerp.api import get_fiscal, get_naming_series_name
 import datetime
+from erpnext.stock.doctype.item.item import get_item_defaults
 
 class BallMillDataSheet(Document):
 
@@ -23,7 +24,7 @@ class BallMillDataSheet(Document):
 				self.company_series = None
 			if self.get('series_value'):
 				if self.series_value > 0:
-					name = naming_series_name(self.naming_series, fiscal, self.company_series)
+					name = get_naming_series_name(self.naming_series, fiscal, self.company_series)
 					check = frappe.db.get_value('Series', name, 'current', order_by="name")
 					if check == 0:
 						pass
@@ -58,12 +59,16 @@ class BallMillDataSheet(Document):
 			d.basic_amount = d.basic_rate * d.qty
 	def get_args_for_incoming_rate(self, item):
 		warehouse = item.source_warehouse or self.warehouse
+		if not frappe.db.get_value("Company",self.company,"maintain_as_is_new"):
+			qty = warehouse and -1*flt(item.quantity) or flt(item.quantity)
+		else:
+			qty = warehouse and -1*flt(item.qty) or flt(item.qty)
 		return frappe._dict({
 			"item_code": item.item_name,
 			"warehouse": warehouse,
 			"posting_date": self.date,
 			"posting_time": nowtime(),
-			"qty": warehouse and -1*flt(item.quantity) or flt(item.quantity),
+			"qty": qty,
 			"voucher_type": self.doctype,
 			"voucher_no": item.name,
 			"company": self.company,
@@ -71,67 +76,103 @@ class BallMillDataSheet(Document):
 			"batch_no":item.batch_no
 		})
 	def repack_calculation(self):
-		for d in self.items:
-			maintain_as_is_stock = frappe.db.get_value("Item",d.item_name,'maintain_as_is_stock')
+		if not frappe.db.get_value("Company",self.company,"maintain_as_is_new"):
+			for d in self.items:
+				maintain_as_is_stock = frappe.db.get_value("Item",d.item_name,'maintain_as_is_stock')
 
-			concentration = d.concentration or 100
+				concentration = d.concentration or 100
 
-			if d.get('packing_size') and d.get('no_of_packages'):
-				d.qty = (d.packing_size * d.no_of_packages)
+				if d.get('packing_size') and d.get('no_of_packages'):
+					d.qty = (d.packing_size * d.no_of_packages)
 
-				if maintain_as_is_stock:
-					d.quantity = flt(d.qty) * flt(concentration) / 100
-					d.price = flt(d.basic_rate) * 100 / flt(concentration)
+					if maintain_as_is_stock:
+						d.quantity = flt(d.qty) * flt(concentration) / 100
+						d.price = flt(d.basic_rate) * 100 / flt(concentration)
 
-				else:
-					d.quantity = flt(d.qty)
-					d.price = flt(d.basic_rate)
-
-			else:
-				if maintain_as_is_stock:
-					d.price = flt(d.basic_rate)*100/flt(concentration)
-
-					if d.quantity:
-						d.qty = flt((d.quantity * 100.0) / flt(concentration))
-
-					if d.qty and not d.quantity:
-						d.quantity = flt(d.qty) * flt(concentration) / 100.0
-				else:
-					d.price = flt(d.basic_rate)
-
-					if d.quantity:
-						d.qty = flt(d.quantity)
-
-					if d.qty and not d.quantity:
+					else:
 						d.quantity = flt(d.qty)
-		
-		for d in self.packaging:
-			maintain_as_is_stock = frappe.db.get_value("Item",self.product_name,'maintain_as_is_stock')
-			if d.get('packing_size') and d.get('no_of_packages'):
-				#d.qty = d.packing_size * d.no_of_packages
-				if maintain_as_is_stock:
-					if d.qty:
-						d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
+						d.price = flt(d.basic_rate)
 
 				else:
-					if d.qty:
-						d.quantity = flt(d.qty)
-			else:
-				if maintain_as_is_stock:
-					if d.qty:
-						d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
+					if maintain_as_is_stock:
+						d.price = flt(d.basic_rate)*100/flt(concentration)
+
+						if d.quantity:
+							d.qty = flt((d.quantity * 100.0) / flt(concentration))
+
+						if d.qty and not d.quantity:
+							d.quantity = flt(d.qty) * flt(concentration) / 100.0
+					else:
+						d.price = flt(d.basic_rate)
+
+						if d.quantity:
+							d.qty = flt(d.quantity)
+
+						if d.qty and not d.quantity:
+							d.quantity = flt(d.qty)
+
+			for d in self.packaging:
+				maintain_as_is_stock = frappe.db.get_value("Item",self.product_name,'maintain_as_is_stock')
+				if d.get('packing_size') and d.get('no_of_packages'):
+					d.qty = d.packing_size * d.no_of_packages
+					if maintain_as_is_stock:
+						if d.qty:
+							d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
+
+					else:
+						if d.qty:
+							d.quantity = flt(d.qty)
+				else:
+					if maintain_as_is_stock:
+						if d.qty:
+							d.quantity = flt(d.qty) * flt(d.concentration) / 100.0
+						
+						if d.quantity and not d.qty:
+							d.qty = flt(d.quantity) * 100 / flt(d.concentration)
+
+					else:
+						if d.qty:
+							d.quantity = flt(d.qty)				
+
+						if d.quantity and not d.qty:
+							d.qty = flt(d.quantity)
+		else:
+			for d in self.items:
+				maintain_as_is_stock = frappe.db.get_value("Item",d.item_name,'maintain_as_is_stock')
+
+				concentration = d.concentration or 100
+
+				if d.get('packing_size') and d.get('no_of_packages'):
+					d.qty = (d.packing_size * d.no_of_packages)
+
+					if maintain_as_is_stock:
+						d.qty = flt(d.qty) * flt(concentration) / 100
+						
+						
+				else:
+					if maintain_as_is_stock:
 					
-					if d.quantity and not d.qty:
-						d.qty = flt(d.quantity) * 100 / flt(d.concentration)
+						if d.qty:
+							d.qty = flt(d.qty) * flt(concentration) / 100.0
 
+			for d in self.packaging:
+				maintain_as_is_stock = frappe.db.get_value("Item",self.product_name,'maintain_as_is_stock')
+				if d.get('packing_size') and d.get('no_of_packages'):
+					d.qty = d.packing_size * d.no_of_packages
+
+					if maintain_as_is_stock:
+						if d.qty:
+							d.qty = flt(d.qty) * flt(d.concentration) / 100.0
+
+					
 				else:
-					if d.qty:
-						d.quantity = flt(d.qty)				
+					if maintain_as_is_stock:
+						if d.qty:
+							d.qty = flt(d.qty) * flt(d.concentration) / 100.0
+							
 
-					if d.quantity and not d.qty:
-						d.qty = flt(d.quantity)
-	
 	def on_submit(self):
+		maintain_as_is_new = frappe.db.get_value("Company", self.company, "maintain_as_is_new")
 		if self.get('create_stock_entry') == 0:
 			create_stock_entry = 0
 		else:
@@ -145,6 +186,7 @@ class BallMillDataSheet(Document):
 			se.posting_date = self.date
 			se.posting_time = self.posting_time
 			se.from_ball_mill = 1
+			# se.branch = self.branch
 			cost_center = frappe.db.get_value("Company",self.company,"cost_center")
 			if hasattr(self,'send_to_party'):
 				se.send_to_party = self.send_to_party
@@ -154,34 +196,39 @@ class BallMillDataSheet(Document):
 				se.party = self.party
 
 			for row in self.items:
-				se.append('items',{
+				item = get_item_defaults(row.item_name, self.company)
+				item_dict = {
 					'item_code': row.item_name,
 					's_warehouse': row.source_warehouse,
 					'qty': row.qty,
-					'quantity':row.quantity,
 					'basic_rate': row.basic_rate,
-					'price':row.price,
 					't_warehouse':None,
 					'uom':frappe.db.get_value("Item",row.item_name,"stock_uom"),
 					'stock_uom':frappe.db.get_value("Item",self.product_name,"stock_uom"),
 					'basic_amount': row.basic_amount,
-					'cost_center': cost_center,
+					'cost_center': item.get("buying_cost_center") or item.get("selling_cost_center") or cost_center,
 					'batch_no': row.batch_no,
 					'concentration':row.concentration,
 					'packaging_material':row.packaging_material,
 					'packing_size':row.packing_size,
 					'no_of_packages':row.no_of_packages
-				})
+				}
+				
+				if not maintain_as_is_new:
+					item_dict['quantity'] = row.quantity
+					item_dict['price'] = row.price
+				
+				se.append('items', item_dict)
 
 			for d in self.packaging:	
-				se.append('items',{
+				item = get_item_defaults(self.product_name, self.company)
+				item_dict = {
 					'item_code': self.product_name,
 					't_warehouse': d.warehouse or self.warehouse,
 					's_warehouse':None,
 					'uom':frappe.db.get_value("Item",self.product_name,"stock_uom"),
 					'stock_uom':frappe.db.get_value("Item",self.product_name,"stock_uom"),
 					'qty': d.qty,
-					'quantity':d.quantity,
 					'packaging_material': d.packaging_material,
 					'packing_size': d.packing_size,
 					'no_of_packages': d.no_of_packages,
@@ -190,9 +237,15 @@ class BallMillDataSheet(Document):
 					'basic_rate': self.per_unit_amount,
 					'valuation_rate': self.per_unit_amount,
 					'basic_amount': flt(d.qty * self.per_unit_amount),
-					'cost_center': cost_center,
+					'cost_center': item.get("buying_cost_center") or item.get("selling_cost_center") or cost_center,
 					'uv_value':self.get("weighted_average_uv_value")
-				})
+				}
+
+				if not maintain_as_is_new:
+					item_dict['quantity'] = row.quantity
+
+				se.append('items', item_dict)
+			
 			for d in self.ball_mill_additional_cost:	
 				se.append('additional_costs',{
 					'expense_account':d.expense_account ,
@@ -260,13 +313,14 @@ class BallMillDataSheet(Document):
 	def cal_total(self):
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
 		self.per_unit_amount = (self.amount + sum([flt(row.amount) for row in self.ball_mill_additional_cost]))/ self.actual_qty
-		self.total_qty = sum([flt(item.qty) for item in self.items])		
-		self.total_quantity = sum([flt(item.quantity) for item in self.items])
-		self.actual_quantity = sum([flt(item.quantity) for item in self.packaging])
+		self.total_qty = sum([flt(item.qty) for item in self.items])
+		if not frappe.db.get_value("Company",self.company,"maintain_as_is_new"):		
+			self.total_quantity = sum([flt(item.quantity) for item in self.items])
+			self.actual_quantity = sum([flt(item.quantity) for item in self.packaging])
+			self.total_packing_quantity = sum([flt(item.quantity) for item in self.packaging])
+			if self.actual_quantity:
+				self.price = flt(self.amount)/ flt(self.actual_quantity)
 		self.total_packing_qty = sum([flt(item.qty) for item in self.packaging])
-		self.total_packing_quantity = sum([flt(item.quantity) for item in self.packaging])
-		if self.actual_quantity:
-			self.price = flt(self.amount)/ flt(self.actual_quantity)
 
 	def before_save(self):
 		self.handling_loss = flt(self.total_qty) - flt(self.actual_qty)
@@ -298,20 +352,23 @@ def make_outward_sample(source_name, target_doc=None):
 
 		total_amount = 0.0
 		for d in doc.details:
-			price = get_price_list(d.item_name, "Standard Buying").price_list_rate
+			if not frappe.db.get_value("Company",doc.company,"maintain_as_is_new"):
 
-			if d.batch_yield:
-				bomyield = frappe.db.get_value("BOM",{'item': d.item_name},"batch_yield")
-				if bomyield != 0:
-					d.rate = (price * flt(bomyield)) / d.batch_yield
+				price = get_price_list(d.item_name, "Standard Buying").price_list_rate
+
+				if d.batch_yield:
+					bomyield = frappe.db.get_value("BOM",{'item': d.item_name},"batch_yield")
+
+					if bomyield != 0:
+						d.rate = (price * flt(bomyield)) / d.batch_yield
+					else:
+						d.rate = (price * 2.2) / d.batch_yield
 				else:
-					d.rate = (price * 2.2) / d.batch_yield
-			else:
-				d.rate = price
+					d.rate = price
 			 
-			d.price_list_rate = price
-			d.amount = flt(d.rate) * d.quantity
-			total_amount += d.amount
+				d.price_list_rate = price
+				d.amount = flt(d.rate) * d.quantity
+				total_amount += d.amount
 
 		doc.total_amount = flt(total_amount)
 		doc.total_qty = source.actual_qty

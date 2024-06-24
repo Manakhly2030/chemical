@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from . import __version__ as app_version
+from . import  __version__ as app_version
 
 from erpnext.accounts.doctype.opening_invoice_creation_tool.opening_invoice_creation_tool import OpeningInvoiceCreationTool
 from chemical.chemical.doc_events.opening_invoice_creation_tool import get_invoice_dict, make_invoices

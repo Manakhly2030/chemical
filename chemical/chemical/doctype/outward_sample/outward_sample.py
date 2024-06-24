@@ -12,7 +12,7 @@ from frappe.desk.reportview import get_match_cond, get_filters_cond
 from erpnext.utilities.product import get_price
 from frappe.utils import nowdate,flt
 
-from finbyzerp.api import before_naming as naming_series
+from finbyzerp.finbyzerp.doc_events.naming_series import before_naming as naming_series 
 
 class OutwardSample(Document):
 	def before_save(self):
@@ -60,7 +60,7 @@ class OutwardSample(Document):
 			rate = price.price_list_rate
 			row.db_set("price_list_rate", rate)
 			row.db_set("rate", rate)
-			#finbyz changes
+			# #finbyz changes
 			row.db_set('amount', flt(row.quantity) * flt(row.rate))
 
 			total_qty += row.quantity
@@ -79,6 +79,7 @@ class OutwardSample(Document):
 	def on_cancel(self):
 		self.db_set('against','')
 		
+	@frappe.whitelist()
 	def get_ball_mill(self):
 		if not self.ball_mill_ref:
 			frappe.throw(_("Please select Ball Mill Data Sheet!"))
@@ -97,10 +98,10 @@ class OutwardSample(Document):
 
 		total_amount = 0.0
 		for row in bm.items:
-			price = self.get_price_list(row.item_code, "Standard Buying").price_list_rate
+			price = self.get_price_list(row.item_name, "Standard Buying").price_list_rate
 
 			if row.batch_yield:
-				bomyield = frappe.db.get_value("BOM",{'item': row.item_code},"batch_yield")
+				bomyield = frappe.db.get_value("BOM",{'item': row.item_name},"batch_yield")
 				if bomyield != 0:
 					rate = (price * flt(bomyield)) / row.batch_yield
 				else:
@@ -217,3 +218,5 @@ def make_quality_inspection(source_name, target_doc=None):
 # 			"mcond": get_match_cond(doctype),
 # 			"txt": "%(txt)s"
 # 		}, {"txt": ("%%%s%%" % txt)}, as_dict=as_dict)
+
+

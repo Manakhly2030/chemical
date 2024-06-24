@@ -34,7 +34,6 @@
   "remarks",
   "amount",
   "column_break_11",
-  "total_quantity",
   "handling_loss",
   "per_unit_amount",
   "price",
@@ -46,7 +45,6 @@
   "section_break_34",
   "total_packing_qty",
   "column_break_36",
-  "total_packing_quantity",
   "2",
   "strength",
   "more_info_break",
@@ -281,12 +279,6 @@
    "label": "Company Series"
   },
   {
-   "fieldname": "total_quantity",
-   "fieldtype": "Float",
-   "label": "Total Quantity",
-   "read_only": 1
-  },
-  {
    "fieldname": "price",
    "fieldtype": "Currency",
    "label": "Price",
@@ -309,12 +301,6 @@
    "read_only": 1
   },
   {
-   "fieldname": "total_packing_quantity",
-   "fieldtype": "Float",
-   "label": "Total Packing Quantity",
-   "read_only": 1
-  },
-  {
    "fieldname": "column_break_36",
    "fieldtype": "Column Break"
   },
@@ -332,7 +318,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-02-24 13:57:58.685854",
+ "modified": "2024-06-24 09:36:50.101430",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",

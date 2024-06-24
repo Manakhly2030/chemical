@@ -8,7 +8,6 @@
   "source_warehouse",
   "item_name",
   "batch_yield",
-  "quantity",
   "batch_no",
   "lot_no",
   "packing_size",
@@ -17,12 +16,10 @@
   "packaging_material",
   "devider_equation",
   "v_s",
-  "price",
   "basic_rate",
   "qty",
   "concentration",
   "basic_amount",
-  "required_quantity",
   "sub_loat_per_kg"
  ],
  "fields": [
@@ -64,14 +61,6 @@
   {
    "fieldname": "column_break_4",
    "fieldtype": "Column Break"
-  },
-  {
-   "columns": 1,
-   "fieldname": "quantity",
-   "fieldtype": "Float",
-   "in_list_view": 1,
-   "label": "Quantity",
-   "reqd": 1
   },
   {
    "columns": 1,
@@ -117,12 +106,6 @@
    "label": "Concentration"
   },
   {
-   "fieldname": "required_quantity",
-   "fieldtype": "Float",
-   "label": "Required Quantity",
-   "read_only": 1
-  },
-  {
    "columns": 1,
    "fieldname": "sub_loat_per_kg",
    "fieldtype": "Float",
@@ -135,12 +118,6 @@
    "fieldname": "qty",
    "fieldtype": "Float",
    "label": "Qty"
-  },
-  {
-   "fieldname": "price",
-   "fieldtype": "Currency",
-   "label": "Price",
-   "read_only": 1
   },
   {
    "columns": 1,
@@ -179,7 +156,7 @@
  ],
  "istable": 1,
  "links": [],
- "modified": "2021-09-18 17:10:05.059375",
+ "modified": "2024-06-24 09:37:58.320356",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet Item",
@@ -188,5 +165,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

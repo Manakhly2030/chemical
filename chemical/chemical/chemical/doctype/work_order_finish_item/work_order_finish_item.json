@@ -1,0 +1,121 @@
+{
+ "creation": "2020-08-14 15:03:49.029195",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "actual_qty",
+  "actual_valuation",
+  "lot_no",
+  "packing_size",
+  "no_of_packages",
+  "purity",
+  "batch_yield",
+  "batch_no",
+  "bom_cost_ratio",
+  "bom_qty_ratio",
+  "bom_qty",
+  "bom_yield"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "actual_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Actual Qty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "actual_valuation",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Actual Valuation",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "lot_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Lot No",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "packing_size",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "BagSize",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "no_of_packages",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "No Bags",
+   "read_only": 1
+  },
+  {
+   "fieldname": "purity",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Purity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch_yield",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Batch Yield",
+   "read_only": 1
+  },
+  {
+   "fieldname": "batch_no",
+   "fieldtype": "Link",
+   "label": "Batch No",
+   "options": "Batch",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bom_cost_ratio",
+   "fieldtype": "Percent",
+   "label": "BOM Cost Ratio"
+  },
+  {
+   "fieldname": "bom_qty_ratio",
+   "fieldtype": "Percent",
+   "label": "BOM Qty Ratio"
+  },
+  {
+   "fieldname": "bom_qty",
+   "fieldtype": "Float",
+   "label": "BOM Qty"
+  },
+  {
+   "fieldname": "bom_yield",
+   "fieldtype": "Percent",
+   "label": "BOM Yield"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-08-14 15:06:56.780819",
+ "modified_by": "Administrator",
+ "module": "Chemical",
+ "name": "Work Order Finish Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
