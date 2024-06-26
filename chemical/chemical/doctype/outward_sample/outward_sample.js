@@ -5,6 +5,7 @@
 //cur_frm.add_fetch("party", "territory", "destination");
 
 //fetch item name in child table.
+// Todo: Need to be Remove and use fetch from
 cur_frm.add_fetch("inward_sample", "item_code", "item_name");
 cur_frm.add_fetch("batch_no", "concentration", "concentration");
 
@@ -142,7 +143,6 @@ frappe.ui.form.on('Outward Sample', {
 				if (r.message) {
 					frappe.msgprint(r.message);
 					frm.refresh_field('details');
-					cur_frm.reload_doc();
 				}
 			}
 		});

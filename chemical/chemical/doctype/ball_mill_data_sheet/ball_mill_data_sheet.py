@@ -9,7 +9,7 @@ from frappe.model.document import Document
 from frappe.utils import nowtime, flt, cint, getdate, get_fullname, get_url_to_form
 from erpnext.stock.stock_ledger import get_valuation_rate
 from frappe.model.mapper import get_mapped_doc
-from finbyzerp.api import get_fiscal, get_naming_series_name
+from finbyzerp.api import get_fiscal, get_naming_series_name as naming_series_name
 import datetime
 from erpnext.stock.doctype.item.item import get_item_defaults
 
@@ -24,7 +24,7 @@ class BallMillDataSheet(Document):
 				self.company_series = None
 			if self.get('series_value'):
 				if self.series_value > 0:
-					name = get_naming_series_name(self.naming_series, fiscal, self.company_series)
+					name = naming_series_name(self.naming_series, fiscal, self.company_series)
 					check = frappe.db.get_value('Series', name, 'current', order_by="name")
 					if check == 0:
 						pass
@@ -211,7 +211,8 @@ class BallMillDataSheet(Document):
 					'concentration':row.concentration,
 					'packaging_material':row.packaging_material,
 					'packing_size':row.packing_size,
-					'no_of_packages':row.no_of_packages
+					'no_of_packages':row.no_of_packages,
+					"use_serial_batch_fields": 1
 				}
 				
 				if not maintain_as_is_new:
@@ -238,7 +239,8 @@ class BallMillDataSheet(Document):
 					'valuation_rate': self.per_unit_amount,
 					'basic_amount': flt(d.qty * self.per_unit_amount),
 					'cost_center': item.get("buying_cost_center") or item.get("selling_cost_center") or cost_center,
-					'uv_value':self.get("weighted_average_uv_value")
+					'uv_value':self.get("weighted_average_uv_value"),
+					"use_serial_batch_fields": 1
 				}
 
 				if not maintain_as_is_new:

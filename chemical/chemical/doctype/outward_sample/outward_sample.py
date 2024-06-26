@@ -56,10 +56,10 @@ class OutwardSample(Document):
 			# 	else:
 			# 		row.db_set('rate',(flt(row.price_list_rate) * 2.2) / row.batch_yield)
 			#finbyz changes
-			price = self.get_price_list(item_code=row.item_code, price_list=self.price_list or "Standard Buying", company=self.company)
-			rate = price.price_list_rate
-			row.db_set("price_list_rate", rate)
-			row.db_set("rate", rate)
+			# price = self.get_price_list(item_code=row.item_code, price_list=self.price_list or "Standard Buying", company=self.company)
+			# rate = price.price_list_rate
+			# row.db_set("price_list_rate", rate)
+			# row.db_set("rate", rate)
 			# #finbyz changes
 			row.db_set('amount', flt(row.quantity) * flt(row.rate))
 

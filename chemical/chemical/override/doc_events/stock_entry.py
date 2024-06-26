@@ -25,7 +25,7 @@ def before_validate(self, method):
 
 def validate(self, method):
 	stock_entry_validate(self)
-	batch_valuation_stock_entry_validate(self)
+	# batch_valuation_stock_entry_validate(self)
 	check_based_on_item(self)
 	cal_validate_additional_cost_qty(self)
 	calculate_rate_and_amount(self)
@@ -78,7 +78,7 @@ def on_cancel(self, method):
 	for data in frappe.get_all("Batch",{'reference_name': self.name, 'reference_doctype': self.doctype}):
 		frappe.db.set_value('Batch',data.name,'reference_name','')
 		frappe.db.set_value('Batch',data.name,'valuation_rate',0)
-	batch_valuation_stock_entry_on_cancel(self,method)
+	# batch_valuation_stock_entry_on_cancel(self,method)
 
 
 def update_item_batches_based_on_fifo(self):

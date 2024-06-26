@@ -92,20 +92,16 @@ doc_events = {
 		"before_validate": "chemical.chemical.doc_events.purchase_receipt.before_validate",
 		"validate": [
 			# "chemical.api.pr_validate",
-			"chemical.batch_valuation.pr_validate",
 			"chemical.chemical.doc_events.purchase_receipt.t_validate",
 		],
-		"on_cancel": "chemical.batch_valuation.pr_on_cancel",
+	
 		"before_submit": "chemical.chemical.doc_events.purchase_receipt.before_submit",
 		"before_cancel": "chemical.chemical.doc_events.purchase_receipt.before_cancel",
 	},
 	"Purchase Invoice": {
 		"onload":"chemical.chemical.doc_events.purchase_invoice.onload",
 		"before_validate": "chemical.chemical.doc_events.purchase_invoice.before_validate",
-		"validate": [
-			"chemical.batch_valuation.pi_validate",
-		],
-		"on_cancel": "chemical.batch_valuation.pi_on_cancel",
+		
 		"before_submit": "chemical.chemical.doc_events.purchase_invoice.before_submit",
 		"before_cancel": "chemical.chemical.doc_events.purchase_invoice.before_cancel",
 		"on_trash":"chemical.chemical.doc_events.purchase_invoice.on_trash",
@@ -118,12 +114,7 @@ doc_events = {
 	
 	"Landed Cost Voucher": {
 		"validate": [
-			"chemical.batch_valuation.lcv_validate",
 			# "chemical.api.lcv_validate",
-		],
-		"on_submit": "chemical.batch_valuation.lcv_on_submit",
-		"on_cancel": [
-			"chemical.batch_valuation.lcv_on_cancel",
 		],
 	},
 	"Delivery Note": {
@@ -145,9 +136,6 @@ doc_events = {
 		"before_cancel": "chemical.chemical.doc_events.sales_invoice.before_cancel",
 		"on_trash":"chemical.chemical.doc_events.sales_invoice.on_trash",
 
-	},
-	"Stock Ledger Entry": {
-		"before_submit": "chemical.chemical.doc_events.stock_ledger_entry.sl_before_submit"
 	},
 	"Stock Reconciliation":{
 		"on_submit":"chemical.chemical.doc_events.stock_reconciliation.on_submit",
@@ -184,6 +172,6 @@ override_doctype_dashboards = {
 	"Lead": "chemical.chemical.dashboard.lead.get_data"
 }
 
-from erpnext.stock.stock_ledger import update_entries_after
-from chemical.chemical.doc_events.stock_ledger import build
-update_entries_after.build = build
+# from erpnext.stock.stock_ledger import update_entries_after
+# from chemical.chemical.doc_events.stock_ledger import build
+# update_entries_after.build = build

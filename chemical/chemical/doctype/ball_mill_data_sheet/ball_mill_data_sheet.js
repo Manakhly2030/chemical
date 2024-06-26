@@ -46,8 +46,8 @@ cur_frm.fields_dict.items.grid.get_field("source_warehouse").get_query = functio
 // 	}
 // };
 
-// this.frm.cscript.onload = function(frm) {
-// 	this.frm.set_query("sales_order",function(doc) {
+// cur_frm.cscript.onload = function(frm) {
+// 	cur_frm.set_query("sales_order",function(doc) {
 // 		console.log("call",doc)
 // 		return{
 // 						query:"chemical.chemical.doctype.ball_mill_data_sheet.ball_mill_data_sheet.get_sales_order",
@@ -61,7 +61,7 @@ cur_frm.fields_dict.items.grid.get_field("source_warehouse").get_query = functio
 // }
 
 cur_frm.cscript.onload = function(frm) {
-	this.frm.set_query("batch_no", "items", function(doc, cdt, cdn) {
+	cur_frm.set_query("batch_no", "items", function(doc, cdt, cdn) {
 		let d = locals[cdt][cdn];
 		if(!d.item_name){
 			frappe.msgprint(__("Please select Item"));
@@ -79,7 +79,7 @@ cur_frm.cscript.onload = function(frm) {
 			}
 		}
 	});
-	this.frm.set_query("sales_order",function(doc) {
+	cur_frm.set_query("sales_order",function(doc) {
 		return{
 						query:"chemical.chemical.doctype.ball_mill_data_sheet.ball_mill_data_sheet.get_sales_order",
 						filters:{
@@ -88,7 +88,7 @@ cur_frm.cscript.onload = function(frm) {
 						}
 			}
 	});
-	this.frm.set_query("expense_account", "ball_mill_additional_cost", function(doc) {
+	cur_frm.set_query("expense_account", "ball_mill_additional_cost", function(doc) {
 		return {
 			query: "erpnext.controllers.queries.tax_account_query",
 			filters: {

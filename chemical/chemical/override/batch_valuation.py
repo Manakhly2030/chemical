@@ -34,6 +34,7 @@ def validate_concentration(self, warehouse_field):
 
 def make_batches(self, warehouse_field):
     # import datetime
+    frappe.msgprint("Helllllo")
     if self._action == "submit":
         validate_concentration(self, warehouse_field)
 
@@ -68,37 +69,38 @@ def make_batches(self, warehouse_field):
                 ):
                     continue
 
-                if row.batch_no and self.doctype == "Stock Entry":
-                    row.db_set("old_batch_no", row.batch_no)
 
-                batch = frappe.new_doc("Batch")
-                batch.item = row.item_code
-                batch.supplier = getattr(self, "supplier", None)
-                batch.lot_no = cstr(row.lot_no)
-                batch.packaging_material = cstr(row.packaging_material)
-                batch.packing_size = cstr(row.packing_size)
-                batch.batch_yield = flt(row.batch_yield, 3)
-                batch.concentration = flt(row.concentration, 3)
-                batch.valuation_rate = flt(row.valuation_rate, 4)
+                # if row.batch_no and self.doctype == "Stock Entry":
+                #     row.db_set("old_batch_no", row.batch_no)
 
-                if self.doctype == "Stock Entry":
-                    if (
-                        self.stock_entry_type == "Manufacture"
-                        or self.stock_entry_type == "Material Receipt"
-                    ):
-                        batch.manufacturing_date = self.posting_date
-                try:
-                    batch.posting_date = dt.datetime.strptime(
-                        self.posting_date, "%Y-%m-%d"
-                    ).strftime("%y%m%d")
-                except:
-                    batch.posting_date = self.posting_date.strftime("%y%m%d")
+                # batch = frappe.new_doc("Batch")
+                # batch.item = row.item_code
+                # batch.supplier = getattr(self, "supplier", None)
+                # batch.lot_no = cstr(row.lot_no)
+                # batch.packaging_material = cstr(row.packaging_material)
+                # batch.packing_size = cstr(row.packing_size)
+                # batch.batch_yield = flt(row.batch_yield, 3)
+                # batch.concentration = flt(row.concentration, 3)
+                # batch.valuation_rate = flt(row.valuation_rate, 4)
 
-                batch.actual_quantity = flt(row.qty * row.conversion_factor)
-                batch.reference_doctype = self.doctype
-                batch.reference_name = self.name
-                batch.insert()
-                row.batch_no = batch.name
+                # if self.doctype == "Stock Entry":
+                #     if (
+                #         self.stock_entry_type == "Manufacture"
+                #         or self.stock_entry_type == "Material Receipt"
+                #     ):
+                #         batch.manufacturing_date = self.posting_date
+                # try:
+                #     batch.posting_date = dt.datetime.strptime(
+                #         self.posting_date, "%Y-%m-%d"
+                #     ).strftime("%y%m%d")
+                # except:
+                #     batch.posting_date = self.posting_date.strftime("%y%m%d")
+
+                # batch.actual_quantity = flt(row.qty * row.conversion_factor)
+                # batch.reference_doctype = self.doctype
+                # batch.reference_name = self.name
+                # batch.insert()
+                # row.batch_no = batch.name
 
 
 def validate_additional_cost(self):

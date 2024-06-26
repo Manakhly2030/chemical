@@ -5,7 +5,7 @@ from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 from chemical.api import se_cal_rate_qty, se_repack_cal_rate_qty, cal_actual_valuations
 from six import iteritems
 from frappe import msgprint, _
-from chemical.batch_valuation import set_incoming_rate
+# from chemical.batch_valuation import set_incoming_rate
 
 class FinishedGoodError(frappe.ValidationError):
 	pass
@@ -168,8 +168,8 @@ def sum_total_additional_costs(self):
 	self.total_additional_costs = sum(m.amount for m in self.additional_costs)
 
 def calculate_rate_and_amount(self,reset_outgoing_rate=True, raise_error_if_no_rate=True):
-	if self.purpose in ["Material Transfer for Manufacture"]:
-		set_incoming_rate(self)
+	# if self.purpose in ["Material Transfer for Manufacture"]:
+	# 	set_incoming_rate(self)
 	if self.purpose in ['Manufacture','Repack']:
 		is_multiple_finish  = 0
 		multi_item_list = []
