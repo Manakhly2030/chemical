@@ -66,7 +66,7 @@ def status_change_comment(self):
         comment_doc.save(ignore_permissions=True)
 
 def cancellation_comment(self):
-    if self.doctype == ["Outward Tracking", "Ball Mill Data Sheet"]:
+    if self.doctype in ["Outward Tracking", "Ball Mill Data Sheet"]:
         self.tracking_status = "Cancelled"
     elif self.doctype == "Outward Sample":
         self.status = "Rejected"

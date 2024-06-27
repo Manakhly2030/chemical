@@ -42,41 +42,38 @@ doctype_js = {
 override_doctype_class = {
     "Stock Entry": "chemical.chemical.override.doctype.stock_entry.StockEntry",
     "Work Order": "chemical.chemical.override.doctype.work_order.WorkOrder",
-    "Quality Inspection": "chemical.chemical.override.doctype.quality_inspection.QualityInspection",
     "Production Plan":"chemical.chemical.override.doctype.production_plan.ProductionPlan",
-    "Purchase Receipt": "chemical.chemical.override.doctype.purchase_receipt.PurchaseReceipt",
-    "Purchase Invoice": "chemical.chemical.override.doctype.purchase_invoice.PurchaseInvoice",
-    "Stock Reconciliation": "chemical.chemical.override.doctype.stock_reconciliation.StockReconciliation",
-    "Subcontracting Receipt": "chemical.chemical.override.doctype.subcontracting_receipt.SubcontractingReceipt",
+    
+
 }
 
 override_whitelisted_methods = {
 	"erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.doc_events.bom.enqueue_update_cost",
 	"erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.get_stock_balance_for": "chemical.chemical.doc_events.stock_reconciliation.get_stock_balance_for",
-    "erpnext.controllers.stock_controller.make_quality_inspections":"chemical.chemical.overrides.whitelisted_methods.stock_controller.make_quality_inspections",
+    "erpnext.controllers.stock_controller.make_quality_inspections":"chemical.chemical.override.controller.stock_controller.make_quality_inspections",
     "erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry": "chemical.chemical.override.doctype.work_order.make_stock_entry",
 }
 
 doc_events = {
     # Finbyz Check Start
     "Batch": {
-        "before_naming": "chemical.chemical.override.doc_events.batch.before_naming",
+        "before_naming": "chemical.chemical.override.doc_event.batch.before_naming",
 	},
     "Work Order":{
-		"validate":"chemical.chemical.override.doc_events.work_order.validate",
-		"before_submit": "chemical.chemical.override.doc_events.work_order.before_submit",
+		"validate":"chemical.chemical.override.doc_event.work_order.validate",
+		"before_submit": "chemical.chemical.override.doc_event.work_order.before_submit",
 	},
     "Stock Entry": {
-		"before_validate": "chemical.chemical.override.doc_events.stock_entry.before_validate",
-		"validate": "chemical.chemical.override.doc_events.stock_entry.validate",
-		"before_save": "chemical.chemical.override.doc_events.stock_entry.before_save",
-		"before_submit": "chemical.chemical.override.doc_events.stock_entry.before_submit",
-		"on_submit": "chemical.chemical.override.doc_events.stock_entry.on_submit",
-		"before_cancel": "chemical.chemical.override.doc_events.stock_entry.before_cancel",
-		"on_cancel": "chemical.chemical.override.doc_events.stock_entry.on_cancel",
+		"before_validate": "chemical.chemical.override.doc_event.stock_entry.before_validate",
+		"validate": "chemical.chemical.override.doc_event.stock_entry.validate",
+		"before_save": "chemical.chemical.override.doc_event.stock_entry.before_save",
+		"before_submit": "chemical.chemical.override.doc_event.stock_entry.before_submit",
+		"on_submit": "chemical.chemical.override.doc_event.stock_entry.on_submit",
+		"before_cancel": "chemical.chemical.override.doc_event.stock_entry.before_cancel",
+		"on_cancel": "chemical.chemical.override.doc_event.stock_entry.on_cancel",
 	},
 	"Item Price": {
-		"before_save": "chemical.chemical.override.doc_events.item_price.before_save",
+		"before_save": "chemical.chemical.override.doc_event.item_price.before_save",
 	},
 	# Finbyz Check End
 	"BOM": {
@@ -151,12 +148,12 @@ doc_events = {
        "on_cancel": "chemical.chemical.doc_events.quality_inspection.on_cancel",
        "validate": "chemical.chemical.doc_events.quality_inspection.validate_qc"
 	},
-	("Outward Sample","Ball Mill Data Sheet","Outward Tracking"):{
-		"on_submit":"chemical.chemical.doc_events.outward_sample.on_submit",
-		"before_update_after_submit":"chemical.chemical.doc_events.outward_sample.before_update_after_submit",
-		"before_cancel":"chemical.chemical.doc_events.outward_sample.on_cancel",
-		"on_trash":"chemical.chemical.doc_events.outward_sample.on_trash"
-	},
+	# ("Outward Sample","Ball Mill Data Sheet","Outward Tracking"):{
+	# 	"on_submit":"chemical.chemical.doc_events.outward_sample.on_submit",
+	# 	"before_update_after_submit":"chemical.chemical.doc_events.outward_sample.before_update_after_submit",
+	# 	"before_cancel":"chemical.chemical.doc_events.outward_sample.on_cancel",
+	# 	"on_trash":"chemical.chemical.doc_events.outward_sample.on_trash"
+	# },
 }
 
 scheduler_events = {

@@ -12,6 +12,7 @@ from frappe.model.mapper import get_mapped_doc
 from finbyzerp.api import get_fiscal, get_naming_series_name as naming_series_name
 import datetime
 from erpnext.stock.doctype.item.item import get_item_defaults
+from chemical.comments_api import creation_comment,status_change_comment,cancellation_comment,delete_comment
 
 class BallMillDataSheet(Document):
 
@@ -33,6 +34,8 @@ class BallMillDataSheet(Document):
 
 					frappe.db.sql("update `tabSeries` set current = {} where name = '{}'".format(cint(self.series_value) - 1, name))
 
+	def before_update_after_submit(self,method):
+		status_change_comment(self)
 
 	def validate(self):
 		self.set_incoming_rate()
@@ -172,6 +175,7 @@ class BallMillDataSheet(Document):
 							
 
 	def on_submit(self):
+		creation_comment(self)
 		maintain_as_is_new = frappe.db.get_value("Company", self.company, "maintain_as_is_new")
 		if self.get('create_stock_entry') == 0:
 			create_stock_entry = 0
@@ -299,8 +303,11 @@ class BallMillDataSheet(Document):
 			outward_sample_list = frappe.db.get_all("Outward Sample",{"last_purchase_reference":self.name},pluck="name")
 			for outward_sample in outward_sample_list:
 				frappe.db.set_value("Outward Sample",outward_sample,"last_purchase_reference", None)
-
+	
+	def on_trash(self,method):
+		delete_comment(self)
 	def on_cancel(self):
+		cancellation_comment(self)
 		if self.stock_entry:
 			se = frappe.get_doc("Stock Entry",self.stock_entry)
 			se.cancel()

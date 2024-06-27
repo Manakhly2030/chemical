@@ -6,7 +6,6 @@ from frappe import _
 
 @frappe.whitelist()
 def make_quality_inspections(doctype, docname, items):
-	# TODO: to be done in version-15
 	if isinstance(items, str):
 		items = json.loads(items)
 

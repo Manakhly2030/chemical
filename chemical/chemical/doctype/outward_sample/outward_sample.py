@@ -13,6 +13,8 @@ from erpnext.utilities.product import get_price
 from frappe.utils import nowdate,flt
 
 from finbyzerp.finbyzerp.doc_events.naming_series import before_naming as naming_series 
+from chemical.comments_api import creation_comment,status_change_comment,cancellation_comment,delete_comment
+
 
 class OutwardSample(Document):
 	def before_save(self):
@@ -75,9 +77,17 @@ class OutwardSample(Document):
 		self.db_set("price_updated_on",nowdate())
 
 		return "Price Updated"
+	def on_submit(self,method):
+		creation_comment(self)
 
+	def before_update_after_submit(self,method):
+		status_change_comment(self)
+
+	def on_trash(self,method):
+		delete_comment(self)
 	def on_cancel(self):
 		self.db_set('against','')
+		cancellation_comment(self)
 		
 	@frappe.whitelist()
 	def get_ball_mill(self):

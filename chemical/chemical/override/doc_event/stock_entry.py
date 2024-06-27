@@ -6,11 +6,6 @@ from chemical.chemical.override.utils import (
 	se_repack_cal_rate_qty,
 	cal_actual_valuations,
 )
-from chemical.chemical.override.batch_valuation import (
-	stock_entry_validate as batch_valuation_stock_entry_validate,
-	set_incoming_rate,
-	stock_entry_on_cancel as batch_valuation_stock_entry_on_cancel,
-)
 
 from chemical.chemical.override.doctype.stock_entry import StockEntry
 
@@ -18,7 +13,6 @@ from chemical.chemical.override.doctype.stock_entry import StockEntry
 def before_validate(self, method):
 	update_item_batches_based_on_fifo(self)
 	stock_entry_calculate_rate_qty(self)
-	fg_completed_quantity_to_fg_completed_qty(self)
 	cal_actual_valuations(self)
 	self.validate_fg_completed_qty()
 
@@ -181,12 +175,6 @@ def stock_entry_calculate_rate_qty(self):
 			se_cal_rate_qty(self)
 	else:
 		se_cal_rate_qty(self)
-
-
-def fg_completed_quantity_to_fg_completed_qty(self):
-	if not frappe.db.get_value("Company", self.company, "maintain_as_is_new"):
-		if self.fg_completed_qty == 0:
-			self.fg_completed_qty = self.fg_completed_quantity
 
 
 def get_fifo_batches(item_code, warehouse):
@@ -384,8 +372,7 @@ def calculate_rate_and_amount(
 	reset_outgoing_rate=True,
 	raise_error_if_no_rate=True,
 ):
-	if self.purpose in ["Material Transfer for Manufacture"]:
-		set_incoming_rate(self)
+
 	if self.purpose in ["Manufacture", "Repack"]:
 		is_multiple_finish = 0
 		multi_item_list = []

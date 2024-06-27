@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from chemical.comments_api import creation_comment,status_change_comment,cancellation_comment,delete_comment
 
 class OutwardTracking(Document):
 	def before_save(self):
@@ -13,3 +14,16 @@ class OutwardTracking(Document):
 				if row.item:
 					ref_code = frappe.db.get_value("Item Customer Detail", {'parent': row.item, 'customer_name': self.party}, 'ref_code')
 					row.product_name = ref_code
+	
+
+	def on_submit(self,method):
+		creation_comment(self)
+
+	def before_update_after_submit(self,method):
+		status_change_comment(self)
+
+	def on_cancel(self,method):
+		cancellation_comment(self)
+
+	def on_trash(self,method):
+		delete_comment(self)
