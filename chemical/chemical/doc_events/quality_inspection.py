@@ -19,9 +19,6 @@ def update_qc_reference(self):
 	if self.reference_type == "Outward Sample":
 		doctype = 'Outward Sample Detail'
 
-	if self.reference_type == "Outward Sample":
-		doctype = 'Inward Sample Details'
-
 
 	if self.reference_type not in ["Outward Sample","Inward Sample"]:
 		if self.reference_type and self.reference_name:
