@@ -17,7 +17,7 @@ def update_qc_reference(self):
 		doctype = 'Stock Entry Detail'
 	
 	if self.reference_type == "Outward Sample":
-		doctype = 'Outward Sample Details'
+		doctype = 'Outward Sample Detail'
 
 	if self.reference_type == "Outward Sample":
 		doctype = 'Inward Sample Details'
@@ -28,6 +28,9 @@ def update_qc_reference(self):
 			conditions = ""
 			if self.batch_no and self.docstatus == 1:
 				conditions += " and t1.batch_no = '%s'"%(self.batch_no)
+
+			if self.ref_itm:
+					conditions += " and t1.name = %s"(self.ref_itm)
 
 			# if self.lot_no and self.docstatus == 1:
 			# 	conditions += " and t1.lot_no = '%s'"%(self.lot_no)

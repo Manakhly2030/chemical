@@ -199,6 +199,7 @@ def make_quality_inspection(source_name, target_doc=None):
 			},
 		}
 	},target_doc)
+	doclist.inspection_type = "Incoming"
 
 	return doclist
 
