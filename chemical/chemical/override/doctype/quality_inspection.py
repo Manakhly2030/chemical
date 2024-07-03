@@ -1,4 +1,4 @@
-from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection as _QualityInspection
+from finbyzerp.finbyzerp.override.quality_inspection import QualityInspection as _QualityInspection # type: ignore
 import frappe
 
 class QualityInspection(_QualityInspection):
@@ -10,11 +10,7 @@ class QualityInspection(_QualityInspection):
 			doctype = 'Stock Entry Detail'
 		
 		if self.reference_type == "Outward Sample":
-			doctype = 'Outward Sample Details'
-
-		if self.reference_type == "Outward Sample":
-			doctype = 'Inward Sample Details'
-
+			doctype = 'Outward Sample Detail'
 
 		if self.reference_type not in ["Outward Sample","Inward Sample"]:
 			if self.reference_type and self.reference_name:
