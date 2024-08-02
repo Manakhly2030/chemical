@@ -68,7 +68,6 @@ def se_before_submit(self, method):
 
 def stock_entry_on_submit(self, method):
 	update_po(self)
-	# frappe.throw("After submit event chal raha hai")
 	set_batch_qc(self)
 
 def se_before_cancel(self, method):
@@ -1002,7 +1001,6 @@ def update_yield(self):
 		po.db_set("concentration", flt(concentration/count))
 		
 def set_batch_qc(self):
-	# frappe.throw("SUBMIT HO GAYA HAI")
 	for row in self.items:
 		if row.quality_inspection:
 			qi_doc = frappe.get_doc("Quality Inspection",row.quality_inspection)

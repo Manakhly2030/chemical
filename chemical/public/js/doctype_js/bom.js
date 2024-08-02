@@ -1,4 +1,19 @@
 frappe.ui.form.on("BOM", {
+    onload: function (frm) {
+        if (frm.doc.__islocal){
+            if(!frm.doc.is_multiple_item){
+                frm.set_value("total_quantity",flt(frm.doc.quantity))
+            }
+            else{
+                frm.events.is_multiple_item(frm)
+                cur_frm.set_df_property("quantity", "read_only",1);
+                cur_frm.set_df_property("quantity", "label",'First Item Quantity');
+            }
+        }
+        if (frm.doc.__islocal && frm.doc.rm_cost_as_per == "Price List") {
+            frm.set_value("buying_price_list", "Standard Buying");
+        }
+    },
     refresh: function(frm){
         if (frm.doc.is_multiple_item){
             cur_frm.set_df_property("quantity", "read_only",1);
@@ -54,21 +69,7 @@ frappe.ui.form.on("BOM", {
             frm.set_value("quantity",flt(frm.doc.multiple_finish_item[0].qty))
         }
     },
-    onload: function (frm) {
-        if (frm.doc.__islocal){
-            if(!frm.doc.is_multiple_item){
-                frm.set_value("total_quantity",flt(frm.doc.quantity))
-            }
-            else{
-                frm.events.is_multiple_item(frm)
-                cur_frm.set_df_property("quantity", "read_only",1);
-                cur_frm.set_df_property("quantity", "label",'First Item Quantity');
-            }
-        }
-        if (frm.doc.__islocal && frm.doc.rm_cost_as_per == "Price List") {
-            frm.set_value("buying_price_list", "Standard Buying");
-        }
-    },
+    
     quantity: function (frm){
         if(!frm.doc.is_multiple_item){
             frm.set_value("total_quantity",flt(frm.doc.quantity))
@@ -95,18 +96,6 @@ frappe.ui.form.on("BOM", {
         }
 	},
 	
-    /* cal_operational_cost: function (frm) {
-        let op_cost = flt(frm.doc.operational_cost * frm.doc.quantity);
-        let total_cost = flt(op_cost + frm.doc.total_cost)
-        frm.set_value("total_operational_cost", flt(op_cost));
-        frm.set_value("total_cost", total_cost);
-        frm.set_value("per_unit_price", flt(total_cost / frm.doc.quantity));
-    }, */
-
-    /* operational_cost: function (frm) {
-        frm.set_value("total_operational_cost", flt(frm.doc.operational_cost * frm.doc.quantity));
-    }, */
-
     total_operational_cost: function (frm) {
         frm.set_value("total_cost", flt(frm.doc.additional_amount + frm.doc.raw_material_cost + frm.doc.volume_amount + frm.doc.etp_amount - frm.doc.scrap_material_cost));
     },
@@ -114,14 +103,6 @@ frappe.ui.form.on("BOM", {
     total_cost: function (frm) {
         frm.set_value("per_unit_price", flt(frm.doc.total_cost / frm.doc.quantity));
     },
-
-    // refresh: function(frm){
-    // 	if(!frm.doc.__islocal){
-    // 		frm.add_custom_button(__("Update Price List"), function() {
-    // 			frm.events.update_price_list(frm);
-    // 		});
-    // 	}
-    // },
 
     before_submit: function (frm) {
         if(frm.doc.is_multiple_item){
@@ -144,7 +125,7 @@ frappe.ui.form.on("BOM", {
 
     update_price_list: function (frm) {
         frappe.call({
-            method: "chemical.chemical.doc_events.bom.upadte_item_price",
+            method: "chemical.chemical.whitelisted_method.bom.upadte_item_price",
             args: {
                 docname: frm.doc.name,
                 item: frm.doc.item,
@@ -159,29 +140,10 @@ frappe.ui.form.on("BOM", {
             }
         });
     },
-	/* refresh: function(frm){
-		if(!frm.doc.__islocal){
-			frm.add_custom_button(__("Update Price List"), function() {
-				frappe.call({
-					method:"chemical.api.upadte_item_price",
-					args:{
-						docname: frm.doc.name,
-						item: frm.doc.item,
-						price_list: frm.doc.buying_price_list,
-						per_unit_price: frm.doc.per_unit_price
-					},
-					callback: function(r){
-						frappe.msgprint(r.message);
-						refresh_field("items");
-					}
-				});
-			});
-		}
-	}, */
     update_cost: function (frm) {
         if (!frm.is_dirty()){
             return frappe.call({
-                method: "chemical.chemical.doc_events.bom.update_bom_cost",
+                method: "chemical.chemical.whitelisted_method.bom.update_bom_cost",
                 freeze: true,
                 args: {
                     doc:frm.doc.name,
@@ -208,10 +170,6 @@ frappe.ui.form.on("BOM", {
 });
 
 frappe.ui.form.on("BOM Additional Cost", {
-	/* qty: function(frm, cdt, cdn){
-		let d = locals[cdt][cdn]
-		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
-	}, */
 	rate: function(frm, cdt, cdn){
 		let d = locals[cdt][cdn]
 		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
@@ -228,10 +186,6 @@ frappe.ui.form.on("BOM Additional Cost", {
     }
 });
 frappe.ui.form.on("BOM Multiple Finish Item", {
-	/* qty: function(frm, cdt, cdn){
-		let d = locals[cdt][cdn]
-		frappe.model.set_value(d.doctype,d.name,'amount',flt(d.qty*d.rate))
-	}, */
 	qty: function(frm, cdt, cdn){
         frm.events.cal_total(frm)
         frm.events.quantity(frm)

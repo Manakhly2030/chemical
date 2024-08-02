@@ -42,7 +42,7 @@ cur_frm.cscript.onload = function (frm) {
         else {
             if (d.item_group == "Finished Products"){
                 return {
-                    query: "chemical.batch_valuation.get_batch_no",
+                    query: "chemical.query.get_batch_no",
                     filters: {
                         'item_code': d.item_code,
                         'warehouse': d.warehouse,
@@ -95,7 +95,6 @@ frappe.ui.form.on("Sales Invoice", {
                 callback: function (r) {
                     if (r.message) {
                         frappe.model.set_value(d.doctype, d.name, 'item_name', r.message);
-                        //frappe.model.set_value(d.doctype, d.name, 'description', r.message);
                     }
                 }
             })
@@ -309,9 +308,6 @@ frappe.ui.form.on("Sales Invoice Item", {
             }, 1000)
         }
     },
-    no_of_packages: function (frm, cdt, cdn) {
-        // frm.events.cal_rate_qty(frm, cdt, cdn)
-    },
 
     batch_no: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];
@@ -323,7 +319,7 @@ frappe.ui.form.on("Sales Invoice Item", {
                 frappe.model.set_value(cdt, cdn, 'batch_yield', r.batch_yield);
                 frappe.model.set_value(cdt, cdn, 'concentration', r.concentration);
             });
-            // frm.events.cal_rate_qty(frm,cdt,cdn)
+            
         }
     },
     discount_percentage:function(frm,cdt,cdn){
@@ -336,7 +332,7 @@ frappe.ui.form.on("Sales Invoice Item", {
             d.rate = flt(d.price_list_rate) - flt(d.discount_amount) 
             d.price = flt(d.rate)
             d.amount = flt(d.rate) * flt(d.quantity)
-            // frm.events.cal_rate_qty(frm, cdt, cdn)
+            
         
     }
 

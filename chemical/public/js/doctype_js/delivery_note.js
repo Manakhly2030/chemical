@@ -1,9 +1,3 @@
-// cur_frm.add_fetch('batch_no', 'packaging_material', 'packaging_material');
-// cur_frm.add_fetch('batch_no', 'packing_size', 'packing_size');
-// cur_frm.add_fetch('batch_no', 'lot_no', 'lot_no');
-// cur_frm.add_fetch('batch_no', 'batch_yield', 'batch_yield');
-// cur_frm.add_fetch('batch_no', 'concentration', 'concentration');
-
 erpnext.stock.DeliveryNoteController = class DeliveryNoteController extends erpnext.stock.DeliveryNoteController{
 	show_stock_ledger () {
         var me = this;
@@ -51,7 +45,7 @@ cur_frm.cscript.onload = function (frm) {
         }
         else {
             return {
-                query: "chemical.batch_valuation.get_batch_no",
+                query: "chemical.query.get_batch_no",
                 filters: {
                     'item_code': d.item_code,
                     'warehouse': d.warehouse,
@@ -198,7 +192,6 @@ frappe.ui.form.on("Delivery Note", {
                 })
             }
         });
-        // frm.trigger("cal_total_quantity");
     },
     cal_rate_qty: function (frm, cdt, cdn) {
         let d = locals[cdt][cdn];

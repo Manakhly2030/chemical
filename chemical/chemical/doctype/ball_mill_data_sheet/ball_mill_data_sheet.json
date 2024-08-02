@@ -37,7 +37,6 @@
   "handling_loss",
   "per_unit_amount",
   "price",
-  "amended_from",
   "section_break_27",
   "ball_mill_additional_cost",
   "section_break_35_section",
@@ -49,8 +48,9 @@
   "strength",
   "more_info_break",
   "stock_entry",
-  "fiscal",
-  "company_series"
+  "amended_from",
+  "company_series",
+  "fiscal"
  ],
  "fields": [
   {
@@ -267,7 +267,7 @@
   },
   {
    "fieldname": "fiscal",
-   "fieldtype": "Small Text",
+   "fieldtype": "Data",
    "hidden": 1,
    "label": "Fiscal"
   },
@@ -318,7 +318,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-24 09:36:50.101430",
+ "modified": "2024-06-28 07:58:27.757292",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",

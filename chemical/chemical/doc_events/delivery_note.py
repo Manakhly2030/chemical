@@ -6,12 +6,11 @@ from chemical.api import cal_rate_qty, quantity_price_to_qty_rate
 def onload(self,method):
 	quantity_price_to_qty_rate(self)
 
-def validate(self,method):
+def before_validate(self,method):
 	cal_rate_qty(self)
 	cal_qty(self, method)
 
-	
-def dn_on_submit(self, method):
+def on_submit(self, method):
 	validate_customer_batch(self)
 
 def before_cancel(self, method):

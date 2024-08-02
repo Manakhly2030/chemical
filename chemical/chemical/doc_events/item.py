@@ -23,23 +23,23 @@ def fill_customer_code(self):
     self.customer_code = ""
     self.item_customer_code = ','.join(cust_code)
 
-def validate(self, method):
-    no_change(self)
-    set_default(self)
+# def validate(self, method):
+#     no_change(self)
+#     set_default(self)
 
-def no_change(self):
-    if not self.get("__islocal"):
-        field = "maintain_as_is_stock"
+# def no_change(self):
+#     if not self.get("__islocal"):
+#         field = "maintain_as_is_stock"
 
-        values = frappe.db.get_value("Item", self.name, field, as_dict=True)
+#         values = frappe.db.get_value("Item", self.name, field, as_dict=True)
     
-        if cstr(self.get(field)) != cstr(values.get(field)):
+#         if cstr(self.get(field)) != cstr(values.get(field)):
             
-            link_fields=get("Item",self.name)
-            if link_fields:
-                frappe.throw(("As there are existing transactions against item {0}, you can not change the value of {1}").format(self.name, frappe.bold(self.meta.get_label(field))))
+#             link_fields=get("Item",self.name)
+#             if link_fields:
+#                 frappe.throw(("As there are existing transactions against item {0}, you can not change the value of {1}").format(self.name, frappe.bold(self.meta.get_label(field))))
 
 
-def set_default(self):
-    if self.has_batch_no:
-        self.create_new_batch = 1
+# def set_default(self):
+#     if self.has_batch_no:
+#         self.create_new_batch = 1

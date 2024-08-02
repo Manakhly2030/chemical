@@ -128,8 +128,6 @@ frappe.ui.form.on("Sales Order Item", {
     item_code: function(frm,cdt,cdn) {
         let d = locals[cdt][cdn];
         frappe.model.set_value(d.doctype, d.name, 'outward_sample', "");
-		// frm.set_value('outward_sample',"")
-		// refresh_field('items');
     },
     quantity: function(frm,cdt,cdn){
         frm.events.cal_rate_qty(frm,cdt,cdn)

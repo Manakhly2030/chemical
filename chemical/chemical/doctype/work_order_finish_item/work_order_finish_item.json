@@ -1,4 +1,5 @@
 {
+ "actions": [],
  "creation": "2020-08-14 15:03:49.029195",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -7,26 +8,32 @@
   "item_code",
   "actual_qty",
   "actual_valuation",
-  "lot_no",
-  "packing_size",
-  "no_of_packages",
-  "purity",
-  "batch_yield",
-  "batch_no",
   "bom_cost_ratio",
   "bom_qty_ratio",
   "bom_qty",
-  "bom_yield"
+  "bom_yield",
+  "column_break_yeud",
+  "stock_entry",
+  "se_detail",
+  "batch_no",
+  "lot_no",
+  "purity",
+  "batch_yield",
+  "packing_size",
+  "no_of_packages"
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "fieldname": "item_code",
    "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Item Code",
+   "read_only": 1,
    "reqd": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "actual_qty",
    "fieldtype": "Float",
@@ -35,6 +42,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "actual_valuation",
    "fieldtype": "Currency",
    "in_list_view": 1,
@@ -42,6 +50,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "lot_no",
    "fieldtype": "Data",
@@ -50,22 +59,25 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "packing_size",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "BagSize",
+   "label": "Packing Size",
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "columns": 1,
    "fieldname": "no_of_packages",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "No Bags",
+   "label": "No of Packages",
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "purity",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -73,6 +85,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "batch_yield",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -80,6 +93,7 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "batch_no",
    "fieldtype": "Link",
    "label": "Batch No",
@@ -87,28 +101,56 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "bom_cost_ratio",
    "fieldtype": "Percent",
-   "label": "BOM Cost Ratio"
+   "label": "BOM Cost Ratio",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "bom_qty_ratio",
    "fieldtype": "Percent",
-   "label": "BOM Qty Ratio"
+   "label": "BOM Qty Ratio",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "bom_qty",
    "fieldtype": "Float",
-   "label": "BOM Qty"
+   "label": "BOM Qty",
+   "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "bom_yield",
    "fieldtype": "Percent",
-   "label": "BOM Yield"
+   "label": "BOM Yield",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_yeud",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "stock_entry",
+   "fieldtype": "Data",
+   "label": "Stock Entry",
+   "options": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "se_detail",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "SE Detail"
   }
  ],
  "istable": 1,
- "modified": "2020-08-14 15:06:56.780819",
+ "links": [],
+ "modified": "2024-06-28 10:44:58.115463",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Work Order Finish Item",
@@ -117,5 +159,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
+ "states": [],
  "track_changes": 1
 }

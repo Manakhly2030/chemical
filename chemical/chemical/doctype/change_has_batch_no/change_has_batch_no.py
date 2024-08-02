@@ -9,7 +9,6 @@ from frappe.model.document import Document
 import datetime
 
 class ChangeHasBatchNo(Document):
-	
 	def validate(self):
 		sle_negative = frappe.get_list("Stock Ledger Entry",{'item_code':self.item_code,'actual_qty':('<',0)})
 		if sle_negative:

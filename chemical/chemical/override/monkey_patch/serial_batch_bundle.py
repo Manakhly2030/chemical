@@ -18,7 +18,7 @@ def create_batch(self):
 			"packing_size": data.get("packing_size"),
 			"no_of_packages": data.get("no_of_packages"),
 			"batch_yield": data.get("batch_yield"),
-			"concentration": data.get("concentration"),
+			"concentration": data.get("concentration")
 		})
 	
 	dct.update({
@@ -26,5 +26,6 @@ def create_batch(self):
 		"reference_doctype": self.get("voucher_type"),
 		"reference_name": self.get("voucher_no"),
 	})
+	
 
 	return make_batch(frappe._dict(dct))

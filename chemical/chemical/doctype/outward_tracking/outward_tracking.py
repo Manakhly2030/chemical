@@ -16,14 +16,14 @@ class OutwardTracking(Document):
 					row.product_name = ref_code
 	
 
-	def on_submit(self,method):
+	def on_submit(self):
 		creation_comment(self)
 
-	def before_update_after_submit(self,method):
+	def before_update_after_submit(self):
 		status_change_comment(self)
 
-	def on_cancel(self,method):
+	def on_cancel(self):
 		cancellation_comment(self)
 
-	def on_trash(self,method):
+	def on_trash(self):
 		delete_comment(self)

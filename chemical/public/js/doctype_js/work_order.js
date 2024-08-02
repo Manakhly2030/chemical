@@ -185,10 +185,9 @@ frappe.ui.form.on("Work Order", {
 
 	make_transfer: function (frm) {
 		var max_qty = flt(frm.doc.qty) - flt(frm.doc.material_transferred_for_instruction);
-
 		max_qty = flt(max_qty, precision("qty"));
 		frappe.call({
-			method: "chemical.chemical.doctype.material_transfer_instruction.material_transfer_instruction.make_material_transfer",
+			method: "chemical.chemical.override.doctype.work_order.make_stock_entry",
 			args: {
 				"work_order_id": frm.doc.name,
 				"qty": max_qty

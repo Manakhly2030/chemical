@@ -34,7 +34,7 @@ class BallMillDataSheet(Document):
 
 					frappe.db.sql("update `tabSeries` set current = {} where name = '{}'".format(cint(self.series_value) - 1, name))
 
-	def before_update_after_submit(self,method):
+	def before_update_after_submit(self):
 		status_change_comment(self)
 
 	def validate(self):
@@ -304,7 +304,7 @@ class BallMillDataSheet(Document):
 			for outward_sample in outward_sample_list:
 				frappe.db.set_value("Outward Sample",outward_sample,"last_purchase_reference", None)
 	
-	def on_trash(self,method):
+	def on_trash(self):
 		delete_comment(self)
 	def on_cancel(self):
 		cancellation_comment(self)

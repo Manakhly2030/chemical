@@ -2,8 +2,6 @@
 frappe.ui.form.on("Quality Inspection", {
 	setup: function(frm) {
 		frm.set_query("item_code", function(doc) {
-			// const doctype = (doc.reference_type == "Stock Entry") ?
-			// 	"Stock Entry Detail" : doc.reference_type + " Item";
 			if(doc.reference_type == "Stock Entry"){
 			var doctype = "Stock Entry Detail"
 			}

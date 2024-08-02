@@ -11,6 +11,7 @@
   "bom_no",
   "price_list_rate",
   "amount",
+  "quality_inspection",
   "column_break_5",
   "quantity",
   "uom",
@@ -117,11 +118,16 @@
    "fieldtype": "Link",
    "label": "BOM No",
    "options": "BOM"
+  },
+  {
+   "fieldname": "quality_inspection",
+   "fieldtype": "Data",
+   "label": "Quality Inspection"
   }
  ],
  "istable": 1,
  "links": [],
- "modified": "2021-07-20 10:28:49.852870",
+ "modified": "2024-07-01 13:22:16.229008",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample Detail",
@@ -130,5 +136,6 @@
  "quick_entry": 1,
  "sort_field": "modified",
  "sort_order": "ASC",
+ "states": [],
  "track_changes": 1
 }

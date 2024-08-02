@@ -44,18 +44,6 @@ frappe.ui.form.on("Production Plan", {
     
 });
 
-// get_items_from_sample: function(frm){
-	// 	frappe.call({
-    //         method:"chemical.api.get_items_from_sample",
-    //         args:{
-    //             doc:frm.doc
-    //         },
-	// 		callback: function(r) {
-    //             // console.log(r.items)
-	// 			refresh_field("po_items");
-	// 		}
-	// 	});
-    // },
 
 
    

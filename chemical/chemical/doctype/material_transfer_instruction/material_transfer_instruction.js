@@ -53,7 +53,7 @@ frappe.ui.form.on('Material Transfer Instruction', {
 
 				if(item.s_warehouse) filters["warehouse"] = item.s_warehouse;
 				return {
-					query : "chemical.batch_valuation.get_batch_no",
+					query : "chemical.query.get_batch_no",
 					filters: filters
 				}
 			}

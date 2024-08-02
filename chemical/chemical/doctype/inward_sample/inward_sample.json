@@ -13,7 +13,6 @@
   "party",
   "outward_reference",
   "column_break_5",
-  "series_value",
   "company",
   "ref_no",
   "item_code",
@@ -76,12 +75,6 @@
   {
    "fieldname": "column_break_5",
    "fieldtype": "Column Break"
-  },
-  {
-   "depends_on": "eval: doc.__islocal",
-   "fieldname": "series_value",
-   "fieldtype": "Int",
-   "label": "Series Value"
   },
   {
    "fieldname": "ref_no",
@@ -212,7 +205,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2024-03-04 15:31:08.818115",
+ "modified": "2024-07-22 17:57:38.073704",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Inward Sample",

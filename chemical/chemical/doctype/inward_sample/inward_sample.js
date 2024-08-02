@@ -10,19 +10,19 @@ frappe.ui.form.on('Inward Sample', {
 		}
 	},
 
-	get_naming_series: function (frm) {
-		let naming_series = frm.doc.naming_series
-		frappe.call({
-			method: "finbyzerp.api.check_counter_series",
-			args: {
-				'name': frm.doc.naming_series,
-			},
-			callback: function (r) {
-				let a = r.message;
-				frm.set_value("series_value", a);
-			}
-		});
-	},
+	// get_naming_series: function (frm) {
+	// 	let naming_series = frm.doc.naming_series
+	// 	frappe.call({
+	// 		method: "finbyzerp.api.check_counter_series",
+	// 		args: {
+	// 			'name': frm.doc.naming_series,
+	// 		},
+	// 		callback: function (r) {
+	// 			let a = r.message;
+	// 			frm.set_value("series_value", a);
+	// 		}
+	// 	});
+	// },
 	naming_series: function (frm) {
 		frm.trigger('get_naming_series')
 	},

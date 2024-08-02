@@ -71,7 +71,7 @@ cur_frm.cscript.onload = function(frm) {
 		}
 		else{
 			return {
-				query: "chemical.batch_valuation.get_batch",
+				query: "chemical.query.get_batch_no",
 				filters: {
 					'item_code': d.item_name,
 					'warehouse': d.source_warehouse

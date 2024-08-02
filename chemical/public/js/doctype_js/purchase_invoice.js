@@ -261,9 +261,7 @@ frappe.ui.form.on("Purchase Invoice", {
                             frappe.model.set_value(d.doctype, d.name, 'supplier_qty', flt(d.supplier_packing_size) * flt(d.supplier_no_of_packages));
                         }
 
-                        if (!d.supplier_qty) {
-                            //frappe.throw(d.doctype + " Row: "+ d.idx +" Please add supplier Qty")
-                        }
+                      
                     }
 
                     if (frappe.meta.get_docfield("Purchase Invoice Item", "receive_packing_size")) {
@@ -309,21 +307,7 @@ frappe.ui.form.on("Purchase Invoice", {
                                 frappe.model.set_value(d.doctype, d.name, 'qty', (flt(d.quantity) * 100.0) / flt(d.concentration))
                             }
                         }
-                        if (!d.qty) {
-                            if (frappe.meta.get_docfield("Purchase Invoice Item", "receive_qty")) {
-                                //frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
-                            } else {
-                                // frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
-                            }
-                        }
 
-                        if (!d.concentration) {
-                            if (frappe.meta.get_docfield("Purchase Invoice Item", "received_concentration")) {
-                                //frappe.throw(d.doctype + " Row: "+ d.idx +" Please add received or accepted concentration")
-                            } else {
-                                // frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add concentration")
-                            }
-                        }
 
                         if (frappe.meta.get_docfield("Purchase Invoice Item", "accepted_quantity") && frappe.meta.get_docfield("Purchase Invoice Item", "receive_quantity")) {
                             frappe.model.set_value(d.doctype, d.name, 'quantity', d.accepted_quantity || d.receive_quantity);
@@ -364,13 +348,6 @@ frappe.ui.form.on("Purchase Invoice", {
                         if (!frappe.meta.get_docfield("Purchase Invoice Item", "receive_qty") && (!d.packing_size || !d.no_of_packages)) {
                             if (d.quantity && d.qty != flt(d.quantity)) {
                                 frappe.model.set_value(d.doctype, d.name, 'qty', flt(d.quantity))
-                            }
-                        }
-                        if (!d.qty) {
-                            if (frappe.meta.get_docfield("Purchase Invoice Item", "receive_qty")) {
-                                // frappe.throw(d.doctype + " Row: "+ d.idx +" Please add Receive Qty or Accepted Qty")
-                            } else {
-                                //  frappe.throw(d.doctype + " Row: "+ d.idx +"  Please add Qty")
                             }
                         }
 
