@@ -12,7 +12,7 @@ from frappe.desk.reportview import get_match_cond, get_filters_cond
 from erpnext.utilities.product import get_price
 from frappe.utils import nowdate,flt
 
-from finbyzerp.api import before_naming as naming_series
+from finbyzerp.finbyzerp.doc_events.before_naming import before_naming as naming_series
 
 class OutwardSample(Document):
 	def before_save(self):
