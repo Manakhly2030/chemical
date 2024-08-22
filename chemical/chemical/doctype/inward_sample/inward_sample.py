@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import db,_
 from frappe.model.document import Document
-from finbyzerp.api import before_naming as naming_series
+from finbyzerp.finbyzerp.doc_events.before_naming import before_naming as naming_series
 from frappe.model.mapper import get_mapped_doc
 
 class InwardSample(Document):
