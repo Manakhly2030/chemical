@@ -1,23 +1,23 @@
 
 frappe.ui.form.on("Production Plan", {
-    refresh: function(frm){
-		frappe.call({
-			method:"chemical.chemical.doc_events.production_plan.override_proplan_functions",
-			callback: function(r) {
-                refresh_field("sales_orders");
-                refresh_field("po_items"); 
-			}
-		});
-    },
-    onload: function(frm){
-		frappe.call({
-			method:"chemical.chemical.doc_events.production_plan.override_proplan_functions",
-			callback: function(r) {
-                refresh_field("sales_orders");
-                refresh_field("po_items");
-			}
-		});
-    },
+    // refresh: function(frm){
+	// 	frappe.call({
+	// 		method:"chemical.chemical.doc_events.production_plan.override_proplan_functions",
+	// 		callback: function(r) {
+    //             refresh_field("sales_orders");
+    //             refresh_field("po_items"); 
+	// 		}
+	// 	});
+    // },
+    // onload: function(frm){
+	// 	frappe.call({
+	// 		method:"chemical.chemical.doc_events.production_plan.override_proplan_functions",
+	// 		callback: function(r) {
+    //             refresh_field("sales_orders");
+    //             refresh_field("po_items");
+	// 		}
+	// 	});
+    // },
     get_finish_item:function(frm){
         frm.set_value('finish_items',[])
         if(frm.doc.get_items_from == "Sales Order"){ 

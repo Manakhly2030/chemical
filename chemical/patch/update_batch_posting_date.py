@@ -33,11 +33,11 @@ def validate_posting_date_format():
         print(res)
         frappe.throw("All Date Formates are not same")
 
-def update_formatted_posting_date():
-    frappe.db.sql("""
-        Update `tabBatch`
-        set formatted_posting_date = CONVERT(STR_TO_DATE(posting_date,"%y%m%d"), DATETIME)
-        where posting_date IS NOT NULL and posting_date != ''
-    """)
+# def update_formatted_posting_date():
+#     frappe.db.sql("""
+#         Update `tabBatch`
+#         set formatted_posting_date = CONVERT(STR_TO_DATE(posting_date,"%y%m%d"), DATETIME)
+#         where posting_date IS NOT NULL and posting_date != ''
+#     """)
     # frappe.throw("the remaining number of batches are {}".format(len(frappe.db.get_all("Batch",{'posting_date':['in',['',None]]}))))
 

@@ -12,9 +12,10 @@
   "link_to",
   "party",
   "outward_reference",
+  "quality_inspection",
   "column_break_5",
-  "company",
   "ref_no",
+  "company",
   "item_code",
   "item_name",
   "party_alias",
@@ -29,7 +30,6 @@
   "currency",
   "price_list",
   "amended_from",
-  "company_series",
   "fiscal"
  ],
  "fields": [
@@ -166,7 +166,6 @@
   },
   {
    "allow_on_submit": 1,
-   "default": "Standard Buying",
    "fieldname": "price_list",
    "fieldtype": "Link",
    "label": "Price List",
@@ -188,24 +187,22 @@
    "options": "Company"
   },
   {
-   "fetch_from": "company.company_series",
-   "fieldname": "company_series",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Company Series",
-   "read_only": 1
-  },
-  {
    "fieldname": "fiscal",
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Fiscal",
    "read_only": 1
+  },
+  {
+   "fieldname": "quality_inspection",
+   "fieldtype": "Data",
+   "label": "Quality Inspection",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-22 17:57:38.073704",
+ "modified": "2024-08-02 17:08:03.694206",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Inward Sample",

@@ -7,16 +7,14 @@ from erpnext.stock.utils import get_latest_stock_qty
 
 def before_validate(self, method):
 	calculate_qty(self)
-	self.validate_fg_completed_qty()
-
 
 def validate(self, method):
 	set_concentration_to_100_for_non_batch_item(self)
 	check_based_on_item(self)
 	calculate_additional_cost(self)
-	# calculate_rate_and_amount(self) #TODO
-	get_based_on(self)
-	calculate_target_yield(self)
+	calculate_rate_and_amount(self)
+	cal_validate_additional_cost_qty(self)
+	cal_target_yield_cons(self)
 
 
 def before_save(self, method):
@@ -57,6 +55,7 @@ def check_based_on_item(self):
 	if (
 		self.purpose == "Manufacture"
 		and frappe.db.get_value("BOM", self.bom_no, "based_on")
+		and self.based_on
 		and self.based_on not in [item.item_code for item in self.items]
 	):
 		frappe.throw(
@@ -72,40 +71,6 @@ def calculate_additional_cost(self):
 		if row.qty and row.rate:
 			row.amount = flt(row.qty) * flt(row.rate)
 			row.base_amount = flt(row.qty) * flt(row.rate)
-
-
-def get_based_on(self):
-	if self.work_order:
-		self.based_on = frappe.db.get_value("Work Order", self.work_order, "based_on")
-
-
-def calculate_target_yield(self):
-	cal_yield = 0
-	item_arr = []
-	item_map = {}
-	flag = 0
-
-	if self.purpose == "Manufacture" and self.based_on:
-		for row in self.items:
-			if row.t_warehouse:
-				flag += 1
-
-			if row.item_code not in item_arr:
-				item_map.setdefault(row.item_code, {"qty": 0, "yield_weights": 0})
-
-			# item_map[row.item_code]['quantity'] += flt(row.quantity)
-			item_map[row.item_code]["qty"] += flt(row.qty)
-			item_map[row.item_code]["yield_weights"] += flt(row.batch_yield) * flt(row.qty)
-
-		if flag == 1:
-			# Last row object
-			last_row = self.items[-1]
-
-			# Check if items list has frm.doc.based_on value
-			if self.based_on in [row.item_code for row in self.items]:
-				cal_yield = flt(last_row.qty / item_map[self.based_on]["qty"])
-
-			last_row.batch_yield = flt(cal_yield)
 
 
 def get_stock_rate_for_repack_and_not_from_ball_mill(self):
@@ -273,6 +238,172 @@ def set_work_order_details(self):
 			if row.lot_no:
 				lot_nos.append(row.lot_no)
 
-		work_order.db_set("batch_yield", flt(batch_yield / (count or 1)))
-		work_order.db_set("concentration", flt(concentration / (count or 1)))
+		work_order.db_set("batch_yield", flt(batch_yield))
+		work_order.db_set("concentration", flt(concentration))
 		work_order.db_set("lot_no", ", ".join(lot_nos))
+
+
+def calculate_rate_and_amount(self):
+	if self.purpose in ["Manufacture", "Repack"]:
+		multi_item_list = []
+
+		for d in self.items:
+			if d.t_warehouse and d.qty != 0 and d.is_finished_item:
+				multi_item_list.append(d.item_code)
+
+		if len(multi_item_list) <= 1:
+			return
+
+		self.set_basic_rate(reset_outgoing_rate=False, raise_error_if_no_rate=True)
+
+		if self.bom_no:
+			bom_doc = frappe.get_doc("BOM", self.bom_no)
+
+			if bom_doc.equal_cost_ratio:
+				calculate_multiple_repack_valuation(self)
+			else:
+				cal_rate_for_finished_item(self)
+		else:
+			calculate_multiple_repack_valuation(self)
+
+		self.update_valuation_rate()
+		self.set_total_incoming_outgoing_value()
+		self.set_total_amount()
+
+
+def calculate_multiple_repack_valuation(self):
+	self.total_additional_costs = sum(
+		[flt(t.amount) for t in self.get("additional_costs")]
+	)
+	scrap_total = 0
+
+	qty = 0.0
+	total_outgoing_value = 0.0
+
+	for row in self.items:
+		if row.s_warehouse:
+			total_outgoing_value += flt(row.basic_amount)
+		if row.t_warehouse:
+			qty += row.qty
+		if row.is_scrap_item:
+			scrap_total += flt(row.basic_amount)
+
+	total_outgoing_value = flt(total_outgoing_value) - flt(scrap_total)
+
+	for row in self.items:
+		if row.t_warehouse:
+			row.basic_amount = flt(total_outgoing_value) * flt(row.qty) / qty
+			row.additional_cost = flt(self.total_additional_costs) * flt(row.qty) / qty
+			row.basic_rate = flt(row.basic_amount / row.qty)
+
+
+def cal_rate_for_finished_item(self):
+	self.total_additional_costs = sum(
+		[flt(t.amount) for t in self.get("additional_costs")]
+	)
+
+	work_order_doc = frappe.get_doc("Work Order", self.work_order)
+	bom_doc = frappe.get_doc("BOM", work_order_doc.bom_no)
+
+	scrap_total = 0
+	for d in self.items:
+		if d.is_scrap_item:
+			scrap_total += flt(d.basic_amount)
+
+	if self.total_outgoing_value:
+		self.total_outgoing_value = max(
+			flt(self.total_outgoing_value) - flt(scrap_total), 0
+		)
+
+	item_arr = list()
+	item_map = dict()
+	finished_list = []
+	result = {}
+
+	for row in self.items:
+		if row.t_warehouse and not d.is_scrap_item:
+			finished_list.append(
+				{row.item_code: row.qty}
+			)  # create a list of dict of finished item
+
+	for d in finished_list:
+		for k in d.keys():
+			result[k] = result.get(k, 0) + d[k]  # create a dict of unique item
+
+	for d in self.items:
+		if d.item_code not in item_arr:
+			item_map.setdefault(d.item_code, {"qty": 0, "yield_weights": 0})
+
+		item_map[d.item_code]["qty"] += flt(d.qty)
+
+		bom_cost_list = []
+		if bom_doc.is_multiple_item:
+			for bom_fi in bom_doc.multiple_finish_item:
+				bom_cost_list.append(
+					{"item_code": bom_fi.item_code, "cost_ratio": bom_fi.cost_ratio}
+				)
+		else:
+			bom_cost_list.append({"item_code": bom_doc.item, "cost_ratio": 100})
+
+		if d.t_warehouse:
+			for bom_cost_dict in bom_cost_list:
+				if d.item_code == bom_cost_dict["item_code"]:
+					d.basic_amount = flt(
+						flt(
+							flt(self.total_outgoing_value)
+							* flt(bom_cost_dict["cost_ratio"])
+							* flt(d.qty)
+						)
+						/ flt(100 * flt(result[d.item_code]))
+					)
+					d.additional_cost = flt(
+						flt(
+							flt(self.total_additional_costs)
+							* flt(bom_cost_dict["cost_ratio"])
+							* flt(d.qty)
+						)
+						/ flt(100 * flt(result[d.item_code]))
+					)
+					d.amount = flt(d.basic_amount + d.additional_cost)
+					d.basic_rate = flt(d.basic_amount / d.qty)
+					d.valuation_rate = flt(d.amount / d.qty)
+
+
+def cal_validate_additional_cost_qty(self):
+	if self.additional_costs:
+		for addi_cost in self.additional_costs:
+			if addi_cost.qty and addi_cost.rate:
+				addi_cost.amount = flt(addi_cost.qty) * flt(addi_cost.rate)
+				addi_cost.base_amount = flt(addi_cost.qty) * flt(addi_cost.rate)
+			if addi_cost.uom == "FG QTY":
+				addi_cost.qty = self.fg_completed_qty
+				addi_cost.amount = flt(self.fg_completed_qty) * flt(addi_cost.rate)
+				addi_cost.base_amount = flt(self.fg_completed_qty) * flt(addi_cost.rate)
+
+def cal_target_yield_cons(self):
+	item_arr = list()
+	item_map = dict()
+	flag = 0
+	if self.purpose == "Manufacture" and self.based_on:
+		for d in self.items:
+			if d.t_warehouse:
+				flag+=1		
+			
+			if d.item_code not in item_arr:
+					item_map.setdefault(d.item_code, {'qty':0, 'yield_weights':0})
+				
+			# item_map[d.item_code]['quantity'] += flt(d.quantity)
+			item_map[d.item_code]['qty'] += flt(d.qty)
+
+		# List of item_code from items table
+		items_list = [row.item_code for row in self.items]
+
+		# Check if items list has frm.doc.based_on value
+		finished_qty = 0
+		if self.based_on in items_list: 
+			for row in self.items:
+				if row.t_warehouse:
+					finished_qty += row.qty
+					row.batch_yield = flt(row.qty / item_map[self.based_on]['qty'])
+
+		self.db_set('batch_yield', flt(finished_qty / item_map[self.based_on]['qty']))

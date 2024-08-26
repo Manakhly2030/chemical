@@ -106,7 +106,6 @@
    "label": "Remarks"
   },
   {
-   "default": "Standard Buying",
    "fieldname": "price_list",
    "fieldtype": "Link",
    "label": "Price List",

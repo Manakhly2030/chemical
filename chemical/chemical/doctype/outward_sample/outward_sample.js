@@ -277,25 +277,6 @@ frappe.ui.form.on('Outward Sample', {
 			});
 		}
 	},
-	get_naming_series: function (frm) {
-		let naming_series = frm.doc.naming_series
-		if (frm.doc.__islocal && frm.doc.company && !frm.doc.amended_from){
-			frappe.call({
-				method: "finbyzerp.api.check_counter_series",
-				args: {
-					'name': frm.doc.naming_series,
-					'date': frm.doc.price_updated_on,
-					'company_series': frm.doc.company_series || null,
-					'company': frm.doc.company || null,
-				},
-				callback: function (r) {
-					let a = r.message;
-					frm.set_value("series_value", a);
-					cur_frm.refresh();
-				}
-			});
-		}
-	},
 	naming_series: function (frm) {
 		frm.trigger('get_naming_series')
 	},

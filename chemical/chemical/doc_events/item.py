@@ -12,7 +12,7 @@ def item_validate(self, method):
             frappe.msgprint("Maintain stock is 1 <br> Has Batch No is 0")
 
     fill_customer_code(self)
-    no_change(self)
+    # no_change(self)
 
 
 def fill_customer_code(self):
