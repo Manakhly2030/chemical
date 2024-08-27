@@ -111,8 +111,8 @@ function get_qty(frm) {
 								let d = frm.add_child("items");
 								d.item_name = row.item_name;
 								d.source_warehouse = frm.doc.default_source_warehouse;
-								d.quantity = flt(flt(frm.doc.target_qty * row.quantity) / os_doc.total_qty);
-								d.required_quantity = flt(flt(frm.doc.target_qty * row.quantity) / os_doc.total_qty);
+								d.qty = flt(flt(frm.doc.target_qty * row.quantity) / os_doc.total_qty);
+								d.required_qty = flt(flt(frm.doc.target_qty * row.quantity) / os_doc.total_qty);
 							})
 						},
 						() => {

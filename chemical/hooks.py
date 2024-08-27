@@ -60,6 +60,7 @@ override_whitelisted_methods = {
     "erpnext.controllers.stock_controller.make_quality_inspections":"chemical.chemical.whitelisted_method.stock_controller.make_quality_inspections",
     "erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry": "chemical.chemical.override.doctype.work_order.make_stock_entry",
     "erpnext.manufacturing.doctype.work_order.work_order.make_work_order": "chemical.chemical.override.doctype.work_order.make_work_order",
+    "erpnext.controllers.queries.get_batch_no": "chemical.query.get_batch_no",
 }
 
 doc_events = {
