@@ -25,6 +25,8 @@ class QualityInspection(_QualityInspection):
 
 			if self.reference_type == "Outward Sample":
 				doctype = 'Outward Sample Detail'
+				
+			
 
 			if self.reference_type and self.reference_name:
 				conditions = ""
