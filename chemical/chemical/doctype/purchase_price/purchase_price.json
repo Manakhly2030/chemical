@@ -290,7 +290,6 @@
    "bold": 0,
    "collapsible": 0,
    "columns": 0,
-   "default": "Standard Buying",
    "fetch_if_empty": 0,
    "fieldname": "price_list",
    "fieldtype": "Link",

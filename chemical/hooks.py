@@ -15,13 +15,21 @@ app_include_js = [
 	"chemical.bundle.js"
 ]
 
+fixtures = [
+    {"dt": "Custom Field", "filters": [["module", "in", ["Chemical"]]]},
+    {"dt": "Property Setter", "filters": [["module", "in", ["Chemical"]]]},
+]
+# override_whitelisted_methods = {
+# 	"frappe.utils.print_format.download_pdf": "chemical.print_format.download_pdf",
+# }
+
 doctype_list_js = {"Item Price" : "public/js/list_js/item_price.js"}
 
 doctype_js = {
 	"Production Plan": "public/js/doctype_js/production_plan.js",
 	"BOM": "public/js/doctype_js/bom.js",
 	"BOM Update Tool": "public/js/doctype_js/bom_update_tool.js",
-	"Stock Entry": "public/js/doctype_js/stock_entry.js",
+	# "Stock Entry": "public/js/doctype_js/stock_entry.js",
 	"Purchase Invoice": "public/js/doctype_js/purchase_invoice.js",
 	"Purchase Order": "public/js/doctype_js/purchase_order.js",
 	"Work Order": "public/js/doctype_js/work_order.js",
@@ -49,8 +57,10 @@ override_doctype_class = {
 override_whitelisted_methods = {
 	# "erpnext.manufacturing.doctype.bom_update_tool.bom_update_tool.enqueue_update_cost": "chemical.chemical.whitelisted_method.bom.enqueue_update_cost",
 	"erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.get_stock_balance_for": "chemical.chemical.whitelisted_method.stock_reconciliation.get_stock_balance_for",
-    "erpnext.controllers.stock_controller.make_quality_inspections":"chemical.chemical.whitelisted_method.controller.stock_controller.make_quality_inspections",
+    "erpnext.controllers.stock_controller.make_quality_inspections":"chemical.chemical.whitelisted_method.stock_controller.make_quality_inspections",
     "erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry": "chemical.chemical.override.doctype.work_order.make_stock_entry",
+    "erpnext.manufacturing.doctype.work_order.work_order.make_work_order": "chemical.chemical.override.doctype.work_order.make_work_order",
+    "erpnext.controllers.queries.get_batch_no": "chemical.query.get_batch_no",
 }
 
 doc_events = {
@@ -147,7 +157,7 @@ scheduler_events = {
 }
 
 override_doctype_dashboards = {
-	"Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
+	# "Stock Entry": "chemical.chemical.dashboard.stock_entry.get_data",
 	"Customer": "chemical.chemical.dashboard.customer.get_data",
 	"Quotation": "chemical.chemical.dashboard.quotation.get_data",
 	"Lead": "chemical.chemical.dashboard.lead.get_data"

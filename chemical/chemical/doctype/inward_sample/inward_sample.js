@@ -54,7 +54,7 @@ frappe.ui.form.on('Inward Sample', {
 					method: "chemical.chemical.doctype.inward_sample.inward_sample.make_quality_inspection",
 					frm: cur_frm
 				})
-			}, __("Make"))
+			}, __("Create"))
 		}
 	},
 	get_party_details: function (frm) {

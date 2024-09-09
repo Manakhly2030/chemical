@@ -3,7 +3,7 @@ from frappe import _
 from pypika import functions as fn
 from frappe.utils import flt
 
-from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as _WorkOrder, OverProductionError
+from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder as _WorkOrder, add_variant_item, get_item_details
 
 class WorkOrder(_WorkOrder):
 	def get_status(self, status=None):
@@ -39,8 +39,34 @@ class WorkOrder(_WorkOrder):
 		return status
 
 @frappe.whitelist()
+def make_work_order(bom_no, item, qty=0, project=None, variant_items=None):
+	if not frappe.has_permission("Work Order", "write"):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	item_details = get_item_details(item, project)
+
+	bom_doc = frappe.get_doc("BOM", bom_no)
+
+	wo_doc = frappe.new_doc("Work Order")
+	wo_doc.production_item = item
+	wo_doc.update(item_details)
+	wo_doc.bom_no = bom_no
+	wo_doc.batch_yield = bom_doc.batch_yield
+
+	if flt(qty) > 0:
+		wo_doc.qty = flt(qty)
+		wo_doc.total_qty = (flt(qty) / bom_doc.quantity) * bom_doc.total_quantity
+		wo_doc.get_items_and_operations_from_bom()
+
+	if variant_items:
+		add_variant_item(variant_items, wo_doc, bom_no, "required_items")
+
+	return wo_doc
+
+@frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):
 	work_order = frappe.get_doc("Work Order", work_order_id)
+	bom = frappe.get_doc("BOM", work_order.bom_no)
 	if not frappe.db.get_value("Warehouse", work_order.wip_warehouse, "is_group"):
 		wip_warehouse = work_order.wip_warehouse
 	else:
@@ -52,6 +78,8 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	stock_entry.company = work_order.company
 	stock_entry.from_bom = 1
 	stock_entry.bom_no = work_order.bom_no
+	stock_entry.batch_yield = work_order.batch_yield
+	stock_entry.based_on = bom.based_on
 	stock_entry.use_multi_level_bom = work_order.use_multi_level_bom
 	# accept 0 qty as well
 	stock_entry.fg_completed_qty = (
@@ -73,35 +101,31 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	stock_entry.get_items()
 	stock_entry.set_serial_no_batch_for_finished_good()
 
-	if purpose=='Manufacture':
-		if work_order.is_multiple_item and work_order.bom_no:
-			remove_items = []
-			for item in stock_entry.items:
-				if item.is_finished_item:
-					remove_items.append(item)
-			for rm in remove_items:
-				stock_entry.items.remove(rm)
-			bom_multi_doc = frappe.get_doc("BOM",work_order.bom_no)
-			for finish_items in bom_multi_doc.multiple_finish_item:
-				# if stock_entry.items[-2].item_code == finish_items.item_code:
-				# 	if stock_entry.items[-2].transfer_qty == work_order.qty:
-				# 		stock_entry.items.remove(stock_entry.items[-2])
-				bom = frappe.db.sql(''' select name from tabBOM where item = %s and docstatus=1''',finish_items.item_code)
-				if bom:
-					bom = bom[0][0]
-				else:
-					bom = None
-				stock_entry.append("items",{
-					'item_code': finish_items.item_code,
-					't_warehouse': work_order.fg_warehouse,
-					'qty': work_order.qty * finish_items.qty_ratio / 100,
-					'uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
-					'stock_uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
-					'conversion_factor': 1 ,
-					'is_finished_item': 1,
-					'batch_yield':finish_items.batch_yield,
-					'bom_no':bom,
-					'concentration':100
-				})
+	if purpose=='Manufacture' and work_order.is_multiple_item and work_order.bom_no:
+		total_qty = flt(qty) * (flt(work_order.total_qty) / flt(work_order.qty))
+		remove_items = []
+
+		for item in stock_entry.items:
+			if item.is_finished_item:
+				remove_items.append(item)
+		
+		for rm in remove_items:
+			stock_entry.items.remove(rm)
+		
+		bom_multi_doc = frappe.get_doc("BOM",work_order.bom_no)
+
+		for finish_items in bom_multi_doc.multiple_finish_item:	
+			stock_entry.append("items",{
+				'item_code': finish_items.item_code,
+				't_warehouse': work_order.fg_warehouse,
+				'qty': total_qty * finish_items.qty_ratio / 100,
+				'uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
+				'stock_uom': frappe.db.get_value('Item',finish_items.item_code,'stock_uom'),
+				'conversion_factor': 1 ,
+				'is_finished_item': 1,
+				'batch_yield':finish_items.batch_yield,
+				'bom_no':stock_entry.bom_no,
+				'concentration':100
+			})
 
 	return stock_entry.as_dict()

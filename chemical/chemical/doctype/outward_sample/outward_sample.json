@@ -12,20 +12,20 @@
   "section_break_4",
   "naming_series",
   "ref_no",
-  "against",
+  "date",
   "product_name",
   "item_name",
   "company",
   "link_to",
   "party",
+  "against",
   "column_break_12",
-  "series_value",
   "status",
   "sample_type",
-  "date",
-  "batch_yield",
   "price_list",
   "party_name",
+  "party_alias",
+  "batch_yield",
   "sales_order",
   "po_no",
   "contact_display",
@@ -47,9 +47,7 @@
   "column_break_40",
   "per_unit_price",
   "amended_from",
-  "company_series",
-  "fiscal",
-  "party_alias"
+  "fiscal"
  ],
  "fields": [
   {
@@ -152,19 +150,12 @@
    "fieldtype": "Column Break"
   },
   {
-   "depends_on": "eval: doc.__islocal",
-   "fieldname": "series_value",
-   "fieldtype": "Int",
-   "label": "Series Value"
-  },
-  {
    "fieldname": "batch_yield",
    "fieldtype": "Float",
    "hidden": 1,
    "label": "Yield"
   },
   {
-   "default": "Standard Buying",
    "fieldname": "price_list",
    "fieldtype": "Link",
    "label": "Price List",
@@ -332,13 +323,6 @@
    "read_only": 1
   },
   {
-   "fetch_from": "company.company_series",
-   "fieldname": "company_series",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Company Series"
-  },
-  {
    "fieldname": "fiscal",
    "fieldtype": "Small Text",
    "hidden": 1,
@@ -353,7 +337,7 @@
  ],
  "is_submittable": 1,
  "links": [],
- "modified": "2024-07-01 13:21:33.294838",
+ "modified": "2024-08-12 10:40:37.328221",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Outward Sample",

@@ -12,7 +12,7 @@ from frappe.desk.reportview import get_match_cond, get_filters_cond
 from erpnext.utilities.product import get_price
 from frappe.utils import nowdate, flt
 
-from finbyzerp.finbyzerp.doc_events.naming_series import before_naming as naming_series
+# from finbyzerp.finbyzerp.doc_events.naming_series import before_naming as naming_series
 from chemical.comments_api import (
     creation_comment,
     status_change_comment,
@@ -36,9 +36,10 @@ class OutwardSample(Document):
         total_amount = 0
 
         for row in self.details:
+
             if row.item_code:
                 concentration = row.concentration or 100
-
+                row.bom_no = frappe.db.get_value("Item", row.item_code, "default_bom") or None
                 price = self.get_price_list(
                     item_code=row.item_code,
                     price_list=self.price_list or "Standard Buying",
@@ -86,7 +87,7 @@ class OutwardSample(Document):
         self.product_name = bm.product_name
         self.link_to = "Customer"
         self.party = bm.customer_name
-        self.batch_yield = bm.total_yield
+        # self.batch_yield = bm.total_yield
 
         customer_name, destination = db.get_value(
             "Customer", bm.customer_name, ["customer_name", "territory"]
@@ -161,8 +162,8 @@ class OutwardSample(Document):
         if last_sample:
             self.last_sample = last_sample[0][0]
 
-    def before_naming(self):
-        naming_series(self, "save")
+    # def before_naming(self):
+    #     naming_series(self, "save")
 
     @frappe.whitelist()
     def get_price_list(
@@ -233,8 +234,10 @@ def make_quality_inspection(source_name, target_doc=None):
         },
         target_doc,
     )
-    doclist.inspection_type = "Incoming"
-
+    doclist.inspection_type = "Outgoing"
+    item_doc = frappe.db.get_value("Item", doclist.item_code, "quality_inspection_template", as_dict=1)
+    doclist.quality_inspection_template = item_doc.quality_inspection_template if item_doc else None
+    doclist.set("inspected_by", frappe.session.user)
     return doclist
 
 

@@ -1,5 +1,5 @@
 import frappe
-from finbyzerp.finbyzerp.override.quality_inspection import QualityInspection as _QualityInspection # type: ignore
+from erpnext.stock.doctype.quality_inspection.quality_inspection import QualityInspection as _QualityInspection # type: ignore
 
 class QualityInspection(_QualityInspection):
 	def update_qc_reference(self):
@@ -14,6 +14,16 @@ class QualityInspection(_QualityInspection):
 					WHERE name = %s and production_item = %s
 				""",
 					(quality_inspection, self.modified, self.reference_name, self.item_code),
+				)
+		elif self.reference_type == "Inward Sample":
+			if self.reference_name:
+				frappe.db.sql(
+					f"""
+					UPDATE `tab{self.reference_type}`
+					SET quality_inspection = %s, modified = %s
+					WHERE name = %s
+				""",
+					(quality_inspection, self.modified, self.reference_name),
 				)
 
 		else:

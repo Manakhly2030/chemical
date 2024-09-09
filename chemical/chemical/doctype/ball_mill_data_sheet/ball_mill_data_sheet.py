@@ -9,30 +9,12 @@ from frappe.model.document import Document
 from frappe.utils import nowtime, flt, cint, getdate, get_fullname, get_url_to_form
 from erpnext.stock.stock_ledger import get_valuation_rate
 from frappe.model.mapper import get_mapped_doc
-from finbyzerp.api import get_fiscal, get_naming_series_name as naming_series_name
+# from finbyzerp.api import get_fiscal, get_naming_series_name as naming_series_name
 import datetime
 from erpnext.stock.doctype.item.item import get_item_defaults
 from chemical.comments_api import creation_comment,status_change_comment,cancellation_comment,delete_comment
 
 class BallMillDataSheet(Document):
-
-	def before_naming(self):
-		if not self.get('amended_from') and not self.get('name'):
-			date = self.get("date") or getdate()
-			fiscal = get_fiscal(date)
-			self.fiscal = fiscal
-			if not self.get('company_series'):
-				self.company_series = None
-			if self.get('series_value'):
-				if self.series_value > 0:
-					name = naming_series_name(self.naming_series, fiscal, self.company_series)
-					check = frappe.db.get_value('Series', name, 'current', order_by="name")
-					if check == 0:
-						pass
-					elif not check:
-						frappe.db.sql("insert into tabSeries (name, current) values ('{}', 0)".format(name))
-
-					frappe.db.sql("update `tabSeries` set current = {} where name = '{}'".format(cint(self.series_value) - 1, name))
 
 	def before_update_after_submit(self):
 		status_change_comment(self)
@@ -59,7 +41,7 @@ class BallMillDataSheet(Document):
 			if not d.source_warehouse:
 				d.basic_rate = 0.0
 			
-			d.basic_amount = d.basic_rate * d.qty
+			d.basic_amount = flt(d.basic_rate) * flt(d.qty)
 	def get_args_for_incoming_rate(self, item):
 		warehouse = item.source_warehouse or self.warehouse
 		if not frappe.db.get_value("Company",self.company,"maintain_as_is_new"):
@@ -176,7 +158,7 @@ class BallMillDataSheet(Document):
 
 	def on_submit(self):
 		creation_comment(self)
-		maintain_as_is_new = frappe.db.get_value("Company", self.company, "maintain_as_is_new")
+		# maintain_as_is_new = frappe.db.get_value("Company", self.company, "maintain_as_is_new")
 		if self.get('create_stock_entry') == 0:
 			create_stock_entry = 0
 		else:
@@ -216,15 +198,10 @@ class BallMillDataSheet(Document):
 					'packaging_material':row.packaging_material,
 					'packing_size':row.packing_size,
 					'no_of_packages':row.no_of_packages,
-					"use_serial_batch_fields": 1
+					"use_serial_batch_fields": True
 				}
-				
-				if not maintain_as_is_new:
-					item_dict['quantity'] = row.quantity
-					item_dict['price'] = row.price
-				
-				se.append('items', item_dict)
 
+				se.append('items', item_dict)
 			for d in self.packaging:	
 				item = get_item_defaults(self.product_name, self.company)
 				item_dict = {
@@ -244,11 +221,8 @@ class BallMillDataSheet(Document):
 					'basic_amount': flt(d.qty * self.per_unit_amount),
 					'cost_center': item.get("buying_cost_center") or item.get("selling_cost_center") or cost_center,
 					'uv_value':self.get("weighted_average_uv_value"),
-					"use_serial_batch_fields": 1
+					"use_serial_batch_fields": True
 				}
-
-				if not maintain_as_is_new:
-					item_dict['quantity'] = row.quantity
 
 				se.append('items', item_dict)
 			
@@ -260,38 +234,36 @@ class BallMillDataSheet(Document):
 					'rate':flt(d.amount),
 					'qty':1
 				})
-			# print(se.items[0].uom)
-			# se.set_missing_values()
-			# se.run_method("set_missing_values")
+
 			se.save()
 			se.submit()
 			self.db_set('stock_entry',se.name)
-			batch = None
-			for row in self.packaging:
-				batch_name = frappe.db.sql("""
-					SELECT sed.batch_no from `tabStock Entry` se LEFT JOIN `tabStock Entry Detail` sed on (se.name = sed.parent)
-					WHERE 
-						se.name = '{name}'
-						and (sed.t_warehouse != '' or sed.t_warehouse IS NOT NULL) 
-						and sed.qty = {qty}
-						and sed.packaging_material = '{packaging_material}'
-						and sed.packing_size = '{packing_size}'
-						and sed.no_of_packages = {no_of_packages}""".format(
-							name=se.name,
-							qty=row.qty,
-							packaging_material=row.packaging_material,
-							packing_size=row.packing_size,
-							no_of_packages=row.no_of_packages,
-						))
-				if batch_name:
-					batch = batch_name[0][0] or ''
+			# batch = None
+			# for row in self.packaging:
+			# 	batch_name = frappe.db.sql("""
+			# 		SELECT sed.batch_no from `tabStock Entry` se LEFT JOIN `tabStock Entry Detail` sed on (se.name = sed.parent)
+			# 		WHERE 
+			# 			se.name = '{name}'
+			# 			and (sed.t_warehouse != '' or sed.t_warehouse IS NOT NULL) 
+			# 			and sed.qty = {qty}
+			# 			and sed.packaging_material = '{packaging_material}'
+			# 			and sed.packing_size = '{packing_size}'
+			# 			and sed.no_of_packages = {no_of_packages}""".format(
+			# 				name=se.name,
+			# 				qty=row.qty,
+			# 				packaging_material=row.packaging_material,
+			# 				packing_size=row.packing_size,
+			# 				no_of_packages=row.no_of_packages,
+			# 			))
+			# 	if batch_name:
+			# 		batch = batch_name[0][0] or ''
 
-				if batch:
-					row.db_set('batch_no', batch)
-					if self.customer_name:
-						frappe.db.set_value("Batch",batch,'customer',self.customer_name)
-					if self.lot_no:
-						frappe.db.set_value("Batch",batch,'sample_ref_no',self.lot_no)
+			# 	if batch:
+			# 		row.db_set('batch_no', batch)
+			# 		if self.customer_name:
+			# 			frappe.db.set_value("Batch",batch,'customer',self.customer_name)
+			# 		if self.lot_no:
+			# 			frappe.db.set_value("Batch",batch,'sample_ref_no',self.lot_no)
 		
 	def before_cancel(self):
 		for item in self.packaging:

@@ -191,11 +191,11 @@ def get_so_items_for_sample(self):
                         )
 
                         item_details[row.item_code].planned_qty += (
-                            flt(abs(diff)) * flt(row.quantity) * flt(row.concentration)
-                        ) / (flt(sample_doc.total_qty) * flt(bom.concentration))
+                            flt(abs(diff)) * flt(row.quantity) * (flt(row.concentration) or 100)
+                        ) / (flt(sample_doc.total_qty) * (flt(bom.concentration) or 100))
 
         items = [values for values in item_details.values()]
-
+        
     elif self.based_on_sample == 1:
 
         sample_list = [
@@ -245,20 +245,12 @@ def get_so_items_for_sample(self):
                     )
 
                     item_details[row.item_code].planned_qty += (
-                        flt(quantity) * flt(row.quantity) * (row.concentration)
-                    ) / (flt(sample_doc.total_qty) * (bom.concentration))
+                        flt(quantity) * flt(row.quantity) * ((row.concentration) or 100)
+                    ) / (flt(sample_doc.total_qty) * ((bom.concentration)) or 100)
 
         items = [values for values in item_details.values()]
     else:
         return
-    # -----------------------
-    # items = frappe.db.sql("""select distinct parent, item_code, warehouse,
-    # 	(qty - work_order_qty) * conversion_factor as pending_qty, name
-    # 	from `tabSales Order Item` so_item
-    # 	where parent in (%s) and docstatus = 1 and qty > work_order_qty
-    # 	and exists (select name from `tabBOM` bom where bom.item=so_item.item_code
-    # 			and bom.is_active = 1) %s""" % \
-    # 	(", ".join(["%s"] * len(so_list)), item_condition), tuple(so_list), as_dict=1)
 
     if self.item_code:
         item_condition = ' and so_item.item_code = "{0}"'.format(

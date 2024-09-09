@@ -49,16 +49,15 @@
   "more_info_break",
   "stock_entry",
   "amended_from",
-  "company_series",
   "fiscal"
  ],
  "fields": [
   {
-   "default": "BMD-.company_series.-.fiscal.-.#####",
+   "default": "BMD-.#####",
    "fieldname": "naming_series",
    "fieldtype": "Select",
    "label": "SR No",
-   "options": "BMD-.company_series.-.fiscal.-.#####\nBMD-"
+   "options": "BMD-.#####\nBMD-"
   },
   {
    "fieldname": "customer_name",
@@ -270,13 +269,6 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Fiscal"
-  },
-  {
-   "fetch_from": "company.company_series",
-   "fieldname": "company_series",
-   "fieldtype": "Data",
-   "hidden": 1,
-   "label": "Company Series"
   },
   {
    "fieldname": "price",
