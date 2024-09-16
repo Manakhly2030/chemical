@@ -29,14 +29,12 @@
   "total_qty",
   "concentration",
   "actual_qty",
-  "actual_quantity",
   "total_sub_loat",
   "remarks",
   "amount",
   "column_break_11",
   "handling_loss",
   "per_unit_amount",
-  "price",
   "section_break_27",
   "ball_mill_additional_cost",
   "section_break_35_section",
@@ -271,18 +269,6 @@
    "label": "Fiscal"
   },
   {
-   "fieldname": "price",
-   "fieldtype": "Currency",
-   "label": "Price",
-   "read_only": 1
-  },
-  {
-   "fieldname": "actual_quantity",
-   "fieldtype": "Float",
-   "label": "Actual Quantity",
-   "read_only": 1
-  },
-  {
    "fieldname": "section_break_34",
    "fieldtype": "Section Break"
   },
@@ -310,7 +296,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-06-28 07:58:27.757292",
+ "modified": "2024-09-16 14:52:24.689155",
  "modified_by": "Administrator",
  "module": "Chemical",
  "name": "Ball Mill Data Sheet",
