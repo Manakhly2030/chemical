@@ -292,9 +292,14 @@ class BallMillDataSheet(Document):
 		self.lot_no=",".join([each.get('lot_no') for each in self.packaging])
 
 	def cal_total(self):
+		total_qty = 0
 		self.amount = sum([flt(row.basic_amount) for row in self.items])
 		self.per_unit_amount = (self.amount + sum([flt(row.amount) for row in self.ball_mill_additional_cost]))/ self.actual_qty
-		self.total_qty = sum([flt(item.qty) for item in self.items])
+		for item in self.items:
+			if frappe.db.get_value("Item",item.item_name,"item_group") != "Packing":
+				total_qty += item.qty
+		self.total_qty = total_qty
+		# self.total_qty = sum([flt(item.qty) for item in self.items])
 		if not frappe.db.get_value("Company",self.company,"maintain_as_is_new"):		
 			self.total_quantity = sum([flt(item.quantity) for item in self.items])
 			self.actual_quantity = sum([flt(item.quantity) for item in self.packaging])
