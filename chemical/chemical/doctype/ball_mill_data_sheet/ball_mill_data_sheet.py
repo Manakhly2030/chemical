@@ -297,7 +297,7 @@ class BallMillDataSheet(Document):
 		self.per_unit_amount = (self.amount + sum([flt(row.amount) for row in self.ball_mill_additional_cost]))/ self.actual_qty
 		for item in self.items:
 			if frappe.db.get_value("Item",item.item_name,"item_group") != "Packing":
-				total_qty += item.qty
+				total_qty += flt(item.qty)
 		self.total_qty = total_qty
 		# self.total_qty = sum([flt(item.qty) for item in self.items])
 		if not frappe.db.get_value("Company",self.company,"maintain_as_is_new"):		
