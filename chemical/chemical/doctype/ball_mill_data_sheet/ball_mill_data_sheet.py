@@ -13,6 +13,7 @@ from frappe.model.mapper import get_mapped_doc
 import datetime
 from erpnext.stock.doctype.item.item import get_item_defaults
 from chemical.comments_api import creation_comment,status_change_comment,cancellation_comment,delete_comment
+from erpnext.stock.utils import get_incoming_rate
 
 class BallMillDataSheet(Document):
 
@@ -401,31 +402,3 @@ def get_sales_order(doctype, txt, searchfield, start, page_len, filters):
 def get_sample_no(parent,item_code):
 	value = frappe.db.get_value("Sales Order Item", {'parent': parent,'item_code': item_code}, 'outward_sample')
 	return value
-
-import frappe, erpnext
-from frappe import _
-import json
-from frappe.utils import flt, cstr, nowdate, nowtime, cint
-
-from erpnext.stock.stock_ledger import get_batch_incoming_rate
-def get_incoming_rate(args, raise_error_if_no_rate=True):
-	"""Get Incoming Rate based on valuation method"""
-	from erpnext.stock.stock_ledger import get_previous_sle, get_valuation_rate
-	if isinstance(args, str):
-		args = json.loads(args)
-
-	in_rate = 0
-	#finbyz changes
-	batch_wise_cost = cint(frappe.db.get_single_value("Stock Settings", 'exact_cost_valuation_for_batch_wise_items'))
-
-	#finbyz changes
-	if args.get("batch_no") :
-		# in_rate = get_batch_rate(args.get("batch_no"))	
-		in_rate = get_batch_incoming_rate(args.get('item_code'), args.get('warehouse'), args.get("batch_no"), args.get("posting_date"), args.get("posting_time"))
-	return in_rate
-
-def get_batch_rate(batch_no):
-	"""Get Batch Valuation Rate of Batch No"""
-
-	return flt(frappe.db.sql("""SELECT valuation_rate FROM `tabBatch` 
-		WHERE name = %s """, batch_no)[0][0])
